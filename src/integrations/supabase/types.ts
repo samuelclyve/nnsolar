@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      client_installments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          due_date: string
+          id: string
+          installation_id: string
+          installment_number: number
+          paid_date: string | null
+          payment_proof_url: string | null
+          status: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          due_date: string
+          id?: string
+          installation_id: string
+          installment_number: number
+          paid_date?: string | null
+          payment_proof_url?: string | null
+          status?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          due_date?: string
+          id?: string
+          installation_id?: string
+          installment_number?: number
+          paid_date?: string | null
+          payment_proof_url?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_installments_installation_id_fkey"
+            columns: ["installation_id"]
+            isOneToOne: false
+            referencedRelation: "installations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hero_slides: {
         Row: {
           button_link: string | null
@@ -49,6 +93,173 @@ export type Database = {
           title?: string
         }
         Relationships: []
+      }
+      installation_documents: {
+        Row: {
+          created_at: string | null
+          document_name: string
+          document_type: string | null
+          file_url: string
+          id: string
+          installation_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          document_name: string
+          document_type?: string | null
+          file_url: string
+          id?: string
+          installation_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          document_name?: string
+          document_type?: string | null
+          file_url?: string
+          id?: string
+          installation_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installation_documents_installation_id_fkey"
+            columns: ["installation_id"]
+            isOneToOne: false
+            referencedRelation: "installations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      installation_stages: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          installation_id: string
+          notes: string | null
+          stage_name: string
+          stage_order: number
+          started_at: string | null
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          installation_id: string
+          notes?: string | null
+          stage_name: string
+          stage_order: number
+          started_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          installation_id?: string
+          notes?: string | null
+          stage_name?: string
+          stage_order?: number
+          started_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installation_stages_installation_id_fkey"
+            columns: ["installation_id"]
+            isOneToOne: false
+            referencedRelation: "installations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      installations: {
+        Row: {
+          actual_end: string | null
+          actual_start: string | null
+          address: string | null
+          assigned_technician: string | null
+          city: string | null
+          client_email: string | null
+          client_name: string
+          client_phone: string | null
+          created_at: string | null
+          estimated_end: string | null
+          estimated_start: string | null
+          id: string
+          lead_id: string | null
+          notes: string | null
+          panel_count: number | null
+          power_kwp: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          actual_end?: string | null
+          actual_start?: string | null
+          address?: string | null
+          assigned_technician?: string | null
+          city?: string | null
+          client_email?: string | null
+          client_name: string
+          client_phone?: string | null
+          created_at?: string | null
+          estimated_end?: string | null
+          estimated_start?: string | null
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          panel_count?: number | null
+          power_kwp?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          actual_end?: string | null
+          actual_start?: string | null
+          address?: string | null
+          assigned_technician?: string | null
+          city?: string | null
+          client_email?: string | null
+          client_name?: string
+          client_phone?: string | null
+          created_at?: string | null
+          estimated_end?: string | null
+          estimated_start?: string | null
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          panel_count?: number | null
+          power_kwp?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installations_assigned_technician_fkey"
+            columns: ["assigned_technician"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installations_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       leads: {
         Row: {
@@ -136,12 +347,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
