@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Send, Phone, MapPin, User, CheckCircle2 } from "lucide-react";
+import { Send, Phone, MapPin, User, CheckCircle2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export function LeadForm() {
   const { toast } = useToast();
@@ -14,6 +15,7 @@ export function LeadForm() {
     nome: "",
     telefone: "",
     cidade: "",
+    email: "",
     aceite: false,
   });
 
@@ -31,16 +33,31 @@ export function LeadForm() {
 
     setIsSubmitting(true);
     
-    // Simula envio
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast({
-      title: "Solicitação enviada!",
-      description: "Nossa equipe entrará em contato em até 24 horas.",
-    });
-    
-    setFormData({ nome: "", telefone: "", cidade: "", aceite: false });
-    setIsSubmitting(false);
+    try {
+      const { error } = await supabase.from("leads").insert({
+        name: formData.nome,
+        phone: formData.telefone,
+        city: formData.cidade,
+        email: formData.email || null,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Solicitação enviada!",
+        description: "Nossa equipe entrará em contato em até 24 horas.",
+      });
+      
+      setFormData({ nome: "", telefone: "", cidade: "", email: "", aceite: false });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao enviar",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -135,6 +152,23 @@ export function LeadForm() {
                       onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
                       className="pl-10 h-12 rounded-xl"
                       required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="email" className="text-sm font-medium">
+                    Email (opcional)
+                  </Label>
+                  <div className="relative mt-1.5">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="pl-10 h-12 rounded-xl"
                     />
                   </div>
                 </div>
