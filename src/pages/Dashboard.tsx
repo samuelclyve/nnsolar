@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 import { 
   Sun, Zap, TrendingUp, Users, FileText, Settings, 
-  LogOut, Menu, X, Home, BarChart3, Calendar
+  LogOut, Menu, X, Home, BarChart3, Calendar, Wrench
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [stats, setStats] = useState({ leads: 0, installations: 0 });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,6 +24,7 @@ export default function Dashboard() {
       }
       setUser(session.user);
       fetchProfile(session.user.id);
+      fetchStats();
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -48,6 +50,18 @@ export default function Dashboard() {
     }
   };
 
+  const fetchStats = async () => {
+    const [leadsRes, installationsRes] = await Promise.all([
+      supabase.from("leads").select("id", { count: "exact" }),
+      supabase.from("installations").select("id", { count: "exact" }),
+    ]);
+
+    setStats({
+      leads: leadsRes.count || 0,
+      installations: installationsRes.count || 0,
+    });
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
@@ -62,18 +76,18 @@ export default function Dashboard() {
   }
 
   const menuItems = [
-    { icon: Home, label: "Visão Geral", href: "/dashboard" },
-    { icon: BarChart3, label: "CRM", href: "/dashboard/crm", coming: true },
-    { icon: Zap, label: "Instalações", href: "/dashboard/installations", coming: true },
-    { icon: Users, label: "Clientes", href: "/dashboard/clients", coming: true },
-    { icon: Calendar, label: "Agenda", href: "/dashboard/schedule", coming: true },
-    { icon: FileText, label: "Documentos", href: "/dashboard/documents", coming: true },
-    { icon: Settings, label: "Configurações", href: "/dashboard/settings", coming: true },
+    { icon: Home, label: "Visão Geral", href: "/dashboard", active: true },
+    { icon: BarChart3, label: "CRM", href: "/crm" },
+    { icon: Wrench, label: "Instalações", href: "/installations" },
+    { icon: Users, label: "Portal Cliente", href: "/portal" },
+    { icon: Calendar, label: "Agenda", href: "#", coming: true },
+    { icon: FileText, label: "Documentos", href: "#", coming: true },
+    { icon: Settings, label: "Configurações", href: "#", coming: true },
   ];
 
-  const stats = [
-    { label: "Leads Ativos", value: "24", icon: Users, color: "bg-primary" },
-    { label: "Instalações em Andamento", value: "8", icon: Zap, color: "bg-secondary" },
+  const statsCards = [
+    { label: "Leads Ativos", value: stats.leads.toString(), icon: Users, color: "bg-primary" },
+    { label: "Instalações", value: stats.installations.toString(), icon: Zap, color: "bg-secondary" },
     { label: "Taxa de Conversão", value: "32%", icon: TrendingUp, color: "bg-success" },
     { label: "Economia Gerada", value: "R$ 847k", icon: Sun, color: "bg-solar-orange" },
   ];
@@ -95,11 +109,12 @@ export default function Dashboard() {
 
           <nav className="flex-1 p-4 space-y-1">
             {menuItems.map((item) => (
-              <a
+              <Link
                 key={item.label}
-                href={item.href}
+                to={item.href}
+                onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                  item.href === "/dashboard"
+                  item.active
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
@@ -108,10 +123,10 @@ export default function Dashboard() {
                 {item.label}
                 {item.coming && (
                   <span className="ml-auto text-xs bg-muted px-2 py-0.5 rounded-full">
-                    Em breve
+                    Breve
                   </span>
                 )}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -190,7 +205,7 @@ export default function Dashboard() {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-            {stats.map((stat, index) => (
+            {statsCards.map((stat, index) => (
               <motion.div
                 key={stat.label}
                 initial={{ opacity: 0, y: 20 }}
@@ -216,39 +231,31 @@ export default function Dashboard() {
             transition={{ delay: 0.4 }}
             className="bg-card rounded-2xl p-6 shadow-sm border border-border"
           >
-            <h3 className="text-lg font-bold text-foreground mb-4">Ações Rápidas</h3>
+            <h3 className="text-lg font-bold text-foreground mb-4">Acesso Rápido</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Button variant="outline" className="h-auto py-4 flex-col gap-2">
-                <Users className="w-6 h-6" />
-                <span>Novo Lead</span>
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
+                <Link to="/crm">
+                  <Users className="w-6 h-6" />
+                  <span>CRM / Leads</span>
+                </Link>
               </Button>
-              <Button variant="outline" className="h-auto py-4 flex-col gap-2">
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
+                <Link to="/installations">
+                  <Wrench className="w-6 h-6" />
+                  <span>Instalações</span>
+                </Link>
+              </Button>
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2" asChild>
+                <Link to="/portal">
+                  <Sun className="w-6 h-6" />
+                  <span>Portal Cliente</span>
+                </Link>
+              </Button>
+              <Button variant="outline" className="h-auto py-4 flex-col gap-2 opacity-50" disabled>
                 <Calendar className="w-6 h-6" />
-                <span>Agendar Visita</span>
-              </Button>
-              <Button variant="outline" className="h-auto py-4 flex-col gap-2">
-                <FileText className="w-6 h-6" />
-                <span>Nova Proposta</span>
-              </Button>
-              <Button variant="outline" className="h-auto py-4 flex-col gap-2">
-                <Zap className="w-6 h-6" />
-                <span>Nova Instalação</span>
+                <span>Agenda</span>
               </Button>
             </div>
-          </motion.div>
-
-          {/* Coming soon notice */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="mt-8 bg-gradient-to-r from-primary to-solar-blue-light rounded-2xl p-6 text-primary-foreground"
-          >
-            <h3 className="text-xl font-bold mb-2">🚀 Em desenvolvimento</h3>
-            <p className="text-primary-foreground/80">
-              Estamos trabalhando para trazer o CRM completo, gestão de instalações, 
-              portal do cliente e muito mais. Fique ligado nas próximas atualizações!
-            </p>
           </motion.div>
         </div>
       </main>
