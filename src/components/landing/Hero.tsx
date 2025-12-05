@@ -14,8 +14,8 @@ export function Hero() {
         backgroundPosition: "center",
       }}
     >
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-primary/40" />
+      {/* Overlay - removed blue filter, using darker gradient */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
 
       <div className="container relative z-10 pt-24">
         <div className="grid lg:grid-cols-2 gap-12 items-center">

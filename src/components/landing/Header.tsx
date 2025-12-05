@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Phone, User, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut, MessageCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,33 +47,25 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      {/* Main nav - transparent with blur on scroll */}
-      <nav className={`transition-all duration-300 ${
-        isScrolled 
-          ? "bg-card/90 backdrop-blur-lg shadow-md" 
-          : "bg-transparent"
-      }`}>
+      {/* Main nav - always transparent */}
+      <nav className="bg-transparent">
         <div className="container flex items-center justify-between h-20">
-          {/* Logo */}
+          {/* Logo - smaller */}
           <Link to="/" className="flex items-center">
             <img 
               src={logoNn} 
               alt="NN Energia Solar" 
-              className="h-10 md:h-12 w-auto object-contain"
+              className="h-7 md:h-8 w-auto object-contain"
             />
           </Link>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-2">
+          {/* Desktop Nav - centered */}
+          <div className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
-                className={`px-4 py-2 rounded-full font-medium transition-all ${
-                  isScrolled 
-                    ? "text-foreground/80 hover:text-primary hover:bg-muted" 
-                    : "text-card/90 hover:text-card hover:bg-card/10"
-                }`}
+                className="px-4 py-2 rounded-full font-medium transition-all text-card/90 hover:text-card hover:bg-card/15 backdrop-blur-sm"
               >
                 {link.label}
               </a>
@@ -81,22 +73,20 @@ export function Header() {
           </div>
 
           {/* CTA & Auth */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
+            {/* WhatsApp Button */}
             <a 
-              href="tel:+5588998471511" 
-              className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
-                isScrolled 
-                  ? "text-foreground/70 hover:text-primary" 
-                  : "text-card/80 hover:text-card"
-              }`}
+              href="https://wa.me/5588998471511" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2.5 rounded-full bg-card/10 backdrop-blur-sm border border-card/20 text-card hover:bg-card/20 transition-all"
             >
-              <Phone className="w-4 h-4" />
-              <span className="hidden lg:inline">(88) 9.9847-1511</span>
+              <MessageCircle className="w-5 h-5" />
             </a>
             {user ? (
               <>
                 <Button 
-                  variant={isScrolled ? "outline" : "hero-outline"} 
+                  variant="hero-outline" 
                   size="sm" 
                   asChild
                 >
@@ -109,7 +99,7 @@ export function Header() {
                   variant="ghost" 
                   size="icon" 
                   onClick={handleLogout}
-                  className={isScrolled ? "" : "text-card hover:bg-card/10"}
+                  className="text-card hover:bg-card/10"
                 >
                   <LogOut className="w-4 h-4" />
                 </Button>
@@ -117,7 +107,7 @@ export function Header() {
             ) : (
               <>
                 <Button 
-                  variant={isScrolled ? "ghost" : "hero-outline"} 
+                  variant="hero-outline" 
                   size="sm" 
                   asChild
                 >
@@ -133,11 +123,9 @@ export function Header() {
           {/* Mobile Menu Toggle */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className={`md:hidden p-2 rounded-full ${
-              isScrolled ? "text-foreground" : "text-card"
-            }`}
+            className="md:hidden p-2.5 rounded-full bg-card/10 backdrop-blur-sm border border-card/20 text-card"
           >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 

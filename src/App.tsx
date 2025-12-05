@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import CRM from "./pages/CRM";
 import Installations from "./pages/Installations";
 import ClientPortal from "./pages/ClientPortal";
+import SiteEditor from "./pages/SiteEditor";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/crm" element={<CRM />} />
           <Route path="/installations" element={<Installations />} />
           <Route path="/portal" element={<ClientPortal />} />
+          <Route path="/site-editor" element={<SiteEditor />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
