@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import { 
   Plus, Search, Filter, Phone, Mail, MapPin, 
-  Calendar, User, MoreVertical, ArrowLeft
+  Calendar, MoreVertical
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +15,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AppLayout } from "@/components/AppLayout";
 
 interface Lead {
   id: string;
@@ -47,24 +47,15 @@ export default function CRM() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newLead, setNewLead] = useState({ name: "", phone: "", email: "", city: "" });
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    checkAuth();
     fetchLeads();
   }, []);
 
   useEffect(() => {
     filterLeads();
   }, [leads, searchTerm, statusFilter]);
-
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/auth");
-    }
-  };
 
   const fetchLeads = async () => {
     const { data, error } = await supabase
@@ -142,99 +133,84 @@ export default function CRM() {
     filteredLeads.filter((lead) => lead.status === status);
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-30">
-        <div className="container flex items-center justify-between h-16">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
-              <ArrowLeft className="w-5 h-5" />
+    <AppLayout title="CRM - Gestão de Leads">
+      {/* Filters & Actions */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nome, telefone ou cidade..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full md:w-48">
+            <Filter className="w-4 h-4 mr-2" />
+            <SelectValue placeholder="Filtrar por status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os status</SelectItem>
+            {statusColumns.map((col) => (
+              <SelectItem key={col.id} value={col.id}>{col.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="cta">
+              <Plus className="w-4 h-4" />
+              Novo Lead
             </Button>
-            <h1 className="text-xl font-bold text-foreground">CRM - Gestão de Leads</h1>
-          </div>
-
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="cta">
-                <Plus className="w-4 h-4" />
-                Novo Lead
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Criar Novo Lead</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 mt-4">
-                <div>
-                  <Label>Nome *</Label>
-                  <Input
-                    value={newLead.name}
-                    onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
-                    placeholder="Nome completo"
-                  />
-                </div>
-                <div>
-                  <Label>Telefone *</Label>
-                  <Input
-                    value={newLead.phone}
-                    onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
-                    placeholder="(00) 00000-0000"
-                  />
-                </div>
-                <div>
-                  <Label>Email</Label>
-                  <Input
-                    value={newLead.email}
-                    onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
-                    placeholder="email@exemplo.com"
-                  />
-                </div>
-                <div>
-                  <Label>Cidade</Label>
-                  <Input
-                    value={newLead.city}
-                    onChange={(e) => setNewLead({ ...newLead, city: e.target.value })}
-                    placeholder="Cidade"
-                  />
-                </div>
-                <Button variant="cta" className="w-full" onClick={createLead}>
-                  Criar Lead
-                </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Criar Novo Lead</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 mt-4">
+              <div>
+                <Label>Nome *</Label>
+                <Input
+                  value={newLead.name}
+                  onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
+                  placeholder="Nome completo"
+                />
               </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </header>
-
-      {/* Filters */}
-      <div className="container py-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nome, telefone ou cidade..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full md:w-48">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Filtrar por status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os status</SelectItem>
-              {statusColumns.map((col) => (
-                <SelectItem key={col.id} value={col.id}>{col.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+              <div>
+                <Label>Telefone *</Label>
+                <Input
+                  value={newLead.phone}
+                  onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
+                  placeholder="(00) 00000-0000"
+                />
+              </div>
+              <div>
+                <Label>Email</Label>
+                <Input
+                  value={newLead.email}
+                  onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
+                  placeholder="email@exemplo.com"
+                />
+              </div>
+              <div>
+                <Label>Cidade</Label>
+                <Input
+                  value={newLead.city}
+                  onChange={(e) => setNewLead({ ...newLead, city: e.target.value })}
+                  placeholder="Cidade"
+                />
+              </div>
+              <Button variant="cta" className="w-full" onClick={createLead}>
+                Criar Lead
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Kanban Board */}
-      <div className="container pb-8 overflow-x-auto">
+      <div className="overflow-x-auto -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
         <div className="flex gap-4 min-w-max pb-4">
           {statusColumns.map((column) => (
             <div key={column.id} className="w-72 flex-shrink-0">
@@ -247,7 +223,7 @@ export default function CRM() {
                   </span>
                 </div>
 
-                <div className="p-2 space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto">
+                <div className="p-2 space-y-2 max-h-[calc(100vh-320px)] overflow-y-auto">
                   {getLeadsByStatus(column.id).map((lead) => (
                     <motion.div
                       key={lead.id}
@@ -312,6 +288,6 @@ export default function CRM() {
           ))}
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }

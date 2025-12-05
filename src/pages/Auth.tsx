@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import logoNn from "@/assets/logo-nn-energia-solar.png";
+import logoFundoBranco from "@/assets/logo-fundo-branco.png";
+import iconeNn from "@/assets/icone-nn.png";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -125,7 +126,7 @@ export default function Auth() {
           className="w-full max-w-md"
         >
           <Link to="/" className="inline-block mb-8">
-            <img src={logoNn} alt="NN Energia Solar" className="h-12" />
+            <img src={logoFundoBranco} alt="NN Energia Solar" className="h-10" />
           </Link>
 
           <h1 className="text-3xl font-display font-bold text-foreground mb-2">
@@ -251,8 +252,8 @@ export default function Auth() {
           transition={{ delay: 0.3 }}
           className="relative z-10 text-center text-primary-foreground"
         >
-          <div className="w-24 h-24 bg-secondary rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-orange-glow">
-            <Sun className="w-12 h-12 text-secondary-foreground" />
+          <div className="w-24 h-24 bg-card rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl">
+            <img src={iconeNn} alt="NN" className="w-16 h-16 object-contain" />
           </div>
           <h2 className="text-4xl font-display font-bold mb-4">
             NN Energia Solar
