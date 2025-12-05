@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Phone, Mail } from "lucide-react";
+import { Menu, X, Phone, Mail, User, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import logoNn from "@/assets/logo-nn-energia-solar.png";
 
 const navLinks = [
@@ -14,6 +16,25 @@ const navLinks = [
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
@@ -35,13 +56,13 @@ export function Header() {
       <nav className="bg-card/95 backdrop-blur-md border-b border-border shadow-sm">
         <div className="container flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <a href="#home" className="flex items-center">
+          <Link to="/" className="flex items-center">
             <img 
               src={logoNn} 
               alt="NN Energia Solar" 
               className="h-10 md:h-12 w-auto object-contain"
             />
-          </a>
+          </Link>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
@@ -56,11 +77,30 @@ export function Header() {
             ))}
           </div>
 
-          {/* CTA */}
-          <div className="hidden md:block">
-            <Button variant="cta" size="lg">
-              Simular Economia
-            </Button>
+          {/* CTA & Auth */}
+          <div className="hidden md:flex items-center gap-3">
+            {user ? (
+              <>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/dashboard">
+                    <User className="w-4 h-4" />
+                    Dashboard
+                  </Link>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/auth">Entrar</Link>
+                </Button>
+                <Button variant="cta" asChild>
+                  <a href="#simulador">Simular Economia</a>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -92,9 +132,31 @@ export function Header() {
                     {link.label}
                   </a>
                 ))}
-                <Button variant="cta" className="mt-2">
-                  Simular Economia
-                </Button>
+                <div className="flex flex-col gap-2 pt-4 border-t border-border">
+                  {user ? (
+                    <>
+                      <Button variant="outline" asChild>
+                        <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
+                          Dashboard
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" onClick={() => { handleLogout(); setIsMenuOpen(false); }}>
+                        Sair
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button variant="outline" asChild>
+                        <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                          Entrar
+                        </Link>
+                      </Button>
+                      <Button variant="cta">
+                        Simular Economia
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
             </motion.div>
           )}
