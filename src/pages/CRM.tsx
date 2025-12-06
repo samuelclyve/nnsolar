@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Plus, Search, Filter, Phone, Mail, MapPin, 
-  Calendar, MoreVertical
+  Calendar, GripVertical
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,17 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 
 interface Lead {
   id: string;
@@ -39,6 +50,96 @@ const statusColumns = [
   { id: "lost", label: "Perdidos", color: "bg-red-500" },
 ];
 
+function DraggableLeadCard({ lead }: { lead: Lead }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: lead.id,
+    data: lead,
+  });
+
+  const style = transform ? {
+    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+    opacity: isDragging ? 0.5 : 1,
+  } : undefined;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      className="bg-background rounded-lg p-3 border border-border hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing"
+    >
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <GripVertical className="w-4 h-4 text-muted-foreground" />
+          <h4 className="font-medium text-foreground text-sm">{lead.name}</h4>
+        </div>
+      </div>
+
+      <div className="space-y-1 text-xs text-muted-foreground ml-6">
+        <div className="flex items-center gap-1">
+          <Phone className="w-3 h-3" />
+          {lead.phone}
+        </div>
+        {lead.city && (
+          <div className="flex items-center gap-1">
+            <MapPin className="w-3 h-3" />
+            {lead.city}
+          </div>
+        )}
+        {lead.email && (
+          <div className="flex items-center gap-1">
+            <Mail className="w-3 h-3" />
+            {lead.email}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-2 pt-2 border-t border-border flex items-center text-xs text-muted-foreground ml-6">
+        <div className="flex items-center gap-1">
+          <Calendar className="w-3 h-3" />
+          {new Date(lead.created_at).toLocaleDateString("pt-BR")}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DroppableColumn({ 
+  column, 
+  leads,
+  children 
+}: { 
+  column: typeof statusColumns[0]; 
+  leads: Lead[];
+  children: React.ReactNode;
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: column.id,
+  });
+
+  return (
+    <div className="w-72 flex-shrink-0">
+      <div className={`bg-card rounded-xl shadow-sm border border-border transition-colors ${isOver ? 'ring-2 ring-primary' : ''}`}>
+        <div className="p-4 border-b border-border flex items-center gap-2">
+          <div className={`w-3 h-3 rounded-full ${column.color}`} />
+          <h3 className="font-semibold text-foreground">{column.label}</h3>
+          <span className="ml-auto bg-muted px-2 py-0.5 rounded-full text-xs text-muted-foreground">
+            {leads.length}
+          </span>
+        </div>
+
+        <div 
+          ref={setNodeRef}
+          className="p-2 space-y-2 max-h-[calc(100vh-320px)] overflow-y-auto min-h-[100px]"
+        >
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CRM() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
@@ -47,7 +148,16 @@ export default function CRM() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newLead, setNewLead] = useState({ name: "", phone: "", email: "", city: "" });
+  const [activeId, setActiveId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   useEffect(() => {
     fetchLeads();
@@ -115,22 +225,43 @@ export default function CRM() {
     fetchLeads();
   };
 
-  const updateLeadStatus = async (leadId: string, newStatus: string) => {
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over) return;
+
+    const leadId = active.id as string;
+    const newStatus = over.id as string;
+
+    const lead = leads.find(l => l.id === leadId);
+    if (!lead || lead.status === newStatus) return;
+
+    // Optimistic update
+    setLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
+
     const { error } = await supabase
       .from("leads")
       .update({ status: newStatus })
       .eq("id", leadId);
 
     if (error) {
-      toast({ title: "Erro ao atualizar status", variant: "destructive" });
+      toast({ title: "Erro ao mover lead", variant: "destructive" });
+      fetchLeads(); // Revert on error
       return;
     }
 
-    fetchLeads();
+    toast({ title: `Lead movido para ${statusColumns.find(c => c.id === newStatus)?.label}` });
   };
 
   const getLeadsByStatus = (status: string) => 
     filteredLeads.filter((lead) => lead.status === status);
+
+  const activeLead = activeId ? leads.find(l => l.id === activeId) : null;
 
   return (
     <AppLayout title="CRM - Gestão de Leads">
@@ -209,85 +340,43 @@ export default function CRM() {
         </Dialog>
       </div>
 
-      {/* Kanban Board */}
-      <div className="overflow-x-auto -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
-        <div className="flex gap-4 min-w-max pb-4">
-          {statusColumns.map((column) => (
-            <div key={column.id} className="w-72 flex-shrink-0">
-              <div className="bg-card rounded-xl shadow-sm border border-border">
-                <div className="p-4 border-b border-border flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${column.color}`} />
-                  <h3 className="font-semibold text-foreground">{column.label}</h3>
-                  <span className="ml-auto bg-muted px-2 py-0.5 rounded-full text-xs text-muted-foreground">
-                    {getLeadsByStatus(column.id).length}
-                  </span>
-                </div>
-
-                <div className="p-2 space-y-2 max-h-[calc(100vh-320px)] overflow-y-auto">
-                  {getLeadsByStatus(column.id).map((lead) => (
-                    <motion.div
-                      key={lead.id}
-                      layout
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-background rounded-lg p-3 border border-border hover:shadow-md transition-shadow cursor-pointer"
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-medium text-foreground text-sm">{lead.name}</h4>
-                        <Select
-                          value={lead.status}
-                          onValueChange={(value) => updateLeadStatus(lead.id, value)}
-                        >
-                          <SelectTrigger className="w-auto h-6 text-xs border-0 p-1">
-                            <MoreVertical className="w-3 h-3" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {statusColumns.map((col) => (
-                              <SelectItem key={col.id} value={col.id}>{col.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-1 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Phone className="w-3 h-3" />
-                          {lead.phone}
-                        </div>
-                        {lead.city && (
-                          <div className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {lead.city}
-                          </div>
-                        )}
-                        {lead.email && (
-                          <div className="flex items-center gap-1">
-                            <Mail className="w-3 h-3" />
-                            {lead.email}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="mt-2 pt-2 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          {new Date(lead.created_at).toLocaleDateString("pt-BR")}
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-
-                  {getLeadsByStatus(column.id).length === 0 && (
-                    <p className="text-center text-sm text-muted-foreground py-8">
-                      Nenhum lead
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+      {/* Kanban Board with DnD */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="overflow-x-auto -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
+          <div className="flex gap-4 min-w-max pb-4">
+            {statusColumns.map((column) => (
+              <DroppableColumn 
+                key={column.id} 
+                column={column} 
+                leads={getLeadsByStatus(column.id)}
+              >
+                {getLeadsByStatus(column.id).map((lead) => (
+                  <DraggableLeadCard key={lead.id} lead={lead} />
+                ))}
+                {getLeadsByStatus(column.id).length === 0 && (
+                  <p className="text-center text-sm text-muted-foreground py-8">
+                    Arraste leads aqui
+                  </p>
+                )}
+              </DroppableColumn>
+            ))}
+          </div>
         </div>
-      </div>
+
+        <DragOverlay>
+          {activeLead ? (
+            <div className="bg-background rounded-lg p-3 border-2 border-primary shadow-lg">
+              <h4 className="font-medium text-foreground text-sm">{activeLead.name}</h4>
+              <p className="text-xs text-muted-foreground">{activeLead.phone}</p>
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </AppLayout>
   );
 }

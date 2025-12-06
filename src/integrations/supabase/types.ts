@@ -347,6 +347,69 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          setting_key: string
+          setting_type: string | null
+          setting_value: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          setting_key: string
+          setting_type?: string | null
+          setting_value?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          setting_key?: string
+          setting_type?: string | null
+          setting_value?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          client_location: string | null
+          client_name: string
+          client_photo_url: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          message: string
+          rating: number | null
+          sort_order: number | null
+        }
+        Insert: {
+          client_location?: string | null
+          client_name: string
+          client_photo_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          message: string
+          rating?: number | null
+          sort_order?: number | null
+        }
+        Update: {
+          client_location?: string | null
+          client_name?: string
+          client_photo_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          message?: string
+          rating?: number | null
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
