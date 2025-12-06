@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, Search, Zap, Calendar, MapPin, 
-  CheckCircle2, Clock, AlertCircle
+  CheckCircle2, Clock, AlertCircle, Upload, FileText, 
+  Image, X, Eye, Download, Camera
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,14 @@ interface Installation {
   created_at: string;
 }
 
+interface Document {
+  id: string;
+  document_name: string;
+  document_type: string | null;
+  file_url: string;
+  created_at: string;
+}
+
 const statusConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   project: { label: "Projeto", color: "bg-blue-500", icon: Clock },
   approval: { label: "Aprovação", color: "bg-yellow-500", icon: AlertCircle },
@@ -46,6 +55,11 @@ export default function Installations() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedInstallation, setSelectedInstallation] = useState<Installation | null>(null);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [newInstallation, setNewInstallation] = useState({
     client_name: "",
     client_phone: "",
@@ -60,6 +74,12 @@ export default function Installations() {
     fetchInstallations();
   }, []);
 
+  useEffect(() => {
+    if (selectedInstallation) {
+      fetchDocuments(selectedInstallation.id);
+    }
+  }, [selectedInstallation]);
+
   const fetchInstallations = async () => {
     const { data, error } = await supabase
       .from("installations")
@@ -73,6 +93,21 @@ export default function Installations() {
 
     setInstallations(data || []);
     setIsLoading(false);
+  };
+
+  const fetchDocuments = async (installationId: string) => {
+    const { data, error } = await supabase
+      .from("installation_documents")
+      .select("*")
+      .eq("installation_id", installationId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching documents:", error);
+      return;
+    }
+
+    setDocuments(data || []);
   };
 
   const createInstallation = async () => {
@@ -114,6 +149,76 @@ export default function Installations() {
 
     toast({ title: "Status atualizado!" });
     fetchInstallations();
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || !selectedInstallation) return;
+    
+    setIsUploading(true);
+    const files = Array.from(event.target.files);
+
+    for (const file of files) {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${selectedInstallation.id}/${Date.now()}-${file.name}`;
+      
+      // Upload to storage
+      const { error: uploadError, data } = await supabase.storage
+        .from('documents')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        toast({ title: `Erro ao fazer upload: ${file.name}`, variant: "destructive" });
+        continue;
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('documents')
+        .getPublicUrl(fileName);
+
+      // Save document record
+      const docType = file.type.startsWith('image/') ? 'photo' : 'document';
+      const { error: docError } = await supabase.from('installation_documents').insert({
+        installation_id: selectedInstallation.id,
+        document_name: file.name,
+        document_type: docType,
+        file_url: urlData.publicUrl,
+      });
+
+      if (docError) {
+        toast({ title: `Erro ao salvar registro: ${file.name}`, variant: "destructive" });
+      }
+    }
+
+    toast({ title: "Arquivos enviados com sucesso!" });
+    setIsUploading(false);
+    fetchDocuments(selectedInstallation.id);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const deleteDocument = async (docId: string, fileUrl: string) => {
+    // Extract file path from URL
+    const pathMatch = fileUrl.match(/documents\/(.+)$/);
+    if (pathMatch) {
+      await supabase.storage.from('documents').remove([pathMatch[1]]);
+    }
+
+    const { error } = await supabase
+      .from('installation_documents')
+      .delete()
+      .eq('id', docId);
+
+    if (error) {
+      toast({ title: "Erro ao excluir documento", variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Documento excluído!" });
+    if (selectedInstallation) {
+      fetchDocuments(selectedInstallation.id);
+    }
   };
 
   const filteredInstallations = installations.filter((inst) => {
@@ -230,13 +335,14 @@ export default function Installations() {
               key={inst.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-shadow"
+              className="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => { setSelectedInstallation(inst); setIsDetailsOpen(true); }}
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-lg font-semibold text-foreground">{inst.client_name}</h3>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium text-white ${status.color}`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium text-card ${status.color}`}>
                       {status.label}
                     </span>
                   </div>
@@ -266,7 +372,7 @@ export default function Installations() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                   <Select
                     value={inst.status}
                     onValueChange={(value) => updateStatus(inst.id, value)}
@@ -322,6 +428,139 @@ export default function Installations() {
           </div>
         )}
       </div>
+
+      {/* Installation Details Dialog */}
+      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              {selectedInstallation?.client_name}
+              {selectedInstallation && (
+                <span className={`px-3 py-1 rounded-full text-xs font-medium text-card ${statusConfig[selectedInstallation.status]?.color}`}>
+                  {statusConfig[selectedInstallation.status]?.label}
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedInstallation && (
+            <div className="space-y-6 mt-4">
+              {/* Info Grid */}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Endereço</p>
+                  <p className="font-medium">{selectedInstallation.address || "Não informado"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Cidade</p>
+                  <p className="font-medium">{selectedInstallation.city || "Não informada"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Potência</p>
+                  <p className="font-medium">{selectedInstallation.power_kwp ? `${selectedInstallation.power_kwp} kWp` : "Não informada"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Painéis</p>
+                  <p className="font-medium">{selectedInstallation.panel_count || "Não informado"}</p>
+                </div>
+              </div>
+
+              {/* Upload Section */}
+              <div className="border-t border-border pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-foreground">Fotos e Documentos</h3>
+                  <div className="flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      accept="image/*,.pdf,.doc,.docx"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="file-upload"
+                    />
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                    >
+                      {isUploading ? (
+                        <>Enviando...</>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          Enviar Arquivos
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Documents Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {documents.map((doc) => (
+                    <div 
+                      key={doc.id}
+                      className="relative group bg-muted rounded-lg p-3 hover:bg-muted/80 transition-colors"
+                    >
+                      {doc.document_type === 'photo' ? (
+                        <div className="aspect-video mb-2 rounded overflow-hidden bg-background">
+                          <img 
+                            src={doc.file_url} 
+                            alt={doc.document_name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="aspect-video mb-2 rounded bg-background flex items-center justify-center">
+                          <FileText className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      <p className="text-xs text-foreground truncate">{doc.document_name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(doc.created_at).toLocaleDateString("pt-BR")}
+                      </p>
+
+                      {/* Actions overlay */}
+                      <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
+                        <a
+                          href={doc.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 bg-card rounded-full hover:bg-card/80"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </a>
+                        <a
+                          href={doc.file_url}
+                          download
+                          className="p-2 bg-card rounded-full hover:bg-card/80"
+                        >
+                          <Download className="w-4 h-4" />
+                        </a>
+                        <button
+                          onClick={() => deleteDocument(doc.id, doc.file_url)}
+                          className="p-2 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/80"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {documents.length === 0 && (
+                    <div className="col-span-full text-center py-8 text-muted-foreground">
+                      <Camera className="w-8 h-8 mx-auto mb-2" />
+                      <p className="text-sm">Nenhum arquivo enviado</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

@@ -23,9 +23,9 @@ const menuItems: MenuItem[] = [
   { icon: Wrench, label: "Instalações", href: "/installations", roles: ["admin", "manager", "technician"] },
   { icon: Users, label: "Portal Cliente", href: "/portal" },
   { icon: Globe, label: "Edição Site", href: "/site-editor", roles: ["admin", "manager"] },
+  { icon: Settings, label: "Usuários", href: "/users", roles: ["admin"] },
   { icon: Calendar, label: "Agenda", href: "#", coming: true },
   { icon: FileText, label: "Documentos", href: "#", coming: true },
-  { icon: Settings, label: "Configurações", href: "#", coming: true },
 ];
 
 interface AppSidebarProps {

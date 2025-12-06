@@ -10,6 +10,7 @@ import CRM from "./pages/CRM";
 import Installations from "./pages/Installations";
 import ClientPortal from "./pages/ClientPortal";
 import SiteEditor from "./pages/SiteEditor";
+import UserManagement from "./pages/UserManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
