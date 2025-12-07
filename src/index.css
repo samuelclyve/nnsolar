@@ -4,43 +4,43 @@
 
 @layer base {
   :root {
-    /* NN Energia Solar Brand Colors */
-    --background: 210 20% 98%;
-    --foreground: 220 30% 15%;
+    /* NN Energia Solar Brand Colors - Light Mode */
+    --background: 0 0% 96%;
+    --foreground: 220 20% 20%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 30% 15%;
+    --card-foreground: 220 20% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 15%;
+    --popover-foreground: 220 20% 20%;
 
-    /* Primary: Deep Blue */
-    --primary: 220 70% 25%;
+    /* Primary: Success Green (like reference) */
+    --primary: 142 76% 36%;
     --primary-foreground: 0 0% 100%;
 
     /* Secondary: Vibrant Orange */
     --secondary: 28 100% 50%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 20% 95%;
-    --muted-foreground: 220 10% 45%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 50%;
 
-    /* Accent: Orange Glow */
-    --accent: 28 100% 55%;
+    /* Accent: Green Glow */
+    --accent: 142 76% 36%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     /* Success Green */
-    --success: 145 65% 42%;
+    --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
-    --border: 220 20% 88%;
-    --input: 220 20% 88%;
-    --ring: 220 70% 25%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 142 76% 36%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
     /* Custom Brand Colors */
     --solar-orange: 28 100% 50%;
@@ -55,22 +55,24 @@
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 20% 98%) 100%);
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(220 30% 15% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(220 30% 15% / 0.1), 0 2px 4px -2px hsl(220 30% 15% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(220 30% 15% / 0.1), 0 4px 6px -4px hsl(220 30% 15% / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(220 30% 15% / 0.1), 0 8px 10px -6px hsl(220 30% 15% / 0.1);
+    --shadow-sm: 0 1px 2px 0 hsl(220 20% 20% / 0.03);
+    --shadow-md: 0 4px 6px -1px hsl(220 20% 20% / 0.05), 0 2px 4px -2px hsl(220 20% 20% / 0.03);
+    --shadow-lg: 0 10px 15px -3px hsl(220 20% 20% / 0.08), 0 4px 6px -4px hsl(220 20% 20% / 0.04);
+    --shadow-xl: 0 20px 25px -5px hsl(220 20% 20% / 0.1), 0 8px 10px -6px hsl(220 20% 20% / 0.05);
     --shadow-orange-glow: 0 10px 40px -10px hsl(28 100% 50% / 0.4);
     --shadow-blue-glow: 0 10px 40px -10px hsl(220 70% 25% / 0.3);
+    --shadow-green-glow: 0 10px 40px -10px hsl(142 76% 36% / 0.3);
 
-    /* Sidebar */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 30% 15%;
-    --sidebar-primary: 220 70% 25%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 20% 95%;
-    --sidebar-accent-foreground: 220 30% 15%;
-    --sidebar-border: 220 20% 88%;
-    --sidebar-ring: 220 70% 25%;
+    /* Sidebar - Dark Style */
+    --sidebar-background: 220 20% 14%;
+    --sidebar-foreground: 220 14% 90%;
+    --sidebar-primary: 142 76% 50%;
+    --sidebar-primary-foreground: 220 20% 14%;
+    --sidebar-accent: 220 20% 20%;
+    --sidebar-accent-foreground: 220 14% 90%;
+    --sidebar-border: 220 20% 20%;
+    --sidebar-ring: 142 76% 50%;
+    --sidebar-muted: 220 14% 60%;
   }
 
   .dark {
@@ -83,7 +85,7 @@
     --popover: 220 30% 12%;
     --popover-foreground: 210 20% 98%;
 
-    --primary: 28 100% 55%;
+    --primary: 142 76% 45%;
     --primary-foreground: 220 30% 10%;
 
     --secondary: 220 60% 35%;
@@ -92,7 +94,7 @@
     --muted: 220 30% 18%;
     --muted-foreground: 220 15% 60%;
 
-    --accent: 28 100% 55%;
+    --accent: 142 76% 45%;
     --accent-foreground: 220 30% 10%;
 
     --destructive: 0 70% 45%;
@@ -100,16 +102,17 @@
 
     --border: 220 30% 20%;
     --input: 220 30% 20%;
-    --ring: 28 100% 55%;
+    --ring: 142 76% 45%;
 
     --sidebar-background: 220 30% 10%;
     --sidebar-foreground: 210 20% 98%;
-    --sidebar-primary: 28 100% 55%;
+    --sidebar-primary: 142 76% 50%;
     --sidebar-primary-foreground: 220 30% 10%;
     --sidebar-accent: 220 30% 15%;
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: 220 30% 20%;
-    --sidebar-ring: 28 100% 55%;
+    --sidebar-ring: 142 76% 50%;
+    --sidebar-muted: 220 15% 60%;
   }
 }
 
