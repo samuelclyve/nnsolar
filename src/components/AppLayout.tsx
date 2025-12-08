@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "./AppSidebar";
 import { Bell, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -14,6 +13,7 @@ interface AppLayoutProps {
 export function AppLayout({ children, title }: AppLayoutProps) {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [userRoles, setUserRoles] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -25,6 +25,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       }
       setUser(session.user);
       fetchProfile(session.user.id);
+      fetchUserRoles(session.user.id);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -48,6 +49,24 @@ export function AppLayout({ children, title }: AppLayoutProps) {
     if (data) {
       setProfile(data);
     }
+  };
+
+  const fetchUserRoles = async (userId: string) => {
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+    
+    if (data) {
+      const roles = data.map(r => r.role);
+      setUserRoles(roles);
+      
+      // If user has only client role or no roles, redirect to portal
+      if (roles.length === 0 || (roles.length === 1 && roles[0] === 'client')) {
+        navigate("/portal");
+        return;
+      }
+    }
     setIsLoading(false);
   };
 
@@ -67,12 +86,9 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       <main className="flex-1 lg:ml-64">
         {/* Top bar */}
         <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-md">
-          <div className="flex items-center justify-between px-6 lg:px-8 h-20">
-            {/* Left spacer for mobile menu button */}
-            <div className="w-12 lg:w-0" />
-            
+          <div className="flex items-center justify-end px-6 lg:px-8 h-16">
             {/* Right side actions */}
-            <div className="flex items-center gap-3 ml-auto">
+            <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" className="rounded-full w-10 h-10 text-muted-foreground hover:text-foreground">
                 <Moon className="w-5 h-5" />
               </Button>
@@ -80,22 +96,6 @@ export function AppLayout({ children, title }: AppLayoutProps) {
                 <Bell className="w-5 h-5" />
                 <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full" />
               </Button>
-              <div className="flex items-center gap-3 ml-2 pl-4 border-l border-border">
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src={profile?.avatar_url} />
-                  <AvatarFallback className="bg-primary text-primary-foreground font-medium">
-                    {profile?.full_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="hidden md:block">
-                  <p className="text-sm font-medium text-foreground">
-                    {profile?.full_name || "Usuário"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {user?.email}
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </header>

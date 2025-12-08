@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Image, Plus, Trash2, Save, Eye, GripVertical,
-  Settings, MessageSquare, Type, Palette
+  Settings, MessageSquare, Type, Upload, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
+  Dialog, DialogContent, DialogHeader, DialogTitle
 } from "@/components/ui/dialog";
 
 interface HeroSlide {
@@ -55,6 +55,7 @@ export default function SiteEditor() {
   const [isTestimonialDialogOpen, setIsTestimonialDialogOpen] = useState(false);
   const [editingSlide, setEditingSlide] = useState<HeroSlide | null>(null);
   const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [slideForm, setSlideForm] = useState({
     title: "",
     subtitle: "",
@@ -71,6 +72,8 @@ export default function SiteEditor() {
     rating: 5,
     is_active: true,
   });
+  const slideImageInputRef = useRef<HTMLInputElement>(null);
+  const heroBackgroundInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -78,21 +81,18 @@ export default function SiteEditor() {
   }, []);
 
   const fetchData = async () => {
-    // Fetch slides
     const { data: slidesData } = await supabase
       .from("hero_slides")
       .select("*")
       .order("sort_order", { ascending: true });
     setSlides(slidesData || []);
 
-    // Fetch testimonials
     const { data: testimonialsData } = await supabase
       .from("testimonials")
       .select("*")
       .order("sort_order", { ascending: true });
     setTestimonials(testimonialsData || []);
 
-    // Fetch settings
     const { data: settingsData } = await supabase
       .from("site_settings")
       .select("*");
@@ -106,7 +106,52 @@ export default function SiteEditor() {
     setIsLoading(false);
   };
 
-  // Slide functions
+  const uploadImage = async (file: File, bucket: string = "documents"): Promise<string | null> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `site-images/${fileName}`;
+
+    const { error } = await supabase.storage
+      .from(bucket)
+      .upload(filePath, file, { upsert: true });
+
+    if (error) {
+      toast({ title: "Erro ao fazer upload", variant: "destructive" });
+      return null;
+    }
+
+    const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+    return data.publicUrl;
+  };
+
+  const handleSlideImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    const url = await uploadImage(file);
+    if (url) {
+      setSlideForm({ ...slideForm, image_url: url });
+    }
+    setUploadingImage(false);
+  };
+
+  const handleHeroBackgroundUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    const url = await uploadImage(file);
+    if (url) {
+      setSettings({ ...settings, hero_background_url: url });
+      await supabase
+        .from("site_settings")
+        .upsert({ setting_key: "hero_background_url", setting_value: url, setting_type: "image" });
+      toast({ title: "Imagem de fundo atualizada!" });
+    }
+    setUploadingImage(false);
+  };
+
   const openSlideDialog = (slide?: HeroSlide) => {
     if (slide) {
       setEditingSlide(slide);
@@ -134,7 +179,7 @@ export default function SiteEditor() {
 
   const saveSlide = async () => {
     if (!slideForm.title || !slideForm.image_url) {
-      toast({ title: "Preencha título e URL da imagem", variant: "destructive" });
+      toast({ title: "Preencha título e faça upload da imagem", variant: "destructive" });
       return;
     }
 
@@ -183,7 +228,6 @@ export default function SiteEditor() {
     fetchData();
   };
 
-  // Testimonial functions
   const openTestimonialDialog = (testimonial?: Testimonial) => {
     if (testimonial) {
       setEditingTestimonial(testimonial);
@@ -260,17 +304,11 @@ export default function SiteEditor() {
     fetchData();
   };
 
-  // Settings functions
-  const updateSetting = async (key: string, value: string) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
-  };
-
   const saveSettings = async () => {
     for (const [key, value] of Object.entries(settings)) {
       await supabase
         .from("site_settings")
-        .update({ setting_value: value })
-        .eq("setting_key", key);
+        .upsert({ setting_key: key, setting_value: value });
     }
     toast({ title: "Configurações salvas!" });
   };
@@ -283,9 +321,10 @@ export default function SiteEditor() {
         className="space-y-6"
       >
         <div className="flex items-center justify-between">
-          <p className="text-muted-foreground">
-            Gerencie todo o conteúdo do site
-          </p>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Edição do Site</h1>
+            <p className="text-muted-foreground">Gerencie todo o conteúdo do site</p>
+          </div>
           <Button variant="outline" asChild>
             <a href="/" target="_blank">
               <Eye className="w-4 h-4" />
@@ -295,10 +334,14 @@ export default function SiteEditor() {
         </div>
 
         <Tabs defaultValue="slides" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="slides" className="gap-2">
               <Image className="w-4 h-4" />
               Banners
+            </TabsTrigger>
+            <TabsTrigger value="hero" className="gap-2">
+              <Image className="w-4 h-4" />
+              Hero
             </TabsTrigger>
             <TabsTrigger value="testimonials" className="gap-2">
               <MessageSquare className="w-4 h-4" />
@@ -315,9 +358,9 @@ export default function SiteEditor() {
             <div className="bg-card rounded-2xl p-6 border border-border">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-xl font-bold text-foreground">Banners do Hero</h2>
+                  <h2 className="text-xl font-bold text-foreground">Banners do Carousel</h2>
                   <p className="text-sm text-muted-foreground">
-                    Gerencie os slides do carousel na página inicial
+                    Gerencie os slides do carousel promocional
                   </p>
                 </div>
                 <Button variant="cta" onClick={() => openSlideDialog()}>
@@ -387,10 +430,68 @@ export default function SiteEditor() {
                       Nenhum slide cadastrado
                     </h3>
                     <p className="text-muted-foreground">
-                      Adicione slides para personalizar o hero.
+                      Adicione slides para o carousel promocional.
                     </p>
                   </div>
                 )}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Hero Background Tab */}
+          <TabsContent value="hero">
+            <div className="bg-card rounded-2xl p-6 border border-border">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-foreground">Imagem de Fundo do Hero</h2>
+                <p className="text-sm text-muted-foreground">
+                  Configure a imagem principal do topo do site
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="aspect-video max-w-2xl bg-muted rounded-xl overflow-hidden relative">
+                  {settings.hero_background_url ? (
+                    <>
+                      <img 
+                        src={settings.hero_background_url} 
+                        alt="Hero Background"
+                        className="w-full h-full object-cover"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2"
+                        onClick={() => {
+                          setSettings({ ...settings, hero_background_url: "" });
+                        }}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center">
+                      <Image className="w-12 h-12 text-muted-foreground mb-2" />
+                      <p className="text-muted-foreground">Nenhuma imagem definida</p>
+                    </div>
+                  )}
+                </div>
+
+                <input
+                  ref={heroBackgroundInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleHeroBackgroundUpload}
+                  className="hidden"
+                />
+
+                <Button 
+                  variant="outline" 
+                  onClick={() => heroBackgroundInputRef.current?.click()}
+                  disabled={uploadingImage}
+                >
+                  <Upload className="w-4 h-4" />
+                  {uploadingImage ? "Enviando..." : "Fazer Upload"}
+                </Button>
               </div>
             </div>
           </TabsContent>
@@ -420,28 +521,26 @@ export default function SiteEditor() {
                     }`}
                   >
                     <div className="flex items-start gap-3 mb-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-secondary to-solar-orange-light flex items-center justify-center text-secondary-foreground font-bold">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-bold">
                         {t.client_name.charAt(0)}
                       </div>
                       <div className="flex-1">
                         <h4 className="font-medium text-foreground">{t.client_name}</h4>
                         <p className="text-sm text-muted-foreground">{t.client_location}</p>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Switch
-                          checked={t.is_active ?? false}
-                          onCheckedChange={async (checked) => {
-                            await supabase.from("testimonials").update({ is_active: checked }).eq("id", t.id);
-                            fetchData();
-                          }}
-                        />
-                      </div>
+                      <Switch
+                        checked={t.is_active ?? false}
+                        onCheckedChange={async (checked) => {
+                          await supabase.from("testimonials").update({ is_active: checked }).eq("id", t.id);
+                          fetchData();
+                        }}
+                      />
                     </div>
                     <p className="text-sm text-muted-foreground mb-3 line-clamp-3">{t.message}</p>
                     <div className="flex items-center justify-between">
                       <div className="flex gap-1">
                         {[...Array(5)].map((_, i) => (
-                          <span key={i} className={i < t.rating ? "text-secondary" : "text-muted"}>★</span>
+                          <span key={i} className={i < t.rating ? "text-primary" : "text-muted"}>★</span>
                         ))}
                       </div>
                       <div className="flex gap-1">
@@ -488,171 +587,196 @@ export default function SiteEditor() {
                 </div>
                 <Button variant="cta" onClick={saveSettings}>
                   <Save className="w-4 h-4" />
-                  Salvar Tudo
+                  Salvar
                 </Button>
               </div>
 
-              <div className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <Label>Título do Hero</Label>
-                    <Input
-                      value={settings.hero_title || ""}
-                      onChange={(e) => updateSetting("hero_title", e.target.value)}
-                      placeholder="Economize até 95%..."
-                    />
-                  </div>
-                  <div>
-                    <Label>Subtítulo do Hero</Label>
-                    <Input
-                      value={settings.hero_subtitle || ""}
-                      onChange={(e) => updateSetting("hero_subtitle", e.target.value)}
-                      placeholder="Transforme a luz do sol..."
-                    />
-                  </div>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div>
+                  <Label>Título Principal do Hero</Label>
+                  <Input
+                    value={settings.hero_title || ""}
+                    onChange={(e) => setSettings({ ...settings, hero_title: e.target.value })}
+                    placeholder="Economize até 95% na sua conta de energia"
+                    className="mt-1.5"
+                  />
                 </div>
-
-                <div className="border-t border-border pt-6">
-                  <h3 className="font-semibold text-foreground mb-4">Simulador</h3>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <Label>Título do Simulador</Label>
-                      <Input
-                        value={settings.simulator_title || ""}
-                        onChange={(e) => updateSetting("simulator_title", e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label>Subtítulo do Simulador</Label>
-                      <Input
-                        value={settings.simulator_subtitle || ""}
-                        onChange={(e) => updateSetting("simulator_subtitle", e.target.value)}
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <Label>Subtítulo do Hero</Label>
+                  <Input
+                    value={settings.hero_subtitle || ""}
+                    onChange={(e) => setSettings({ ...settings, hero_subtitle: e.target.value })}
+                    placeholder="Transforme a luz do sol em economia real"
+                    className="mt-1.5"
+                  />
                 </div>
-
-                <div className="border-t border-border pt-6">
-                  <h3 className="font-semibold text-foreground mb-4">Contato</h3>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <Label>Telefone</Label>
-                      <Input
-                        value={settings.contact_phone || ""}
-                        onChange={(e) => updateSetting("contact_phone", e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label>WhatsApp (só números)</Label>
-                      <Input
-                        value={settings.whatsapp_number || ""}
-                        onChange={(e) => updateSetting("whatsapp_number", e.target.value)}
-                        placeholder="5588998471511"
-                      />
-                    </div>
-                    <div>
-                      <Label>Email</Label>
-                      <Input
-                        value={settings.contact_email || ""}
-                        onChange={(e) => updateSetting("contact_email", e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label>Endereço</Label>
-                      <Input
-                        value={settings.contact_address || ""}
-                        onChange={(e) => updateSetting("contact_address", e.target.value)}
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <Label>Telefone de Contato</Label>
+                  <Input
+                    value={settings.contact_phone || ""}
+                    onChange={(e) => setSettings({ ...settings, contact_phone: e.target.value })}
+                    placeholder="(00) 00000-0000"
+                    className="mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label>Email de Contato</Label>
+                  <Input
+                    value={settings.contact_email || ""}
+                    onChange={(e) => setSettings({ ...settings, contact_email: e.target.value })}
+                    placeholder="contato@nnenergia.com"
+                    className="mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label>WhatsApp</Label>
+                  <Input
+                    value={settings.whatsapp || ""}
+                    onChange={(e) => setSettings({ ...settings, whatsapp: e.target.value })}
+                    placeholder="5500000000000"
+                    className="mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label>Endereço</Label>
+                  <Input
+                    value={settings.address || ""}
+                    onChange={(e) => setSettings({ ...settings, address: e.target.value })}
+                    placeholder="Rua Exemplo, 123 - Cidade/UF"
+                    className="mt-1.5"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label>Texto sobre a empresa</Label>
+                  <Textarea
+                    value={settings.about_text || ""}
+                    onChange={(e) => setSettings({ ...settings, about_text: e.target.value })}
+                    placeholder="Descrição da empresa..."
+                    className="mt-1.5 min-h-[100px]"
+                  />
                 </div>
               </div>
             </div>
           </TabsContent>
         </Tabs>
+      </motion.div>
 
-        {/* Slide Dialog */}
-        <Dialog open={isSlideDialogOpen} onOpenChange={setIsSlideDialogOpen}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>
-                {editingSlide ? "Editar Slide" : "Novo Slide"}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 mt-4">
-              <div>
-                <Label>Título *</Label>
-                <Input
-                  value={slideForm.title}
-                  onChange={(e) => setSlideForm({ ...slideForm, title: e.target.value })}
-                  placeholder="Título do slide"
+      {/* Slide Dialog */}
+      <Dialog open={isSlideDialogOpen} onOpenChange={setIsSlideDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editingSlide ? "Editar Slide" : "Novo Slide"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div>
+              <Label>Imagem do Banner *</Label>
+              <div className="mt-1.5">
+                {slideForm.image_url ? (
+                  <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+                    <img 
+                      src={slideForm.image_url} 
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2"
+                      onClick={() => setSlideForm({ ...slideForm, image_url: "" })}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div 
+                    onClick={() => slideImageInputRef.current?.click()}
+                    className="aspect-video rounded-lg border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors"
+                  >
+                    <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">Clique para fazer upload</p>
+                  </div>
+                )}
+                <input
+                  ref={slideImageInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleSlideImageUpload}
+                  className="hidden"
                 />
               </div>
-              <div>
-                <Label>Subtítulo</Label>
-                <Textarea
-                  value={slideForm.subtitle}
-                  onChange={(e) => setSlideForm({ ...slideForm, subtitle: e.target.value })}
-                  placeholder="Texto de apoio"
-                  rows={2}
-                />
-              </div>
-              <div>
-                <Label>URL da Imagem *</Label>
-                <Input
-                  value={slideForm.image_url}
-                  onChange={(e) => setSlideForm({ ...slideForm, image_url: e.target.value })}
-                  placeholder="https://exemplo.com/imagem.jpg"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Texto do Botão</Label>
-                  <Input
-                    value={slideForm.button_text}
-                    onChange={(e) => setSlideForm({ ...slideForm, button_text: e.target.value })}
-                    placeholder="Saiba mais"
-                  />
-                </div>
-                <div>
-                  <Label>Link do Botão</Label>
-                  <Input
-                    value={slideForm.button_link}
-                    onChange={(e) => setSlideForm({ ...slideForm, button_link: e.target.value })}
-                    placeholder="#simulador"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={slideForm.is_active}
-                  onCheckedChange={(checked) => setSlideForm({ ...slideForm, is_active: checked })}
-                />
-                <Label>Slide ativo</Label>
-              </div>
-              <Button variant="cta" className="w-full" onClick={saveSlide}>
-                <Save className="w-4 h-4" />
-                Salvar
-              </Button>
             </div>
-          </DialogContent>
-        </Dialog>
+            <div>
+              <Label>Título *</Label>
+              <Input
+                value={slideForm.title}
+                onChange={(e) => setSlideForm({ ...slideForm, title: e.target.value })}
+                placeholder="Título do slide"
+                className="mt-1.5"
+              />
+            </div>
+            <div>
+              <Label>Subtítulo</Label>
+              <Input
+                value={slideForm.subtitle}
+                onChange={(e) => setSlideForm({ ...slideForm, subtitle: e.target.value })}
+                placeholder="Descrição adicional"
+                className="mt-1.5"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Texto do Botão</Label>
+                <Input
+                  value={slideForm.button_text}
+                  onChange={(e) => setSlideForm({ ...slideForm, button_text: e.target.value })}
+                  placeholder="Saiba mais"
+                  className="mt-1.5"
+                />
+              </div>
+              <div>
+                <Label>Link do Botão</Label>
+                <Input
+                  value={slideForm.button_link}
+                  onChange={(e) => setSlideForm({ ...slideForm, button_link: e.target.value })}
+                  placeholder="#contato"
+                  className="mt-1.5"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={slideForm.is_active}
+                onCheckedChange={(checked) => setSlideForm({ ...slideForm, is_active: checked })}
+              />
+              <Label>Ativo</Label>
+            </div>
+            <Button 
+              variant="cta" 
+              className="w-full" 
+              onClick={saveSlide}
+              disabled={uploadingImage}
+            >
+              {editingSlide ? "Atualizar" : "Criar"} Slide
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        {/* Testimonial Dialog */}
-        <Dialog open={isTestimonialDialogOpen} onOpenChange={setIsTestimonialDialogOpen}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>
-                {editingTestimonial ? "Editar Depoimento" : "Novo Depoimento"}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 mt-4">
+      {/* Testimonial Dialog */}
+      <Dialog open={isTestimonialDialogOpen} onOpenChange={setIsTestimonialDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editingTestimonial ? "Editar Depoimento" : "Novo Depoimento"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Nome do Cliente *</Label>
                 <Input
                   value={testimonialForm.client_name}
                   onChange={(e) => setTestimonialForm({ ...testimonialForm, client_name: e.target.value })}
                   placeholder="Nome completo"
+                  className="mt-1.5"
                 />
               </div>
               <div>
@@ -660,56 +784,48 @@ export default function SiteEditor() {
                 <Input
                   value={testimonialForm.client_location}
                   onChange={(e) => setTestimonialForm({ ...testimonialForm, client_location: e.target.value })}
-                  placeholder="Cidade, Estado"
+                  placeholder="Cidade/UF"
+                  className="mt-1.5"
                 />
               </div>
-              <div>
-                <Label>URL da Foto (opcional)</Label>
-                <Input
-                  value={testimonialForm.client_photo_url}
-                  onChange={(e) => setTestimonialForm({ ...testimonialForm, client_photo_url: e.target.value })}
-                  placeholder="https://..."
-                />
-              </div>
-              <div>
-                <Label>Mensagem *</Label>
-                <Textarea
-                  value={testimonialForm.message}
-                  onChange={(e) => setTestimonialForm({ ...testimonialForm, message: e.target.value })}
-                  placeholder="Depoimento do cliente..."
-                  rows={3}
-                />
-              </div>
-              <div>
-                <Label>Avaliação</Label>
-                <div className="flex gap-2 mt-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setTestimonialForm({ ...testimonialForm, rating: star })}
-                      className={`text-2xl ${star <= testimonialForm.rating ? "text-secondary" : "text-muted"}`}
-                    >
-                      ★
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={testimonialForm.is_active}
-                  onCheckedChange={(checked) => setTestimonialForm({ ...testimonialForm, is_active: checked })}
-                />
-                <Label>Depoimento ativo</Label>
-              </div>
-              <Button variant="cta" className="w-full" onClick={saveTestimonial}>
-                <Save className="w-4 h-4" />
-                Salvar
-              </Button>
             </div>
-          </DialogContent>
-        </Dialog>
-      </motion.div>
+            <div>
+              <Label>Depoimento *</Label>
+              <Textarea
+                value={testimonialForm.message}
+                onChange={(e) => setTestimonialForm({ ...testimonialForm, message: e.target.value })}
+                placeholder="O que o cliente disse..."
+                className="mt-1.5 min-h-[100px]"
+              />
+            </div>
+            <div>
+              <Label>Avaliação: {testimonialForm.rating} estrelas</Label>
+              <div className="flex gap-2 mt-1.5">
+                {[1, 2, 3, 4, 5].map((rating) => (
+                  <button
+                    key={rating}
+                    type="button"
+                    onClick={() => setTestimonialForm({ ...testimonialForm, rating })}
+                    className={`text-2xl ${rating <= testimonialForm.rating ? "text-primary" : "text-muted"}`}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={testimonialForm.is_active}
+                onCheckedChange={(checked) => setTestimonialForm({ ...testimonialForm, is_active: checked })}
+              />
+              <Label>Ativo</Label>
+            </div>
+            <Button variant="cta" className="w-full" onClick={saveTestimonial}>
+              {editingTestimonial ? "Atualizar" : "Criar"} Depoimento
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
