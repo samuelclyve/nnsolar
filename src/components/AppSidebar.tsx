@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, BarChart3, Wrench, Users, Calendar, FileText, 
-  Settings, LogOut, Menu, X, Globe, Search
+  Settings, LogOut, Menu, X, Globe, Search, UserCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import iconeNn from "@/assets/icone-nn.png";
+import logoFundoBranco from "@/assets/logo-fundo-branco.png";
 
 interface MenuItem {
   icon: React.ElementType;
@@ -22,9 +22,9 @@ const menuItems: MenuItem[] = [
   { icon: Home, label: "Visão Geral", href: "/dashboard" },
   { icon: BarChart3, label: "CRM", href: "/crm", roles: ["admin", "manager", "comercial"] },
   { icon: Wrench, label: "Instalações", href: "/installations", roles: ["admin", "manager", "technician"] },
-  { icon: Users, label: "Portal Cliente", href: "/portal" },
+  { icon: UserCheck, label: "Clientes", href: "/clients", roles: ["admin", "manager", "comercial"] },
   { icon: Globe, label: "Edição Site", href: "/site-editor", roles: ["admin", "manager"] },
-  { icon: Settings, label: "Usuários", href: "/users", roles: ["admin"] },
+  { icon: Users, label: "Usuários", href: "/users", roles: ["admin"] },
   { icon: Calendar, label: "Agenda", href: "#", coming: true },
   { icon: FileText, label: "Documentos", href: "#", coming: true },
 ];
@@ -65,7 +65,7 @@ export function AppSidebar({ user, profile }: AppSidebarProps) {
 
   const filteredMenuItems = menuItems.filter(item => {
     if (!item.roles) return true;
-    if (userRoles.length === 0) return true;
+    if (userRoles.length === 0) return false;
     return item.roles.some(role => userRoles.includes(role));
   });
 
@@ -88,12 +88,8 @@ export function AppSidebar({ user, profile }: AppSidebarProps) {
         <div className="flex flex-col h-full">
           {/* Logo & Brand */}
           <div className="p-5 flex items-center gap-3">
-            <div className="w-10 h-10 bg-sidebar-accent rounded-xl flex items-center justify-center overflow-hidden">
-              <img src={iconeNn} alt="NN" className="w-7 h-7 object-contain" />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sidebar-foreground font-semibold text-lg">NN Solar</span>
-              <span className="text-xs bg-sidebar-accent text-sidebar-muted px-2 py-0.5 rounded-md">⌘K</span>
+            <div className="h-10 flex items-center">
+              <img src={logoFundoBranco} alt="NN Energia Solar" className="h-9 object-contain" />
             </div>
           </div>
 
@@ -124,13 +120,13 @@ export function AppSidebar({ user, profile }: AppSidebarProps) {
               return (
                 <Link
                   key={item.label}
-                  to={item.href}
+                  to={item.coming ? "#" : item.href}
                   onClick={() => setIsSidebarOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                     isActive
                       ? "bg-primary text-primary-foreground shadow-md"
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                  }`}
+                  } ${item.coming ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <item.icon className="w-5 h-5" />
                   <span>{item.label}</span>
@@ -144,28 +140,10 @@ export function AppSidebar({ user, profile }: AppSidebarProps) {
             })}
           </nav>
 
-          {/* Settings Label */}
-          <div className="px-5 mb-2 mt-4">
-            <span className="text-xs font-medium text-sidebar-muted uppercase tracking-wider">
-              Configurações
-            </span>
-          </div>
-
-          {/* Settings Menu */}
-          <div className="px-3 mb-4 space-y-1">
-            <Link
-              to="/site-editor"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
-            >
-              <Settings className="w-5 h-5" />
-              <span>Configurações</span>
-            </Link>
-          </div>
-
           {/* User Profile */}
           <div className="p-4 border-t border-sidebar-border">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-success rounded-full flex items-center justify-center text-primary-foreground font-semibold text-sm">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-primary-foreground font-semibold text-sm">
                 {profile?.full_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -173,7 +151,10 @@ export function AppSidebar({ user, profile }: AppSidebarProps) {
                   {profile?.full_name || "Usuário"}
                 </p>
                 <p className="text-xs text-sidebar-muted truncate">
-                  {user?.email}
+                  {userRoles.includes('admin') ? 'Administrador' : 
+                   userRoles.includes('manager') ? 'Gerente' :
+                   userRoles.includes('comercial') ? 'Comercial' :
+                   userRoles.includes('technician') ? 'Técnico' : 'Staff'}
                 </p>
               </div>
             </div>

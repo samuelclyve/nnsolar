@@ -24,20 +24,38 @@ export default function Auth() {
 
   useEffect(() => {
     // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
-        navigate("/dashboard");
+        await handleRedirectAfterAuth(session.user.id);
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
-        navigate("/dashboard");
+        await handleRedirectAfterAuth(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const handleRedirectAfterAuth = async (userId: string) => {
+    // Check user roles to determine where to redirect
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+    
+    const userRoles = roles?.map(r => r.role) || [];
+    
+    // If user is a client (no roles or only client role), go to portal
+    if (userRoles.length === 0 || (userRoles.length === 1 && userRoles[0] === 'client')) {
+      navigate("/portal");
+    } else {
+      // Staff users go to dashboard
+      navigate("/dashboard");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +63,7 @@ export default function Auth() {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
@@ -217,12 +235,12 @@ export default function Auth() {
               {isLogin ? (
                 <>
                   Não tem uma conta?{" "}
-                  <span className="text-secondary font-medium">Cadastre-se</span>
+                  <span className="text-primary font-medium">Cadastre-se</span>
                 </>
               ) : (
                 <>
                   Já tem uma conta?{" "}
-                  <span className="text-secondary font-medium">Entrar</span>
+                  <span className="text-primary font-medium">Entrar</span>
                 </>
               )}
             </button>
@@ -242,8 +260,8 @@ export default function Auth() {
       {/* Right side - Visual */}
       <div className="hidden lg:flex flex-1 gradient-hero items-center justify-center p-12 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 right-10 w-72 h-72 bg-secondary/10 rounded-full blur-3xl animate-pulse-slow" />
-          <div className="absolute bottom-20 left-10 w-96 h-96 bg-solar-orange/10 rounded-full blur-3xl animate-pulse-slow" />
+          <div className="absolute top-20 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse-slow" />
+          <div className="absolute bottom-20 left-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse-slow" />
         </div>
 
         <motion.div
@@ -264,15 +282,15 @@ export default function Auth() {
 
           <div className="grid grid-cols-3 gap-6 mt-12">
             <div>
-              <div className="text-3xl font-bold text-secondary">500+</div>
+              <div className="text-3xl font-bold text-primary">500+</div>
               <div className="text-sm text-primary-foreground/70">Projetos</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-secondary">95%</div>
+              <div className="text-3xl font-bold text-primary">95%</div>
               <div className="text-sm text-primary-foreground/70">Economia</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-secondary">25</div>
+              <div className="text-3xl font-bold text-primary">25</div>
               <div className="text-sm text-primary-foreground/70">Anos Garantia</div>
             </div>
           </div>
