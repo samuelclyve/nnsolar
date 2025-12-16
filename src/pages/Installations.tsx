@@ -3,15 +3,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, Search, Zap, Calendar, MapPin, 
   CheckCircle2, Clock, AlertCircle, Upload, FileText, 
-  Image, X, Eye, Download, Camera
+  Image, X, Eye, Download, Camera, MessageCircle, Send
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from "@/components/ui/select";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -22,6 +23,7 @@ interface Installation {
   id: string;
   client_name: string;
   client_phone: string | null;
+  client_email: string | null;
   address: string | null;
   city: string | null;
   power_kwp: number | null;
@@ -49,6 +51,85 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.E
   cancelled: { label: "Cancelado", color: "bg-red-500", icon: AlertCircle },
 };
 
+const whatsappTemplates: Record<string, { title: string; template: string; dateField?: string }> = {
+  project: {
+    title: "Abertura do Projeto",
+    template: `Olá {nome}! 🌞
+
+Bem-vindo(a) à NN Energia Solar!
+
+Seu projeto solar foi iniciado com os seguintes dados:
+📍 Endereço: {endereco}, {cidade}
+⚡ Potência: {potencia} kWp
+🔲 Painéis: {paineis} unidades
+
+Previsão de início: {data_inicio}
+Previsão de conclusão: {data_fim}
+
+Em breve entraremos em contato para as próximas etapas.
+
+Dúvidas? Responda esta mensagem! ☀️`,
+  },
+  approval: {
+    title: "Agendamento de Aprovação",
+    dateField: "Data da Reunião",
+    template: `Olá {nome}! 📋
+
+Temos novidades sobre seu projeto solar!
+
+Estamos agendando a reunião de aprovação junto à concessionária.
+
+📅 Data prevista: {data}
+
+Aguarde nosso contato para confirmar detalhes.
+
+NN Energia Solar ☀️`,
+  },
+  installation: {
+    title: "Dia da Instalação",
+    dateField: "Data da Instalação",
+    template: `Olá {nome}! 🚚
+
+Boas notícias!
+
+Nossa equipe técnica está a caminho para realizar a instalação do seu sistema solar.
+
+📍 Local: {endereco}
+📅 Data: {data}
+
+Por favor, certifique-se de que haja acesso ao local.
+
+Até logo! ⚡ NN Energia Solar`,
+  },
+  inspection: {
+    title: "Agendamento de Vistoria",
+    dateField: "Data da Vistoria",
+    template: `Olá {nome}! 🔍
+
+Seu sistema solar está quase pronto!
+
+A vistoria técnica está agendada para:
+📅 Data: {data}
+
+Após a aprovação, seu sistema será ativado junto à rede.
+
+Estamos quase lá! ☀️ NN Energia Solar`,
+  },
+  active: {
+    title: "Sistema Ativo!",
+    template: `🎉 Parabéns {nome}!
+
+Seu sistema solar está ATIVO e gerando energia!
+
+⚡ {potencia} kWp de potência
+🔲 {paineis} painéis instalados
+
+A partir de agora você economizará até 95% na sua conta de luz!
+
+Obrigado por confiar na NN Energia Solar! ☀️`,
+  },
+};
+
 export default function Installations() {
   const [installations, setInstallations] = useState<Installation[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -59,10 +140,15 @@ export default function Installations() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [customDate, setCustomDate] = useState("");
+  const [customMessage, setCustomMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [newInstallation, setNewInstallation] = useState({
     client_name: "",
     client_phone: "",
+    client_email: "",
     address: "",
     city: "",
     power_kwp: "",
@@ -79,6 +165,13 @@ export default function Installations() {
       fetchDocuments(selectedInstallation.id);
     }
   }, [selectedInstallation]);
+
+  useEffect(() => {
+    if (selectedInstallation && selectedTemplate) {
+      const message = generateMessage(selectedInstallation, selectedTemplate, customDate);
+      setCustomMessage(message);
+    }
+  }, [selectedInstallation, selectedTemplate, customDate]);
 
   const fetchInstallations = async () => {
     const { data, error } = await supabase
@@ -119,6 +212,7 @@ export default function Installations() {
     const { error } = await supabase.from("installations").insert({
       client_name: newInstallation.client_name,
       client_phone: newInstallation.client_phone || null,
+      client_email: newInstallation.client_email || null,
       address: newInstallation.address || null,
       city: newInstallation.city || null,
       power_kwp: newInstallation.power_kwp ? parseFloat(newInstallation.power_kwp) : null,
@@ -131,7 +225,7 @@ export default function Installations() {
     }
 
     toast({ title: "Instalação criada com sucesso!" });
-    setNewInstallation({ client_name: "", client_phone: "", address: "", city: "", power_kwp: "", panel_count: "" });
+    setNewInstallation({ client_name: "", client_phone: "", client_email: "", address: "", city: "", power_kwp: "", panel_count: "" });
     setIsDialogOpen(false);
     fetchInstallations();
   };
@@ -161,7 +255,6 @@ export default function Installations() {
       const fileExt = file.name.split('.').pop();
       const fileName = `${selectedInstallation.id}/${Date.now()}-${file.name}`;
       
-      // Upload to storage
       const { error: uploadError, data } = await supabase.storage
         .from('documents')
         .upload(fileName, file);
@@ -171,12 +264,10 @@ export default function Installations() {
         continue;
       }
 
-      // Get public URL
       const { data: urlData } = supabase.storage
         .from('documents')
         .getPublicUrl(fileName);
 
-      // Save document record
       const docType = file.type.startsWith('image/') ? 'photo' : 'document';
       const { error: docError } = await supabase.from('installation_documents').insert({
         installation_id: selectedInstallation.id,
@@ -199,7 +290,6 @@ export default function Installations() {
   };
 
   const deleteDocument = async (docId: string, fileUrl: string) => {
-    // Extract file path from URL
     const pathMatch = fileUrl.match(/documents\/(.+)$/);
     if (pathMatch) {
       await supabase.storage.from('documents').remove([pathMatch[1]]);
@@ -219,6 +309,43 @@ export default function Installations() {
     if (selectedInstallation) {
       fetchDocuments(selectedInstallation.id);
     }
+  };
+
+  const generateMessage = (inst: Installation, templateKey: string, date?: string): string => {
+    const template = whatsappTemplates[templateKey]?.template || "";
+    
+    return template
+      .replace(/{nome}/g, inst.client_name || "Cliente")
+      .replace(/{endereco}/g, inst.address || "Endereço não informado")
+      .replace(/{cidade}/g, inst.city || "Cidade não informada")
+      .replace(/{potencia}/g, inst.power_kwp?.toString() || "N/A")
+      .replace(/{paineis}/g, inst.panel_count?.toString() || "N/A")
+      .replace(/{data_inicio}/g, inst.estimated_start ? new Date(inst.estimated_start).toLocaleDateString("pt-BR") : "A definir")
+      .replace(/{data_fim}/g, inst.estimated_end ? new Date(inst.estimated_end).toLocaleDateString("pt-BR") : "A definir")
+      .replace(/{data}/g, date || "A definir");
+  };
+
+  const openWhatsApp = () => {
+    if (!selectedInstallation?.client_phone) {
+      toast({ title: "Cliente não possui telefone cadastrado", variant: "destructive" });
+      return;
+    }
+
+    const phone = selectedInstallation.client_phone.replace(/\D/g, "");
+    const phoneWithCountry = phone.startsWith("55") ? phone : `55${phone}`;
+    const encodedMessage = encodeURIComponent(customMessage);
+    const whatsappUrl = `https://wa.me/${phoneWithCountry}?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, "_blank");
+    setIsWhatsAppOpen(false);
+    toast({ title: "Abrindo WhatsApp..." });
+  };
+
+  const openWhatsAppDialog = (inst: Installation) => {
+    setSelectedInstallation(inst);
+    setSelectedTemplate(inst.status);
+    setCustomDate("");
+    setIsWhatsAppOpen(true);
   };
 
   const filteredInstallations = installations.filter((inst) => {
@@ -272,13 +399,23 @@ export default function Installations() {
                   placeholder="Nome completo"
                 />
               </div>
-              <div>
-                <Label>Telefone</Label>
-                <Input
-                  value={newInstallation.client_phone}
-                  onChange={(e) => setNewInstallation({ ...newInstallation, client_phone: e.target.value })}
-                  placeholder="(00) 00000-0000"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Telefone</Label>
+                  <Input
+                    value={newInstallation.client_phone}
+                    onChange={(e) => setNewInstallation({ ...newInstallation, client_phone: e.target.value })}
+                    placeholder="(00) 00000-0000"
+                  />
+                </div>
+                <div>
+                  <Label>Email</Label>
+                  <Input
+                    value={newInstallation.client_email}
+                    onChange={(e) => setNewInstallation({ ...newInstallation, client_email: e.target.value })}
+                    placeholder="email@exemplo.com"
+                  />
+                </div>
               </div>
               <div>
                 <Label>Endereço</Label>
@@ -335,11 +472,13 @@ export default function Installations() {
               key={inst.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => { setSelectedInstallation(inst); setIsDetailsOpen(true); }}
+              className="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-shadow"
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex-1">
+                <div 
+                  className="flex-1 cursor-pointer"
+                  onClick={() => { setSelectedInstallation(inst); setIsDetailsOpen(true); }}
+                >
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-lg font-semibold text-foreground">{inst.client_name}</h3>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium text-card ${status.color}`}>
@@ -372,7 +511,16 @@ export default function Installations() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={(e) => { e.stopPropagation(); openWhatsAppDialog(inst); }}
+                  >
+                    <MessageCircle className="w-4 h-4 text-green-500" />
+                    Notificar
+                  </Button>
                   <Select
                     value={inst.status}
                     onValueChange={(value) => updateStatus(inst.id, value)}
@@ -448,6 +596,14 @@ export default function Installations() {
               {/* Info Grid */}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
+                  <p className="text-muted-foreground">Telefone</p>
+                  <p className="font-medium">{selectedInstallation.client_phone || "Não informado"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Email</p>
+                  <p className="font-medium">{selectedInstallation.client_email || "Não informado"}</p>
+                </div>
+                <div>
                   <p className="text-muted-foreground">Endereço</p>
                   <p className="font-medium">{selectedInstallation.address || "Não informado"}</p>
                 </div>
@@ -463,6 +619,18 @@ export default function Installations() {
                   <p className="text-muted-foreground">Painéis</p>
                   <p className="font-medium">{selectedInstallation.panel_count || "Não informado"}</p>
                 </div>
+              </div>
+
+              {/* WhatsApp Button */}
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 gap-2"
+                  onClick={() => openWhatsAppDialog(selectedInstallation)}
+                >
+                  <MessageCircle className="w-4 h-4 text-green-500" />
+                  Enviar Notificação WhatsApp
+                </Button>
               </div>
 
               {/* Upload Section */}
@@ -559,6 +727,79 @@ export default function Installations() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* WhatsApp Message Dialog */}
+      <Dialog open={isWhatsAppOpen} onOpenChange={setIsWhatsAppOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-green-500" />
+              Notificar Cliente via WhatsApp
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label>Tipo de Mensagem</Label>
+              <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo de mensagem" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(whatsappTemplates).map(([key, value]) => (
+                    <SelectItem key={key} value={key}>
+                      {value.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {whatsappTemplates[selectedTemplate]?.dateField && (
+              <div>
+                <Label>{whatsappTemplates[selectedTemplate].dateField}</Label>
+                <Input
+                  type="date"
+                  value={customDate}
+                  onChange={(e) => {
+                    const date = e.target.value ? new Date(e.target.value).toLocaleDateString("pt-BR") : "";
+                    setCustomDate(date);
+                  }}
+                />
+              </div>
+            )}
+
+            <div>
+              <Label>Prévia da Mensagem</Label>
+              <Textarea
+                value={customMessage}
+                onChange={(e) => setCustomMessage(e.target.value)}
+                rows={12}
+                className="font-mono text-sm"
+              />
+            </div>
+
+            <div className="text-sm text-muted-foreground">
+              <p>📱 Telefone: {selectedInstallation?.client_phone || "Não cadastrado"}</p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsWhatsAppOpen(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              variant="cta" 
+              onClick={openWhatsApp}
+              disabled={!selectedInstallation?.client_phone}
+              className="gap-2"
+            >
+              <Send className="w-4 h-4" />
+              Abrir WhatsApp
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </AppLayout>
