@@ -24,9 +24,9 @@ const menuItems: MenuItem[] = [
   { icon: BarChart3, label: "CRM", href: "/crm", roles: ["admin", "manager", "comercial"] },
   { icon: Wrench, label: "Instalações", href: "/installations", roles: ["admin", "manager", "technician", "comercial"] },
   { icon: UserCircle, label: "Clientes", href: "/clients", roles: ["admin", "manager", "comercial"] },
+  { icon: Calendar, label: "Agenda", href: "/schedule", roles: ["admin", "manager", "technician", "comercial"] },
   { icon: Globe, label: "Edição Site", href: "/site-editor", roles: ["admin", "manager"] },
   { icon: Users, label: "Usuários", href: "/users", roles: ["admin"] },
-  { icon: Calendar, label: "Agenda", href: "#", coming: true },
   { icon: FileText, label: "Documentos", href: "#", coming: true },
 ];
 

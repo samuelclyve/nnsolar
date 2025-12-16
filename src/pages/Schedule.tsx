@@ -1,0 +1,434 @@
+import { useState, useEffect } from "react";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, parseISO, isToday } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Clock, MapPin, Wrench } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { AppLayout } from "@/components/AppLayout";
+
+interface Installation {
+  id: string;
+  client_name: string;
+  address: string | null;
+  city: string | null;
+  status: string | null;
+  estimated_start: string | null;
+  estimated_end: string | null;
+  actual_start: string | null;
+  actual_end: string | null;
+  power_kwp: number | null;
+}
+
+interface ScheduleEvent {
+  id: string;
+  installation_id: string;
+  installation: Installation;
+  date: string;
+  type: "start" | "end" | "visit" | "inspection";
+}
+
+const statusColors: Record<string, string> = {
+  project: "bg-blue-500",
+  approval: "bg-yellow-500",
+  installation: "bg-primary",
+  inspection: "bg-purple-500",
+  active: "bg-success",
+};
+
+const statusLabels: Record<string, string> = {
+  project: "Projeto",
+  approval: "Aprovação",
+  installation: "Instalação",
+  inspection: "Vistoria",
+  active: "Ativo",
+};
+
+const eventTypeLabels: Record<string, string> = {
+  start: "Início",
+  end: "Conclusão",
+  visit: "Visita",
+  inspection: "Vistoria",
+};
+
+export default function Schedule() {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [installations, setInstallations] = useState<Installation[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Form state for new scheduling
+  const [selectedInstallation, setSelectedInstallation] = useState<string>("");
+  const [scheduleDate, setScheduleDate] = useState<string>("");
+  const [scheduleType, setScheduleType] = useState<"estimated_start" | "estimated_end">("estimated_start");
+
+  useEffect(() => {
+    fetchInstallations();
+  }, []);
+
+  const fetchInstallations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("installations")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setInstallations(data || []);
+    } catch (error) {
+      console.error("Error fetching installations:", error);
+      toast.error("Erro ao carregar instalações");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getEventsForMonth = (): ScheduleEvent[] => {
+    const events: ScheduleEvent[] = [];
+    
+    installations.forEach((installation) => {
+      if (installation.estimated_start) {
+        events.push({
+          id: `${installation.id}-start`,
+          installation_id: installation.id,
+          installation,
+          date: installation.estimated_start,
+          type: "start",
+        });
+      }
+      if (installation.estimated_end) {
+        events.push({
+          id: `${installation.id}-end`,
+          installation_id: installation.id,
+          installation,
+          date: installation.estimated_end,
+          type: "end",
+        });
+      }
+    });
+
+    return events;
+  };
+
+  const getEventsForDate = (date: Date): ScheduleEvent[] => {
+    const events = getEventsForMonth();
+    return events.filter((event) => isSameDay(parseISO(event.date), date));
+  };
+
+  const daysInMonth = eachDayOfInterval({
+    start: startOfMonth(currentMonth),
+    end: endOfMonth(currentMonth),
+  });
+
+  // Get padding days for the calendar grid
+  const firstDayOfMonth = startOfMonth(currentMonth);
+  const startPadding = firstDayOfMonth.getDay();
+  const paddingDays = Array.from({ length: startPadding }, (_, i) => null);
+
+  const handleSchedule = async () => {
+    if (!selectedInstallation || !scheduleDate) {
+      toast.error("Preencha todos os campos");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("installations")
+        .update({ [scheduleType]: scheduleDate })
+        .eq("id", selectedInstallation);
+
+      if (error) throw error;
+      
+      toast.success("Agendamento salvo com sucesso!");
+      setIsDialogOpen(false);
+      setSelectedInstallation("");
+      setScheduleDate("");
+      fetchInstallations();
+    } catch (error) {
+      console.error("Error scheduling:", error);
+      toast.error("Erro ao salvar agendamento");
+    }
+  };
+
+  const todayEvents = getEventsForDate(new Date());
+  const selectedDateEvents = selectedDate ? getEventsForDate(selectedDate) : [];
+
+  return (
+    <AppLayout title="Agenda">
+      <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Agenda</h1>
+          <p className="text-muted-foreground">Calendário de instalações e visitas</p>
+        </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Novo Agendamento
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Agendar Instalação</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label>Instalação</Label>
+                <Select value={selectedInstallation} onValueChange={setSelectedInstallation}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma instalação" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {installations.map((inst) => (
+                      <SelectItem key={inst.id} value={inst.id}>
+                        {inst.client_name} - {inst.city || "Sem cidade"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Tipo de Agendamento</Label>
+                <Select value={scheduleType} onValueChange={(v) => setScheduleType(v as any)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="estimated_start">Data de Início</SelectItem>
+                    <SelectItem value="estimated_end">Data de Conclusão</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Data</Label>
+                <Input
+                  type="date"
+                  value={scheduleDate}
+                  onChange={(e) => setScheduleDate(e.target.value)}
+                />
+              </div>
+              <Button className="w-full" onClick={handleSchedule}>
+                Salvar Agendamento
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Calendar */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="flex items-center gap-2">
+              <CalendarIcon className="w-5 h-5 text-primary" />
+              {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setCurrentMonth(new Date())}>
+                Hoje
+              </Button>
+              <Button variant="outline" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Day names */}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => (
+                <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Calendar grid */}
+            <div className="grid grid-cols-7 gap-1">
+              {/* Padding days */}
+              {paddingDays.map((_, index) => (
+                <div key={`padding-${index}`} className="h-24 p-1 bg-muted/30 rounded-lg" />
+              ))}
+
+              {/* Actual days */}
+              {daysInMonth.map((day) => {
+                const dayEvents = getEventsForDate(day);
+                const isSelected = selectedDate && isSameDay(day, selectedDate);
+                const today = isToday(day);
+
+                return (
+                  <div
+                    key={day.toISOString()}
+                    onClick={() => setSelectedDate(day)}
+                    className={cn(
+                      "h-24 p-1 rounded-lg cursor-pointer transition-all border",
+                      isSelected ? "border-primary bg-primary/5" : "border-transparent hover:bg-muted/50",
+                      today && "ring-2 ring-primary/30"
+                    )}
+                  >
+                    <div className={cn(
+                      "text-sm font-medium mb-1 w-6 h-6 flex items-center justify-center rounded-full",
+                      today && "bg-primary text-white"
+                    )}>
+                      {format(day, "d")}
+                    </div>
+                    <div className="space-y-0.5 overflow-hidden">
+                      {dayEvents.slice(0, 2).map((event) => (
+                        <div
+                          key={event.id}
+                          className={cn(
+                            "text-[10px] px-1 py-0.5 rounded truncate text-white",
+                            statusColors[event.installation.status || "project"]
+                          )}
+                        >
+                          {event.installation.client_name}
+                        </div>
+                      ))}
+                      {dayEvents.length > 2 && (
+                        <div className="text-[10px] text-muted-foreground px-1">
+                          +{dayEvents.length - 2} mais
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Today's events */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                Hoje
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {todayEvents.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhum evento para hoje</p>
+              ) : (
+                <div className="space-y-3">
+                  {todayEvents.map((event) => (
+                    <div key={event.id} className="flex items-start gap-3 p-2 rounded-lg bg-muted/50">
+                      <div className={cn(
+                        "w-2 h-2 rounded-full mt-1.5 flex-shrink-0",
+                        statusColors[event.installation.status || "project"]
+                      )} />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{event.installation.client_name}</p>
+                        <p className="text-xs text-muted-foreground">{eventTypeLabels[event.type]}</p>
+                        {event.installation.city && (
+                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                            <MapPin className="w-3 h-3" />
+                            {event.installation.city}
+                          </p>
+                        )}
+                      </div>
+                      <Badge variant="secondary" className="text-[10px]">
+                        {statusLabels[event.installation.status || "project"]}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Selected date events */}
+          {selectedDate && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CalendarIcon className="w-4 h-4 text-primary" />
+                  {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {selectedDateEvents.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Nenhum evento nesta data</p>
+                ) : (
+                  <div className="space-y-3">
+                    {selectedDateEvents.map((event) => (
+                      <div key={event.id} className="p-3 rounded-lg border bg-card">
+                        <div className="flex items-center justify-between mb-2">
+                          <Badge className={cn(statusColors[event.installation.status || "project"])}>
+                            {statusLabels[event.installation.status || "project"]}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">{eventTypeLabels[event.type]}</span>
+                        </div>
+                        <p className="font-semibold">{event.installation.client_name}</p>
+                        {event.installation.address && (
+                          <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                            <MapPin className="w-3 h-3" />
+                            {event.installation.address}
+                          </p>
+                        )}
+                        {event.installation.city && (
+                          <p className="text-sm text-muted-foreground ml-4">{event.installation.city}</p>
+                        )}
+                        {event.installation.power_kwp && (
+                          <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                            <Wrench className="w-3 h-3" />
+                            {event.installation.power_kwp} kWp
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Upcoming installations */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">Próximas Instalações</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {installations
+                  .filter((i) => i.estimated_start && new Date(i.estimated_start) >= new Date())
+                  .sort((a, b) => new Date(a.estimated_start!).getTime() - new Date(b.estimated_start!).getTime())
+                  .slice(0, 5)
+                  .map((installation) => (
+                    <div key={installation.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50">
+                      <div>
+                        <p className="font-medium text-sm">{installation.client_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(parseISO(installation.estimated_start!), "dd/MM/yyyy")}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {statusLabels[installation.status || "project"]}
+                      </Badge>
+                    </div>
+                  ))}
+                {installations.filter((i) => i.estimated_start && new Date(i.estimated_start) >= new Date()).length === 0 && (
+                  <p className="text-sm text-muted-foreground">Nenhuma instalação agendada</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      </div>
+    </AppLayout>
+  );
+}
