@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
-  Users, Plus, Search, Filter, Eye, Settings, 
-  Phone, Mail, MapPin, Calendar, Zap, CreditCard
+  Users, Plus, Search, Filter, 
+  Phone, Mail, MapPin, Calendar, Zap, CreditCard, Link2, MessageCircle, Copy, ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,9 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from "@/components/ui/select";
 
 interface Client {
   id: string;
@@ -36,6 +39,7 @@ interface Client {
 interface Installation {
   id: string;
   client_name: string;
+  client_user_id: string | null;
   status: string;
   power_kwp: number | null;
   panel_count: number | null;
@@ -52,15 +56,28 @@ interface Installment {
   paid_date: string | null;
 }
 
+interface CreateClientResult {
+  success: boolean;
+  user_id: string;
+  temp_password: string;
+  whatsapp_link: string;
+  message: string;
+}
+
 export default function Clients() {
   const [clients, setClients] = useState<Client[]>([]);
+  const [availableInstallations, setAvailableInstallations] = useState<Installation[]>([]);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [clientInstallation, setClientInstallation] = useState<Installation | null>(null);
   const [clientInstallments, setClientInstallments] = useState<Installment[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+  const [selectedInstallationId, setSelectedInstallationId] = useState<string>("");
+  const [createdUserInfo, setCreatedUserInfo] = useState<CreateClientResult | null>(null);
   const [clientForm, setClientForm] = useState({
     full_name: "",
     email: "",
@@ -73,6 +90,7 @@ export default function Clients() {
 
   useEffect(() => {
     fetchClients();
+    fetchAvailableInstallations();
   }, []);
 
   const fetchClients = async () => {
@@ -83,6 +101,17 @@ export default function Clients() {
     
     if (data) setClients(data);
     setIsLoading(false);
+  };
+
+  const fetchAvailableInstallations = async () => {
+    // Fetch installations that are not linked to any client
+    const { data } = await supabase
+      .from("installations")
+      .select("*")
+      .is("client_user_id", null)
+      .order("created_at", { ascending: false });
+    
+    if (data) setAvailableInstallations(data);
   };
 
   const fetchClientDetails = async (client: Client) => {
@@ -117,28 +146,86 @@ export default function Clients() {
       return;
     }
 
-    // Create client record with a placeholder user_id
-    // In production, you would create an auth user via edge function
-    const { error } = await supabase.from("clients").insert({
-      user_id: crypto.randomUUID(),
-      full_name: clientForm.full_name,
-      email: clientForm.email,
-      phone: clientForm.phone || null,
-      cpf: clientForm.cpf || null,
-      address: clientForm.address || null,
-      city: clientForm.city || null,
-    });
+    setIsCreating(true);
 
-    if (error) {
-      console.error("Error creating client:", error);
-      toast({ title: "Erro ao criar cliente", description: error.message, variant: "destructive" });
+    try {
+      // Call edge function to create user with temporary password
+      const { data, error } = await supabase.functions.invoke('create-client-user', {
+        body: {
+          email: clientForm.email,
+          full_name: clientForm.full_name,
+          phone: clientForm.phone || undefined,
+          cpf: clientForm.cpf || undefined,
+          address: clientForm.address || undefined,
+          city: clientForm.city || undefined,
+        }
+      });
+
+      if (error) {
+        console.error("Error creating client:", error);
+        toast({ title: "Erro ao criar cliente", description: error.message, variant: "destructive" });
+        setIsCreating(false);
+        return;
+      }
+
+      if (data?.error) {
+        toast({ title: "Erro ao criar cliente", description: data.error, variant: "destructive" });
+        setIsCreating(false);
+        return;
+      }
+
+      // Show success with WhatsApp link
+      setCreatedUserInfo(data as CreateClientResult);
+      toast({ title: "Cliente criado com sucesso!" });
+      fetchClients();
+      
+    } catch (err: any) {
+      console.error("Error:", err);
+      toast({ title: "Erro ao criar cliente", description: err.message, variant: "destructive" });
+    }
+
+    setIsCreating(false);
+  };
+
+  const linkInstallationToClient = async () => {
+    if (!selectedClient || !selectedInstallationId) {
+      toast({ title: "Selecione uma instalação", variant: "destructive" });
       return;
     }
 
-    toast({ title: "Cliente criado com sucesso!" });
-    setIsDialogOpen(false);
-    setClientForm({ full_name: "", email: "", phone: "", cpf: "", address: "", city: "" });
-    fetchClients();
+    const { error } = await supabase
+      .from("installations")
+      .update({ client_user_id: selectedClient.user_id })
+      .eq("id", selectedInstallationId);
+
+    if (error) {
+      toast({ title: "Erro ao vincular instalação", variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Instalação vinculada com sucesso!" });
+    setIsLinkDialogOpen(false);
+    setSelectedInstallationId("");
+    fetchClientDetails(selectedClient);
+    fetchAvailableInstallations();
+  };
+
+  const unlinkInstallation = async () => {
+    if (!clientInstallation) return;
+
+    const { error } = await supabase
+      .from("installations")
+      .update({ client_user_id: null })
+      .eq("id", clientInstallation.id);
+
+    if (error) {
+      toast({ title: "Erro ao desvincular instalação", variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Instalação desvinculada!" });
+    if (selectedClient) fetchClientDetails(selectedClient);
+    fetchAvailableInstallations();
   };
 
   const updateClientInstallation = async (updates: Partial<Installation>) => {
@@ -156,6 +243,16 @@ export default function Clients() {
 
     toast({ title: "Instalação atualizada!" });
     if (selectedClient) fetchClientDetails(selectedClient);
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({ title: "Copiado!" });
+  };
+
+  const resetForm = () => {
+    setClientForm({ full_name: "", email: "", phone: "", cpf: "", address: "", city: "" });
+    setCreatedUserInfo(null);
   };
 
   const filteredClients = clients.filter(client =>
@@ -199,7 +296,10 @@ export default function Clients() {
             <h1 className="text-2xl font-bold text-foreground">Clientes</h1>
             <p className="text-muted-foreground">Gerencie os clientes e seus portais</p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) resetForm();
+          }}>
             <DialogTrigger asChild>
               <Button variant="cta">
                 <Plus className="w-4 h-4" />
@@ -208,70 +308,131 @@ export default function Clients() {
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Cadastrar Novo Cliente</DialogTitle>
+                <DialogTitle>
+                  {createdUserInfo ? "Cliente Criado!" : "Cadastrar Novo Cliente"}
+                </DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div>
-                  <Label>Nome Completo *</Label>
-                  <Input
-                    value={clientForm.full_name}
-                    onChange={(e) => setClientForm({ ...clientForm, full_name: e.target.value })}
-                    placeholder="Nome do cliente"
-                    className="mt-1.5"
-                  />
+
+              {createdUserInfo ? (
+                <div className="space-y-4 pt-4">
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                    <p className="text-emerald-700 font-medium mb-2">✓ Cliente criado com sucesso!</p>
+                    <p className="text-sm text-emerald-600">
+                      Envie a mensagem de boas-vindas pelo WhatsApp com os dados de acesso.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Email</Label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Input value={clientForm.email} readOnly className="bg-muted" />
+                        <Button variant="ghost" size="icon" onClick={() => copyToClipboard(clientForm.email)}>
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Senha Temporária</Label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Input value={createdUserInfo.temp_password} readOnly className="bg-muted font-mono" />
+                        <Button variant="ghost" size="icon" onClick={() => copyToClipboard(createdUserInfo.temp_password)}>
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="cta"
+                    className="w-full"
+                    onClick={() => window.open(createdUserInfo.whatsapp_link, '_blank')}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Enviar via WhatsApp
+                    <ExternalLink className="w-3 h-3" />
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      setIsDialogOpen(false);
+                      resetForm();
+                    }}
+                  >
+                    Fechar
+                  </Button>
                 </div>
-                <div>
-                  <Label>Email *</Label>
-                  <Input
-                    type="email"
-                    value={clientForm.email}
-                    onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })}
-                    placeholder="email@exemplo.com"
-                    className="mt-1.5"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+              ) : (
+                <div className="space-y-4 pt-4">
                   <div>
-                    <Label>Telefone</Label>
+                    <Label>Nome Completo *</Label>
                     <Input
-                      value={clientForm.phone}
-                      onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })}
-                      placeholder="(00) 00000-0000"
+                      value={clientForm.full_name}
+                      onChange={(e) => setClientForm({ ...clientForm, full_name: e.target.value })}
+                      placeholder="Nome do cliente"
                       className="mt-1.5"
                     />
                   </div>
                   <div>
-                    <Label>CPF</Label>
+                    <Label>Email *</Label>
                     <Input
-                      value={clientForm.cpf}
-                      onChange={(e) => setClientForm({ ...clientForm, cpf: e.target.value })}
-                      placeholder="000.000.000-00"
+                      type="email"
+                      value={clientForm.email}
+                      onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })}
+                      placeholder="email@exemplo.com"
                       className="mt-1.5"
                     />
                   </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Telefone (WhatsApp)</Label>
+                      <Input
+                        value={clientForm.phone}
+                        onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })}
+                        placeholder="(00) 00000-0000"
+                        className="mt-1.5"
+                      />
+                    </div>
+                    <div>
+                      <Label>CPF</Label>
+                      <Input
+                        value={clientForm.cpf}
+                        onChange={(e) => setClientForm({ ...clientForm, cpf: e.target.value })}
+                        placeholder="000.000.000-00"
+                        className="mt-1.5"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Endereço</Label>
+                    <Input
+                      value={clientForm.address}
+                      onChange={(e) => setClientForm({ ...clientForm, address: e.target.value })}
+                      placeholder="Rua, número, bairro"
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label>Cidade</Label>
+                    <Input
+                      value={clientForm.city}
+                      onChange={(e) => setClientForm({ ...clientForm, city: e.target.value })}
+                      placeholder="Cidade/UF"
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <Button 
+                    variant="cta" 
+                    className="w-full" 
+                    onClick={createClient}
+                    disabled={isCreating}
+                  >
+                    {isCreating ? "Criando..." : "Cadastrar Cliente"}
+                  </Button>
                 </div>
-                <div>
-                  <Label>Endereço</Label>
-                  <Input
-                    value={clientForm.address}
-                    onChange={(e) => setClientForm({ ...clientForm, address: e.target.value })}
-                    placeholder="Rua, número, bairro"
-                    className="mt-1.5"
-                  />
-                </div>
-                <div>
-                  <Label>Cidade</Label>
-                  <Input
-                    value={clientForm.city}
-                    onChange={(e) => setClientForm({ ...clientForm, city: e.target.value })}
-                    placeholder="Cidade/UF"
-                    className="mt-1.5"
-                  />
-                </div>
-                <Button variant="cta" className="w-full" onClick={createClient}>
-                  Cadastrar Cliente
-                </Button>
-              </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>
@@ -441,15 +602,75 @@ export default function Clients() {
                           <option value="active">Sistema Ativo</option>
                         </select>
                       </div>
+                      <Button 
+                        variant="outline" 
+                        className="w-full text-destructive hover:text-destructive"
+                        onClick={unlinkInstallation}
+                      >
+                        <Link2 className="w-4 h-4" />
+                        Desvincular Instalação
+                      </Button>
                     </CardContent>
                   </Card>
                 ) : (
                   <div className="text-center py-8">
                     <Zap className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">Nenhuma instalação vinculada</p>
-                    <Button variant="outline" className="mt-4">
-                      Vincular Instalação
-                    </Button>
+                    <p className="text-muted-foreground mb-4">Nenhuma instalação vinculada</p>
+                    <Dialog open={isLinkDialogOpen} onOpenChange={setIsLinkDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline">
+                          <Link2 className="w-4 h-4" />
+                          Vincular Instalação
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Vincular Instalação</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 pt-4">
+                          <p className="text-sm text-muted-foreground">
+                            Selecione uma instalação existente para vincular a este cliente.
+                          </p>
+                          
+                          {availableInstallations.length > 0 ? (
+                            <>
+                              <Select
+                                value={selectedInstallationId}
+                                onValueChange={setSelectedInstallationId}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione uma instalação" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {availableInstallations.map((inst) => (
+                                    <SelectItem key={inst.id} value={inst.id}>
+                                      {inst.client_name} - {inst.power_kwp || 0} kWp ({inst.city || 'Sem cidade'})
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button 
+                                variant="cta" 
+                                className="w-full"
+                                onClick={linkInstallationToClient}
+                                disabled={!selectedInstallationId}
+                              >
+                                Vincular
+                              </Button>
+                            </>
+                          ) : (
+                            <div className="text-center py-4">
+                              <p className="text-sm text-muted-foreground">
+                                Não há instalações disponíveis para vincular.
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-2">
+                                Crie uma nova instalação na aba "Instalações".
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 )}
               </TabsContent>
