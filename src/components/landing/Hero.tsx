@@ -40,7 +40,7 @@ export function Hero() {
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-bold text-card leading-tight mb-6">
               Economize até{" "}
-              <span className="text-secondary">95%</span>{" "}
+              <span className="text-primary">95%</span>{" "}
               na sua conta de energia
             </h1>
 
@@ -138,7 +138,7 @@ export function Hero() {
                 <p className="text-sm opacity-80">Projetos Instalados</p>
               </div>
               <div>
-                <p className="text-3xl md:text-4xl font-bold text-secondary mb-1">95%</p>
+                <p className="text-3xl md:text-4xl font-bold text-primary mb-1">95%</p>
                 <p className="text-sm opacity-80">Economia Média</p>
               </div>
               <div>
