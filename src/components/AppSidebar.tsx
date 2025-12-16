@@ -27,7 +27,7 @@ const menuItems: MenuItem[] = [
   { icon: Calendar, label: "Agenda", href: "/schedule", roles: ["admin", "manager", "technician", "comercial"] },
   { icon: Globe, label: "Edição Site", href: "/site-editor", roles: ["admin", "manager"] },
   { icon: Users, label: "Usuários", href: "/users", roles: ["admin"] },
-  { icon: FileText, label: "Documentos", href: "#", coming: true },
+  { icon: FileText, label: "Documentos", href: "/documents", roles: ["admin", "manager", "comercial", "technician"] },
 ];
 
 // Context for sidebar collapse state
