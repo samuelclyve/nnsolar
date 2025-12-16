@@ -305,12 +305,25 @@ export default function SiteEditor() {
   };
 
   const saveSettings = async () => {
-    for (const [key, value] of Object.entries(settings)) {
-      await supabase
-        .from("site_settings")
-        .upsert({ setting_key: key, setting_value: value });
+    try {
+      for (const [key, value] of Object.entries(settings)) {
+        const { error } = await supabase
+          .from("site_settings")
+          .upsert(
+            { setting_key: key, setting_value: value, setting_type: "text" },
+            { onConflict: "setting_key" }
+          );
+        
+        if (error) {
+          console.error(`Error saving ${key}:`, error);
+          throw error;
+        }
+      }
+      toast({ title: "Configurações salvas com sucesso!" });
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      toast({ title: "Erro ao salvar configurações", variant: "destructive" });
     }
-    toast({ title: "Configurações salvas!" });
   };
 
   return (

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, parseISO, isToday } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, parseISO, isToday, startOfWeek, endOfWeek, addWeeks, subWeeks, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Clock, MapPin, Wrench, GripVertical } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Clock, MapPin, GripVertical, CalendarDays, CalendarRange } from "lucide-react";
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDraggable, useDroppable, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -58,7 +59,7 @@ const eventTypeLabels: Record<string, string> = {
 };
 
 // Draggable Event Component
-function DraggableEvent({ event }: { event: ScheduleEvent }) {
+function DraggableEvent({ event, compact = false }: { event: ScheduleEvent; compact?: boolean }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: event.id,
     data: event,
@@ -76,19 +77,21 @@ function DraggableEvent({ event }: { event: ScheduleEvent }) {
       {...listeners}
       {...attributes}
       className={cn(
-        "text-[10px] px-1 py-0.5 rounded truncate text-white cursor-grab active:cursor-grabbing flex items-center gap-0.5",
+        "px-2 py-1 rounded text-white cursor-grab active:cursor-grabbing flex items-center gap-1",
         statusColors[event.installation.status || "project"],
-        isDragging && "opacity-50 shadow-lg"
+        isDragging && "opacity-50 shadow-lg",
+        compact ? "text-[10px]" : "text-xs"
       )}
     >
-      <GripVertical className="w-2 h-2 flex-shrink-0" />
+      <GripVertical className={cn("flex-shrink-0", compact ? "w-2 h-2" : "w-3 h-3")} />
       <span className="truncate">{event.installation.client_name}</span>
+      <span className="text-white/70 ml-auto">({eventTypeLabels[event.type]})</span>
     </div>
   );
 }
 
-// Droppable Day Cell Component
-function DroppableDay({ 
+// Droppable Day Cell for Monthly View
+function DroppableDayMonth({ 
   day, 
   events, 
   isSelected, 
@@ -126,7 +129,7 @@ function DroppableDay({
       </div>
       <div className="space-y-0.5 overflow-hidden">
         {events.slice(0, 2).map((event) => (
-          <DraggableEvent key={event.id} event={event} />
+          <DraggableEvent key={event.id} event={event} compact />
         ))}
         {events.length > 2 && (
           <div className="text-[10px] text-muted-foreground px-1">
@@ -138,8 +141,64 @@ function DroppableDay({
   );
 }
 
+// Droppable Day Cell for Weekly View
+function DroppableDayWeek({ 
+  day, 
+  events, 
+  isSelected, 
+  isToday: today, 
+  onClick 
+}: { 
+  day: Date; 
+  events: ScheduleEvent[]; 
+  isSelected: boolean; 
+  isToday: boolean; 
+  onClick: () => void;
+}) {
+  const dateStr = format(day, "yyyy-MM-dd");
+  const { setNodeRef, isOver } = useDroppable({
+    id: dateStr,
+    data: { date: day },
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      onClick={onClick}
+      className={cn(
+        "min-h-[200px] p-2 rounded-lg cursor-pointer transition-all border flex-1",
+        isSelected ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50",
+        today && "ring-2 ring-primary/30",
+        isOver && "bg-primary/20 border-primary border-dashed"
+      )}
+    >
+      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
+        <div className={cn(
+          "text-lg font-bold w-8 h-8 flex items-center justify-center rounded-full",
+          today && "bg-primary text-white"
+        )}>
+          {format(day, "d")}
+        </div>
+        <div>
+          <p className="text-sm font-medium">{format(day, "EEEE", { locale: ptBR })}</p>
+          <p className="text-xs text-muted-foreground">{format(day, "dd/MM")}</p>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {events.map((event) => (
+          <DraggableEvent key={event.id} event={event} />
+        ))}
+        {events.length === 0 && (
+          <p className="text-xs text-muted-foreground text-center py-4">Nenhum evento</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Schedule() {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [viewMode, setViewMode] = useState<"month" | "week">("month");
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [installations, setInstallations] = useState<Installation[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -180,7 +239,7 @@ export default function Schedule() {
     }
   };
 
-  const getEventsForMonth = (): ScheduleEvent[] => {
+  const getAllEvents = (): ScheduleEvent[] => {
     const events: ScheduleEvent[] = [];
     
     installations.forEach((installation) => {
@@ -208,19 +267,38 @@ export default function Schedule() {
   };
 
   const getEventsForDate = (date: Date): ScheduleEvent[] => {
-    const events = getEventsForMonth();
+    const events = getAllEvents();
     return events.filter((event) => isSameDay(parseISO(event.date), date));
   };
 
+  // Monthly view data
   const daysInMonth = eachDayOfInterval({
-    start: startOfMonth(currentMonth),
-    end: endOfMonth(currentMonth),
+    start: startOfMonth(currentDate),
+    end: endOfMonth(currentDate),
   });
-
-  // Get padding days for the calendar grid
-  const firstDayOfMonth = startOfMonth(currentMonth);
+  const firstDayOfMonth = startOfMonth(currentDate);
   const startPadding = firstDayOfMonth.getDay();
   const paddingDays = Array.from({ length: startPadding }, (_, i) => null);
+
+  // Weekly view data
+  const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+
+  const handlePrevious = () => {
+    if (viewMode === "month") {
+      setCurrentDate(subMonths(currentDate, 1));
+    } else {
+      setCurrentDate(subWeeks(currentDate, 1));
+    }
+  };
+
+  const handleNext = () => {
+    if (viewMode === "month") {
+      setCurrentDate(addMonths(currentDate, 1));
+    } else {
+      setCurrentDate(addWeeks(currentDate, 1));
+    }
+  };
 
   const handleDragStart = (event: DragStartEvent) => {
     const eventData = event.active.data.current as ScheduleEvent;
@@ -285,6 +363,15 @@ export default function Schedule() {
   const todayEvents = getEventsForDate(new Date());
   const selectedDateEvents = selectedDate ? getEventsForDate(selectedDate) : [];
 
+  const getHeaderTitle = () => {
+    if (viewMode === "month") {
+      return format(currentDate, "MMMM yyyy", { locale: ptBR });
+    } else {
+      const weekEnd = endOfWeek(currentDate, { weekStartsOn: 0 });
+      return `${format(weekStart, "dd/MM")} - ${format(weekEnd, "dd/MM/yyyy")}`;
+    }
+  };
+
   return (
     <AppLayout title="Agenda">
       <div className="space-y-6">
@@ -294,127 +381,164 @@ export default function Schedule() {
             <h1 className="text-3xl font-bold text-foreground">Agenda</h1>
             <p className="text-muted-foreground">Arraste os eventos para reagendar instalações</p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Novo Agendamento
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Agendar Instalação</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label>Instalação</Label>
-                  <Select value={selectedInstallation} onValueChange={setSelectedInstallation}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione uma instalação" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {installations.map((inst) => (
-                        <SelectItem key={inst.id} value={inst.id}>
-                          {inst.client_name} - {inst.city || "Sem cidade"}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Tipo de Agendamento</Label>
-                  <Select value={scheduleType} onValueChange={(v) => setScheduleType(v as any)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="estimated_start">Data de Início</SelectItem>
-                      <SelectItem value="estimated_end">Data de Conclusão</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Data</Label>
-                  <Input
-                    type="date"
-                    value={scheduleDate}
-                    onChange={(e) => setScheduleDate(e.target.value)}
-                  />
-                </div>
-                <Button className="w-full" onClick={handleSchedule}>
-                  Salvar Agendamento
+          <div className="flex items-center gap-3">
+            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "month" | "week")}>
+              <TabsList>
+                <TabsTrigger value="month" className="gap-2">
+                  <CalendarDays className="w-4 h-4" />
+                  Mês
+                </TabsTrigger>
+                <TabsTrigger value="week" className="gap-2">
+                  <CalendarRange className="w-4 h-4" />
+                  Semana
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo Agendamento
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Agendar Instalação</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <Label>Instalação</Label>
+                    <Select value={selectedInstallation} onValueChange={setSelectedInstallation}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma instalação" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {installations.map((inst) => (
+                          <SelectItem key={inst.id} value={inst.id}>
+                            {inst.client_name} - {inst.city || "Sem cidade"}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Tipo de Agendamento</Label>
+                    <Select value={scheduleType} onValueChange={(v) => setScheduleType(v as any)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="estimated_start">Data de Início</SelectItem>
+                        <SelectItem value="estimated_end">Data de Conclusão</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Data</Label>
+                    <Input
+                      type="date"
+                      value={scheduleDate}
+                      onChange={(e) => setScheduleDate(e.target.value)}
+                    />
+                  </div>
+                  <Button className="w-full" onClick={handleSchedule}>
+                    Salvar Agendamento
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Calendar */}
           <Card className="lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 capitalize">
                 <CalendarIcon className="w-5 h-5 text-primary" />
-                {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
+                {getHeaderTitle()}
               </CardTitle>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+                <Button variant="outline" size="icon" onClick={handlePrevious}>
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setCurrentMonth(new Date())}>
+                <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
                   Hoje
                 </Button>
-                <Button variant="outline" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+                <Button variant="outline" size="icon" onClick={handleNext}>
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              {/* Day names */}
-              <div className="grid grid-cols-7 gap-1 mb-2">
-                {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => (
-                  <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
-                    {day}
-                  </div>
-                ))}
-              </div>
-
-              {/* Calendar grid with DnD */}
               <DndContext
                 sensors={sensors}
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
               >
-                <div className="grid grid-cols-7 gap-1">
-                  {/* Padding days */}
-                  {paddingDays.map((_, index) => (
-                    <div key={`padding-${index}`} className="h-24 p-1 bg-muted/30 rounded-lg" />
-                  ))}
+                {viewMode === "month" ? (
+                  <>
+                    {/* Day names */}
+                    <div className="grid grid-cols-7 gap-1 mb-2">
+                      {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => (
+                        <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
+                          {day}
+                        </div>
+                      ))}
+                    </div>
 
-                  {/* Actual days */}
-                  {daysInMonth.map((day) => {
-                    const dayEvents = getEventsForDate(day);
-                    const isSelected = selectedDate && isSameDay(day, selectedDate);
-                    const today = isToday(day);
+                    {/* Monthly grid */}
+                    <div className="grid grid-cols-7 gap-1">
+                      {paddingDays.map((_, index) => (
+                        <div key={`padding-${index}`} className="h-24 p-1 bg-muted/30 rounded-lg" />
+                      ))}
+                      {daysInMonth.map((day) => {
+                        const dayEvents = getEventsForDate(day);
+                        const isSelected = selectedDate && isSameDay(day, selectedDate);
+                        const today = isToday(day);
 
-                    return (
-                      <DroppableDay
-                        key={day.toISOString()}
-                        day={day}
-                        events={dayEvents}
-                        isSelected={!!isSelected}
-                        isToday={today}
-                        onClick={() => setSelectedDate(day)}
-                      />
-                    );
-                  })}
-                </div>
+                        return (
+                          <DroppableDayMonth
+                            key={day.toISOString()}
+                            day={day}
+                            events={dayEvents}
+                            isSelected={!!isSelected}
+                            isToday={today}
+                            onClick={() => setSelectedDate(day)}
+                          />
+                        );
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Weekly view */}
+                    <div className="flex gap-2">
+                      {weekDays.map((day) => {
+                        const dayEvents = getEventsForDate(day);
+                        const isSelected = selectedDate && isSameDay(day, selectedDate);
+                        const today = isToday(day);
+
+                        return (
+                          <DroppableDayWeek
+                            key={day.toISOString()}
+                            day={day}
+                            events={dayEvents}
+                            isSelected={!!isSelected}
+                            isToday={today}
+                            onClick={() => setSelectedDate(day)}
+                          />
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
 
                 {/* Drag Overlay */}
                 <DragOverlay>
                   {activeEvent ? (
                     <div className={cn(
-                      "text-[10px] px-2 py-1 rounded text-white shadow-lg",
+                      "text-xs px-2 py-1 rounded text-white shadow-lg",
                       statusColors[activeEvent.installation.status || "project"]
                     )}>
                       {activeEvent.installation.client_name} ({eventTypeLabels[activeEvent.type]})
@@ -482,28 +606,28 @@ export default function Schedule() {
                     <div className="space-y-3">
                       {selectedDateEvents.map((event) => (
                         <div key={event.id} className="p-3 rounded-lg border bg-card">
-                          <div className="flex items-center justify-between mb-2">
-                            <Badge className={cn(statusColors[event.installation.status || "project"])}>
-                              {statusLabels[event.installation.status || "project"]}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">{eventTypeLabels[event.type]}</span>
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className={cn(
+                              "w-3 h-3 rounded-full",
+                              statusColors[event.installation.status || "project"]
+                            )} />
+                            <span className="font-medium text-sm">{event.installation.client_name}</span>
                           </div>
-                          <p className="font-semibold">{event.installation.client_name}</p>
-                          {event.installation.address && (
-                            <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                              <MapPin className="w-3 h-3" />
-                              {event.installation.address}
-                            </p>
-                          )}
-                          {event.installation.city && (
-                            <p className="text-sm text-muted-foreground ml-4">{event.installation.city}</p>
-                          )}
-                          {event.installation.power_kwp && (
-                            <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                              <Wrench className="w-3 h-3" />
-                              {event.installation.power_kwp} kWp
-                            </p>
-                          )}
+                          <div className="space-y-1 text-xs text-muted-foreground">
+                            <p>Tipo: {eventTypeLabels[event.type]}</p>
+                            {event.installation.address && (
+                              <p className="flex items-center gap-1">
+                                <MapPin className="w-3 h-3" />
+                                {event.installation.address}
+                              </p>
+                            )}
+                            {event.installation.power_kwp && (
+                              <p>Potência: {event.installation.power_kwp} kWp</p>
+                            )}
+                          </div>
+                          <Badge className="mt-2" variant="secondary">
+                            {statusLabels[event.installation.status || "project"]}
+                          </Badge>
                         </div>
                       ))}
                     </div>
@@ -512,33 +636,19 @@ export default function Schedule() {
               </Card>
             )}
 
-            {/* Upcoming installations */}
+            {/* Status Legend */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Próximas Instalações</CardTitle>
+                <CardTitle className="text-lg">Legenda</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {installations
-                    .filter((i) => i.estimated_start && new Date(i.estimated_start) >= new Date())
-                    .sort((a, b) => new Date(a.estimated_start!).getTime() - new Date(b.estimated_start!).getTime())
-                    .slice(0, 5)
-                    .map((installation) => (
-                      <div key={installation.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50">
-                        <div>
-                          <p className="font-medium text-sm">{installation.client_name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(parseISO(installation.estimated_start!), "dd/MM/yyyy")}
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="text-xs">
-                          {statusLabels[installation.status || "project"]}
-                        </Badge>
-                      </div>
-                    ))}
-                  {installations.filter((i) => i.estimated_start && new Date(i.estimated_start) >= new Date()).length === 0 && (
-                    <p className="text-sm text-muted-foreground">Nenhuma instalação agendada</p>
-                  )}
+                  {Object.entries(statusLabels).map(([key, label]) => (
+                    <div key={key} className="flex items-center gap-2">
+                      <div className={cn("w-3 h-3 rounded-full", statusColors[key])} />
+                      <span className="text-sm">{label}</span>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
