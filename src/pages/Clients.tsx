@@ -117,55 +117,22 @@ export default function Clients() {
       return;
     }
 
-    // Create auth user first
-    const { data: authData, error: authError } = await supabase.auth.admin
-      ? await supabase.auth.signUp({
-          email: clientForm.email,
-          password: Math.random().toString(36).slice(-8) + "Aa1!", // Temporary password
-          options: {
-            data: { full_name: clientForm.full_name }
-          }
-        })
-      : { data: null, error: { message: "Admin access required" } };
+    // Create client record with a placeholder user_id
+    // In production, you would create an auth user via edge function
+    const { error } = await supabase.from("clients").insert({
+      user_id: crypto.randomUUID(),
+      full_name: clientForm.full_name,
+      email: clientForm.email,
+      phone: clientForm.phone || null,
+      cpf: clientForm.cpf || null,
+      address: clientForm.address || null,
+      city: clientForm.city || null,
+    });
 
-    if (authError || !authData?.user) {
-      // If we can't create auth user, just create client record with placeholder
-      const { error } = await supabase.from("clients").insert({
-        user_id: crypto.randomUUID(),
-        full_name: clientForm.full_name,
-        email: clientForm.email,
-        phone: clientForm.phone || null,
-        cpf: clientForm.cpf || null,
-        address: clientForm.address || null,
-        city: clientForm.city || null,
-      });
-
-      if (error) {
-        toast({ title: "Erro ao criar cliente", variant: "destructive" });
-        return;
-      }
-    } else {
-      // Create client record with auth user id
-      const { error } = await supabase.from("clients").insert({
-        user_id: authData.user.id,
-        full_name: clientForm.full_name,
-        email: clientForm.email,
-        phone: clientForm.phone || null,
-        cpf: clientForm.cpf || null,
-        address: clientForm.address || null,
-        city: clientForm.city || null,
-      });
-
-      if (error) {
-        toast({ title: "Erro ao criar cliente", variant: "destructive" });
-        return;
-      }
-
-      // Assign client role
-      await supabase.from("user_roles").insert({
-        user_id: authData.user.id,
-        role: "client"
-      });
+    if (error) {
+      console.error("Error creating client:", error);
+      toast({ title: "Erro ao criar cliente", description: error.message, variant: "destructive" });
+      return;
     }
 
     toast({ title: "Cliente criado com sucesso!" });
