@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { 
   FileText, Upload, Search, Filter, Grid, List, 
   Download, Trash2, Eye, FolderOpen, Plus, X,
-  File, FileImage, FileSpreadsheet, Archive
+  File, FileImage, FileSpreadsheet, Archive, User, Wrench
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +48,16 @@ interface Document {
   installations?: { client_name: string } | null;
 }
 
+interface Client {
+  id: string;
+  full_name: string;
+}
+
+interface Installation {
+  id: string;
+  client_name: string;
+}
+
 const CATEGORIES = [
   { value: "contrato", label: "Contratos", icon: FileText, color: "bg-blue-500" },
   { value: "nota_fiscal", label: "Notas Fiscais", icon: FileSpreadsheet, color: "bg-green-500" },
@@ -60,9 +70,13 @@ const CATEGORIES = [
 export default function Documents() {
   const navigate = useNavigate();
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [installations, setInstallations] = useState<Installation[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [clientFilter, setClientFilter] = useState<string>("all");
+  const [installationFilter, setInstallationFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -73,6 +87,21 @@ export default function Documents() {
   const [uploadCategory, setUploadCategory] = useState("outros");
   const [uploadDescription, setUploadDescription] = useState("");
   const [uploadTags, setUploadTags] = useState("");
+  const [uploadClientId, setUploadClientId] = useState<string>("none");
+  const [uploadInstallationId, setUploadInstallationId] = useState<string>("none");
+
+  // Fetch clients and installations for filters
+  useEffect(() => {
+    const fetchClientsAndInstallations = async () => {
+      const [clientsRes, installationsRes] = await Promise.all([
+        supabase.from("clients").select("id, full_name").order("full_name"),
+        supabase.from("installations").select("id, client_name").order("client_name"),
+      ]);
+      if (clientsRes.data) setClients(clientsRes.data);
+      if (installationsRes.data) setInstallations(installationsRes.data);
+    };
+    fetchClientsAndInstallations();
+  }, []);
 
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
@@ -90,6 +119,14 @@ export default function Documents() {
         query = query.eq("category", categoryFilter);
       }
 
+      if (clientFilter !== "all") {
+        query = query.eq("client_id", clientFilter);
+      }
+
+      if (installationFilter !== "all") {
+        query = query.eq("installation_id", installationFilter);
+      }
+
       if (searchQuery) {
         query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
       }
@@ -103,7 +140,7 @@ export default function Documents() {
     } finally {
       setLoading(false);
     }
-  }, [categoryFilter, searchQuery]);
+  }, [categoryFilter, clientFilter, installationFilter, searchQuery]);
 
   useEffect(() => {
     fetchDocuments();
@@ -150,6 +187,8 @@ export default function Documents() {
           description: uploadDescription || null,
           tags: tags.length > 0 ? tags : null,
           uploaded_by: user.id,
+          client_id: uploadClientId !== "none" ? uploadClientId : null,
+          installation_id: uploadInstallationId !== "none" ? uploadInstallationId : null,
         });
 
       if (insertError) throw insertError;
@@ -197,6 +236,8 @@ export default function Documents() {
     setUploadCategory("outros");
     setUploadDescription("");
     setUploadTags("");
+    setUploadClientId("none");
+    setUploadInstallationId("none");
   };
 
   const formatFileSize = (bytes: number | null) => {
@@ -334,6 +375,42 @@ export default function Documents() {
                   />
                 </div>
 
+                {/* Client Link */}
+                <div className="space-y-2">
+                  <Label>Vincular a Cliente</Label>
+                  <Select value={uploadClientId} onValueChange={setUploadClientId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um cliente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhum cliente</SelectItem>
+                      {clients.map(client => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.full_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Installation Link */}
+                <div className="space-y-2">
+                  <Label>Vincular a Instalação</Label>
+                  <Select value={uploadInstallationId} onValueChange={setUploadInstallationId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma instalação" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhuma instalação</SelectItem>
+                      {installations.map(inst => (
+                        <SelectItem key={inst.id} value={inst.id}>
+                          {inst.client_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <Button
                   onClick={handleUpload}
                   disabled={!uploadFile || uploading}
@@ -370,46 +447,79 @@ export default function Documents() {
         </div>
 
         {/* Filters & Search */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nome ou descrição..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <div className="flex gap-2">
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-[180px]">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas Categorias</SelectItem>
-                {CATEGORIES.map(cat => (
-                  <SelectItem key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="flex border rounded-md">
-              <Button
-                variant={viewMode === "grid" ? "secondary" : "ghost"}
-                size="icon"
-                onClick={() => setViewMode("grid")}
-              >
-                <Grid className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "secondary" : "ghost"}
-                size="icon"
-                onClick={() => setViewMode("list")}
-              >
-                <List className="w-4 h-4" />
-              </Button>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome ou descrição..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-[160px]">
+                  <Filter className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas Categorias</SelectItem>
+                  {CATEGORIES.map(cat => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={clientFilter} onValueChange={setClientFilter}>
+                <SelectTrigger className="w-[160px]">
+                  <User className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Cliente" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos Clientes</SelectItem>
+                  {clients.map(client => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.full_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={installationFilter} onValueChange={setInstallationFilter}>
+                <SelectTrigger className="w-[160px]">
+                  <Wrench className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Instalação" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas Instalações</SelectItem>
+                  {installations.map(inst => (
+                    <SelectItem key={inst.id} value={inst.id}>
+                      {inst.client_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <div className="flex border rounded-md">
+                <Button
+                  variant={viewMode === "grid" ? "secondary" : "ghost"}
+                  size="icon"
+                  onClick={() => setViewMode("grid")}
+                >
+                  <Grid className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "secondary" : "ghost"}
+                  size="icon"
+                  onClick={() => setViewMode("list")}
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -461,6 +571,24 @@ export default function Documents() {
                       {catInfo.label}
                     </Badge>
 
+                    {/* Linked Client/Installation */}
+                    {(doc.clients || doc.installations) && (
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {doc.clients && (
+                          <Badge variant="secondary" className="text-xs gap-1">
+                            <User className="w-3 h-3" />
+                            {doc.clients.full_name}
+                          </Badge>
+                        )}
+                        {doc.installations && (
+                          <Badge variant="secondary" className="text-xs gap-1">
+                            <Wrench className="w-3 h-3" />
+                            {doc.installations.client_name}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+
                     {doc.description && (
                       <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                         {doc.description}
@@ -470,7 +598,7 @@ export default function Documents() {
                     {doc.tags && doc.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-3">
                         {doc.tags.slice(0, 3).map((tag, i) => (
-                          <Badge key={i} variant="secondary" className="text-xs">
+                          <Badge key={i} variant="outline" className="text-xs">
                             {tag}
                           </Badge>
                         ))}
@@ -520,12 +648,30 @@ export default function Documents() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium truncate">{doc.name}</h3>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
                         <span>{catInfo.label}</span>
                         <span>•</span>
                         <span>{formatFileSize(doc.file_size)}</span>
                         <span>•</span>
                         <span>{format(new Date(doc.created_at), "dd/MM/yyyy", { locale: ptBR })}</span>
+                        {doc.clients && (
+                          <>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <User className="w-3 h-3" />
+                              {doc.clients.full_name}
+                            </span>
+                          </>
+                        )}
+                        {doc.installations && (
+                          <>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <Wrench className="w-3 h-3" />
+                              {doc.installations.client_name}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                     {doc.tags && doc.tags.length > 0 && (
