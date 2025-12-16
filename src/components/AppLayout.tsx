@@ -3,8 +3,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "./AppSidebar";
-import { Bell, Moon } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NotificationsPanel } from "./NotificationsPanel";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -22,6 +23,12 @@ export function AppLayout({ children, title }: AppLayoutProps) {
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      return document.documentElement.classList.contains("dark");
+    }
+    return false;
+  });
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -52,10 +59,22 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       .from("profiles")
       .select("*")
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
     
     if (data) {
       setProfile(data);
+    }
+  };
+
+  const toggleTheme = () => {
+    const newDark = !isDark;
+    setIsDark(newDark);
+    if (newDark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
     }
   };
 
@@ -82,14 +101,16 @@ export function AppLayout({ children, title }: AppLayoutProps) {
         <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-md">
           <div className="flex items-center justify-end px-6 lg:px-8 h-16">
             {/* Right side actions */}
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="rounded-full w-10 h-10 text-muted-foreground hover:text-foreground">
-                <Moon className="w-5 h-5" />
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={toggleTheme}
+                className="rounded-full w-10 h-10 text-muted-foreground hover:text-foreground"
+              >
+                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </Button>
-              <Button variant="ghost" size="icon" className="rounded-full w-10 h-10 text-muted-foreground hover:text-foreground relative">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full" />
-              </Button>
+              <NotificationsPanel userId={user?.id} />
             </div>
           </div>
         </header>

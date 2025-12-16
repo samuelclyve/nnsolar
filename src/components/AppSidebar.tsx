@@ -7,7 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import logoFundoBranco from "@/assets/logo-fundo-branco.png";
+import logoNnEnergiaSolar from "@/assets/logo-nn-energia-solar.png";
 import iconeNn from "@/assets/icone-nn.png";
 
 interface MenuItem {
@@ -113,7 +113,7 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
           >
             <div className="h-10 flex items-center">
               <img 
-                src={isCollapsed ? iconeNn : logoFundoBranco} 
+                src={isCollapsed ? iconeNn : logoNnEnergiaSolar} 
                 alt="NN Energia Solar" 
                 className={`${isCollapsed ? "h-8" : "h-9"} object-contain transition-all`} 
               />
