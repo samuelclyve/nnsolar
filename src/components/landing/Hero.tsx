@@ -1,15 +1,79 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Sun, Zap, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import heroBanner from "@/assets/hero-banner-1.jpg";
+import { supabase } from "@/integrations/supabase/client";
+import heroBannerDefault from "@/assets/hero-banner-1.jpg";
+
+interface HeroSettings {
+  hero_background_url: string;
+  hero_tagline: string;
+  hero_title_prefix: string;
+  hero_title_highlight: string;
+  hero_title_suffix: string;
+  hero_description: string;
+  hero_button_primary: string;
+  hero_button_secondary: string;
+  hero_stat_1_value: string;
+  hero_stat_1_label: string;
+  hero_stat_2_value: string;
+  hero_stat_2_label: string;
+  hero_stat_3_value: string;
+  hero_stat_3_label: string;
+  hero_stat_4_value: string;
+  hero_stat_4_label: string;
+}
+
+const defaultSettings: HeroSettings = {
+  hero_background_url: "",
+  hero_tagline: "Desenvolvendo o seu futuro com energia solar",
+  hero_title_prefix: "Economize até",
+  hero_title_highlight: "95%",
+  hero_title_suffix: "na sua conta de energia",
+  hero_description: "Transforme a luz do sol em economia real. Sistema fotovoltaico completo com instalação profissional e garantia de 25 anos.",
+  hero_button_primary: "Simular Economia",
+  hero_button_secondary: "Agendar Visita Técnica",
+  hero_stat_1_value: "500+",
+  hero_stat_1_label: "Projetos Instalados",
+  hero_stat_2_value: "95%",
+  hero_stat_2_label: "Economia Média",
+  hero_stat_3_value: "25",
+  hero_stat_3_label: "Anos de Garantia",
+  hero_stat_4_value: "10+",
+  hero_stat_4_label: "Anos no Mercado",
+};
 
 export function Hero() {
+  const [settings, setSettings] = useState<HeroSettings>(defaultSettings);
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    const { data } = await supabase
+      .from("site_settings")
+      .select("setting_key, setting_value");
+
+    if (data) {
+      const settingsMap: Partial<HeroSettings> = {};
+      data.forEach((item) => {
+        if (item.setting_key in defaultSettings) {
+          settingsMap[item.setting_key as keyof HeroSettings] = item.setting_value || "";
+        }
+      });
+      setSettings({ ...defaultSettings, ...settingsMap });
+    }
+  };
+
+  const backgroundImage = settings.hero_background_url || heroBannerDefault;
+
   return (
     <section 
       id="home" 
       className="relative min-h-screen flex items-center overflow-hidden"
       style={{
-        backgroundImage: `url(${heroBanner})`,
+        backgroundImage: `url(${backgroundImage})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
@@ -32,21 +96,20 @@ export function Hero() {
               transition={{ delay: 0.2 }}
               className="inline-flex items-center gap-2 bg-card/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6 border border-card/20"
             >
-              <Sun className="w-5 h-5 text-secondary" />
+              <Sun className="w-5 h-5 text-primary" />
               <span className="text-card text-sm font-medium">
-                Desenvolvendo o seu futuro com energia solar
+                {settings.hero_tagline}
               </span>
             </motion.div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-bold text-card leading-tight mb-6">
-              Economize até{" "}
-              <span className="text-primary">95%</span>{" "}
-              na sua conta de energia
+              {settings.hero_title_prefix}{" "}
+              <span className="text-primary">{settings.hero_title_highlight}</span>{" "}
+              {settings.hero_title_suffix}
             </h1>
 
             <p className="text-lg md:text-xl text-card/80 mb-8 max-w-xl mx-auto lg:mx-0">
-              Transforme a luz do sol em economia real. Sistema fotovoltaico 
-              completo com instalação profissional e garantia de 25 anos.
+              {settings.hero_description}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
@@ -54,14 +117,14 @@ export function Hero() {
                 <Button variant="hero" size="xl" asChild>
                   <a href="#simulador">
                     <Zap className="w-5 h-5" />
-                    Simular Economia
+                    {settings.hero_button_primary}
                     <ArrowRight className="w-5 h-5" />
                   </a>
                 </Button>
               </motion.div>
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button variant="hero-outline" size="xl" asChild>
-                  <a href="#contato">Agendar Visita Técnica</a>
+                  <a href="#contato">{settings.hero_button_secondary}</a>
                 </Button>
               </motion.div>
             </div>
@@ -114,7 +177,7 @@ export function Hero() {
 
               {/* Badge */}
               <motion.div 
-                className="absolute -top-4 -right-4 bg-secondary text-secondary-foreground px-4 py-2 rounded-full font-bold shadow-orange-glow text-sm"
+                className="absolute -top-4 -right-4 bg-primary text-white px-4 py-2 rounded-full font-bold shadow-orange-glow text-sm"
                 animate={{ rotate: [-3, 3, -3] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
@@ -134,20 +197,20 @@ export function Hero() {
           <div className="bg-card/10 backdrop-blur-md rounded-2xl border border-card/20 p-6 md:p-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center text-card">
               <div>
-                <p className="text-3xl md:text-4xl font-bold mb-1">500+</p>
-                <p className="text-sm opacity-80">Projetos Instalados</p>
+                <p className="text-3xl md:text-4xl font-bold mb-1">{settings.hero_stat_1_value}</p>
+                <p className="text-sm opacity-80">{settings.hero_stat_1_label}</p>
               </div>
               <div>
-                <p className="text-3xl md:text-4xl font-bold text-primary mb-1">95%</p>
-                <p className="text-sm opacity-80">Economia Média</p>
+                <p className="text-3xl md:text-4xl font-bold text-primary mb-1">{settings.hero_stat_2_value}</p>
+                <p className="text-sm opacity-80">{settings.hero_stat_2_label}</p>
               </div>
               <div>
-                <p className="text-3xl md:text-4xl font-bold mb-1">25</p>
-                <p className="text-sm opacity-80">Anos de Garantia</p>
+                <p className="text-3xl md:text-4xl font-bold mb-1">{settings.hero_stat_3_value}</p>
+                <p className="text-sm opacity-80">{settings.hero_stat_3_label}</p>
               </div>
               <div>
-                <p className="text-3xl md:text-4xl font-bold mb-1">10+</p>
-                <p className="text-sm opacity-80">Anos no Mercado</p>
+                <p className="text-3xl md:text-4xl font-bold mb-1">{settings.hero_stat_4_value}</p>
+                <p className="text-sm opacity-80">{settings.hero_stat_4_label}</p>
               </div>
             </div>
           </div>
