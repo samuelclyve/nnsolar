@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, Search, Zap, Calendar, MapPin, 
   CheckCircle2, Clock, AlertCircle, Upload, FileText, 
-  Image, X, Eye, Download, Camera, MessageCircle, Send
+  Image, X, Eye, Download, Camera, MessageCircle, Send, History
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -130,6 +130,15 @@ Obrigado por confiar na NN Energia Solar! ☀️`,
   },
 };
 
+interface NotificationLog {
+  id: string;
+  message_type: string;
+  message_content: string | null;
+  sent_at: string;
+  sent_by: string | null;
+  sender_name?: string;
+}
+
 export default function Installations() {
   const [installations, setInstallations] = useState<Installation[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -138,6 +147,7 @@ export default function Installations() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedInstallation, setSelectedInstallation] = useState<Installation | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [notificationLogs, setNotificationLogs] = useState<NotificationLog[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
@@ -163,6 +173,7 @@ export default function Installations() {
   useEffect(() => {
     if (selectedInstallation) {
       fetchDocuments(selectedInstallation.id);
+      fetchNotificationLogs(selectedInstallation.id);
     }
   }, [selectedInstallation]);
 
@@ -201,6 +212,27 @@ export default function Installations() {
     }
 
     setDocuments(data || []);
+  };
+
+  const fetchNotificationLogs = async (installationId: string) => {
+    const { data, error } = await supabase
+      .from("notification_logs")
+      .select(`
+        *,
+        profiles:sent_by (full_name)
+      `)
+      .eq("installation_id", installationId)
+      .order("sent_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching notification logs:", error);
+      return;
+    }
+
+    setNotificationLogs((data || []).map((log: any) => ({
+      ...log,
+      sender_name: log.profiles?.full_name || "Sistema",
+    })));
   };
 
   const createInstallation = async () => {
@@ -325,11 +357,32 @@ export default function Installations() {
       .replace(/{data}/g, date || "A definir");
   };
 
-  const openWhatsApp = () => {
+  const openWhatsApp = async () => {
     if (!selectedInstallation?.client_phone) {
       toast({ title: "Cliente não possui telefone cadastrado", variant: "destructive" });
       return;
     }
+
+    // Get current user's profile for logging
+    const { data: { user } } = await supabase.auth.getUser();
+    let profileId = null;
+    
+    if (user) {
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      profileId = profileData?.id;
+    }
+
+    // Save notification log
+    await supabase.from("notification_logs").insert({
+      installation_id: selectedInstallation.id,
+      message_type: selectedTemplate,
+      message_content: customMessage,
+      sent_by: profileId,
+    });
 
     const phone = selectedInstallation.client_phone.replace(/\D/g, "");
     const phoneWithCountry = phone.startsWith("55") ? phone : `55${phone}`;
@@ -338,7 +391,12 @@ export default function Installations() {
     
     window.open(whatsappUrl, "_blank");
     setIsWhatsAppOpen(false);
-    toast({ title: "Abrindo WhatsApp..." });
+    toast({ title: "Notificação enviada e registrada!" });
+    
+    // Refresh logs if viewing details
+    if (selectedInstallation) {
+      fetchNotificationLogs(selectedInstallation.id);
+    }
   };
 
   const openWhatsAppDialog = (inst: Installation) => {
@@ -721,6 +779,42 @@ export default function Installations() {
                     <div className="col-span-full text-center py-8 text-muted-foreground">
                       <Camera className="w-8 h-8 mx-auto mb-2" />
                       <p className="text-sm">Nenhum arquivo enviado</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Notification History */}
+              <div className="border-t border-border pt-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <History className="w-5 h-5 text-muted-foreground" />
+                  <h3 className="font-semibold text-foreground">Histórico de Notificações</h3>
+                </div>
+
+                <div className="space-y-3">
+                  {notificationLogs.map((log) => (
+                    <div 
+                      key={log.id}
+                      className="bg-muted/50 rounded-lg p-3"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-foreground">
+                          {whatsappTemplates[log.message_type]?.title || log.message_type}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(log.sent_at).toLocaleString("pt-BR")}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Enviado por: {log.sender_name}
+                      </p>
+                    </div>
+                  ))}
+
+                  {notificationLogs.length === 0 && (
+                    <div className="text-center py-6 text-muted-foreground">
+                      <MessageCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Nenhuma notificação enviada</p>
                     </div>
                   )}
                 </div>
