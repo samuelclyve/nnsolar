@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, BarChart3, Wrench, Users, Calendar, FileText, 
-  Settings, LogOut, Menu, X, Globe, Search, UserCheck
+  Settings, LogOut, Menu, X, Globe, Search
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,8 +21,7 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   { icon: Home, label: "Visão Geral", href: "/dashboard" },
   { icon: BarChart3, label: "CRM", href: "/crm", roles: ["admin", "manager", "comercial"] },
-  { icon: Wrench, label: "Instalações", href: "/installations", roles: ["admin", "manager", "technician"] },
-  { icon: UserCheck, label: "Clientes", href: "/clients", roles: ["admin", "manager", "comercial"] },
+  { icon: Wrench, label: "Instalações", href: "/installations", roles: ["admin", "manager", "technician", "comercial"] },
   { icon: Globe, label: "Edição Site", href: "/site-editor", roles: ["admin", "manager"] },
   { icon: Users, label: "Usuários", href: "/users", roles: ["admin"] },
   { icon: Calendar, label: "Agenda", href: "#", coming: true },

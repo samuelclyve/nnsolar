@@ -13,7 +13,6 @@ interface AppLayoutProps {
 export function AppLayout({ children, title }: AppLayoutProps) {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
-  const [userRoles, setUserRoles] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -25,7 +24,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       }
       setUser(session.user);
       fetchProfile(session.user.id);
-      fetchUserRoles(session.user.id);
+      setIsLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -49,25 +48,6 @@ export function AppLayout({ children, title }: AppLayoutProps) {
     if (data) {
       setProfile(data);
     }
-  };
-
-  const fetchUserRoles = async (userId: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
-    
-    if (data) {
-      const roles = data.map(r => r.role);
-      setUserRoles(roles);
-      
-      // If user has only client role or no roles, redirect to portal
-      if (roles.length === 0 || (roles.length === 1 && roles[0] === 'client')) {
-        navigate("/portal");
-        return;
-      }
-    }
-    setIsLoading(false);
   };
 
   if (isLoading || !user) {

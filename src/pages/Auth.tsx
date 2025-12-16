@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
-import { Mail, Lock, User, ArrowRight, Sun, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,118 +11,62 @@ import logoFundoBranco from "@/assets/logo-fundo-branco.png";
 import iconeNn from "@/assets/icone-nn.png";
 
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    fullName: "",
   });
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
-        await handleRedirectAfterAuth(session.user.id);
+        navigate("/dashboard");
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
-        await handleRedirectAfterAuth(session.user.id);
+        navigate("/dashboard");
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleRedirectAfterAuth = async (userId: string) => {
-    // Check user roles to determine where to redirect
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
-    
-    const userRoles = roles?.map(r => r.role) || [];
-    
-    // If user is a client (no roles or only client role), go to portal
-    if (userRoles.length === 0 || (userRoles.length === 1 && userRoles[0] === 'client')) {
-      navigate("/portal");
-    } else {
-      // Staff users go to dashboard
-      navigate("/dashboard");
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      if (isLogin) {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
 
-        if (error) {
-          if (error.message.includes("Invalid login credentials")) {
-            toast({
-              title: "Erro no login",
-              description: "Email ou senha incorretos. Verifique suas credenciais.",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Erro",
-              description: error.message,
-              variant: "destructive",
-            });
-          }
-          return;
+      if (error) {
+        if (error.message.includes("Invalid login credentials")) {
+          toast({
+            title: "Erro no login",
+            description: "Email ou senha incorretos. Verifique suas credenciais.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Erro",
+            description: error.message,
+            variant: "destructive",
+          });
         }
-
-        toast({
-          title: "Bem-vindo!",
-          description: "Login realizado com sucesso.",
-        });
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: {
-              full_name: formData.fullName,
-            },
-          },
-        });
-
-        if (error) {
-          if (error.message.includes("already registered")) {
-            toast({
-              title: "Email já cadastrado",
-              description: "Este email já possui uma conta. Tente fazer login.",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Erro no cadastro",
-              description: error.message,
-              variant: "destructive",
-            });
-          }
-          return;
-        }
-
-        toast({
-          title: "Conta criada!",
-          description: "Sua conta foi criada com sucesso.",
-        });
+        return;
       }
+
+      toast({
+        title: "Bem-vindo!",
+        description: "Login realizado com sucesso.",
+      });
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -148,33 +92,13 @@ export default function Auth() {
           </Link>
 
           <h1 className="text-3xl font-display font-bold text-foreground mb-2">
-            {isLogin ? "Bem-vindo de volta!" : "Criar sua conta"}
+            Bem-vindo de volta!
           </h1>
           <p className="text-muted-foreground mb-8">
-            {isLogin
-              ? "Acesse sua conta para gerenciar seus projetos"
-              : "Cadastre-se para acompanhar sua instalação"}
+            Acesse o sistema interno da NN Energia Solar
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {!isLogin && (
-              <div>
-                <Label htmlFor="fullName">Nome completo</Label>
-                <div className="relative mt-1.5">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="Seu nome"
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    className="pl-10 h-12 rounded-xl"
-                    required={!isLogin}
-                  />
-                </div>
-              </div>
-            )}
-
             <div>
               <Label htmlFor="email">Email</Label>
               <div className="relative mt-1.5">
@@ -222,29 +146,10 @@ export default function Auth() {
               className="w-full"
               disabled={isLoading}
             >
-              {isLoading ? "Carregando..." : isLogin ? "Entrar" : "Criar conta"}
+              {isLoading ? "Carregando..." : "Entrar"}
               <ArrowRight className="w-5 h-5" />
             </Button>
           </form>
-
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-muted-foreground hover:text-primary transition-colors"
-            >
-              {isLogin ? (
-                <>
-                  Não tem uma conta?{" "}
-                  <span className="text-primary font-medium">Cadastre-se</span>
-                </>
-              ) : (
-                <>
-                  Já tem uma conta?{" "}
-                  <span className="text-primary font-medium">Entrar</span>
-                </>
-              )}
-            </button>
-          </div>
 
           <div className="mt-8 pt-6 border-t border-border">
             <Link
@@ -274,10 +179,10 @@ export default function Auth() {
             <img src={iconeNn} alt="NN" className="w-16 h-16 object-contain" />
           </div>
           <h2 className="text-4xl font-display font-bold mb-4">
-            NN Energia Solar
+            Sistema Interno
           </h2>
           <p className="text-xl text-primary-foreground/80 max-w-md">
-            Transforme a luz do sol em economia real para sua casa ou empresa.
+            Gerencie leads, instalações e acompanhe o progresso de todos os projetos.
           </p>
 
           <div className="grid grid-cols-3 gap-6 mt-12">
