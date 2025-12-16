@@ -438,17 +438,25 @@ export default function SiteEditor() {
             </div>
           </TabsContent>
 
-          {/* Hero Background Tab */}
+          {/* Hero Tab - Full Configuration */}
           <TabsContent value="hero">
-            <div className="bg-card rounded-2xl p-6 border border-border">
-              <div className="mb-6">
-                <h2 className="text-xl font-bold text-foreground">Imagem de Fundo do Hero</h2>
-                <p className="text-sm text-muted-foreground">
-                  Configure a imagem principal do topo do site
-                </p>
+            <div className="bg-card rounded-2xl p-6 border border-border space-y-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">Configuração do Hero</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Configure todos os textos e imagem da seção principal do site
+                  </p>
+                </div>
+                <Button variant="cta" onClick={saveSettings}>
+                  <Save className="w-4 h-4" />
+                  Salvar Alterações
+                </Button>
               </div>
 
+              {/* Background Image */}
               <div className="space-y-4">
+                <h3 className="font-semibold text-foreground">Imagem de Fundo</h3>
                 <div className="aspect-video max-w-2xl bg-muted rounded-xl overflow-hidden relative">
                   {settings.hero_background_url ? (
                     <>
@@ -461,9 +469,7 @@ export default function SiteEditor() {
                         variant="destructive"
                         size="icon"
                         className="absolute top-2 right-2"
-                        onClick={() => {
-                          setSettings({ ...settings, hero_background_url: "" });
-                        }}
+                        onClick={() => setSettings({ ...settings, hero_background_url: "" })}
                       >
                         <X className="w-4 h-4" />
                       </Button>
@@ -471,11 +477,10 @@ export default function SiteEditor() {
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center">
                       <Image className="w-12 h-12 text-muted-foreground mb-2" />
-                      <p className="text-muted-foreground">Nenhuma imagem definida</p>
+                      <p className="text-muted-foreground">Usando imagem padrão</p>
                     </div>
                   )}
                 </div>
-
                 <input
                   ref={heroBackgroundInputRef}
                   type="file"
@@ -483,15 +488,176 @@ export default function SiteEditor() {
                   onChange={handleHeroBackgroundUpload}
                   className="hidden"
                 />
-
                 <Button 
                   variant="outline" 
                   onClick={() => heroBackgroundInputRef.current?.click()}
                   disabled={uploadingImage}
                 >
                   <Upload className="w-4 h-4" />
-                  {uploadingImage ? "Enviando..." : "Fazer Upload"}
+                  {uploadingImage ? "Enviando..." : "Trocar Imagem de Fundo"}
                 </Button>
+              </div>
+
+              {/* Tagline */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-foreground">Texto de Destaque (Badge)</h3>
+                <div>
+                  <Label>Tagline</Label>
+                  <Input
+                    value={settings.hero_tagline || ""}
+                    onChange={(e) => setSettings({ ...settings, hero_tagline: e.target.value })}
+                    placeholder="Desenvolvendo o seu futuro com energia solar"
+                    className="mt-1.5"
+                  />
+                </div>
+              </div>
+
+              {/* Title */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-foreground">Título Principal</h3>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div>
+                    <Label>Início do Título</Label>
+                    <Input
+                      value={settings.hero_title_prefix || ""}
+                      onChange={(e) => setSettings({ ...settings, hero_title_prefix: e.target.value })}
+                      placeholder="Economize até"
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label>Destaque (Laranja)</Label>
+                    <Input
+                      value={settings.hero_title_highlight || ""}
+                      onChange={(e) => setSettings({ ...settings, hero_title_highlight: e.target.value })}
+                      placeholder="95%"
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label>Final do Título</Label>
+                    <Input
+                      value={settings.hero_title_suffix || ""}
+                      onChange={(e) => setSettings({ ...settings, hero_title_suffix: e.target.value })}
+                      placeholder="na sua conta de energia"
+                      className="mt-1.5"
+                    />
+                  </div>
+                </div>
+                <div className="p-4 bg-muted rounded-xl">
+                  <p className="text-sm text-muted-foreground mb-1">Prévia:</p>
+                  <p className="text-xl font-bold">
+                    {settings.hero_title_prefix || "Economize até"}{" "}
+                    <span className="text-primary">{settings.hero_title_highlight || "95%"}</span>{" "}
+                    {settings.hero_title_suffix || "na sua conta de energia"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-foreground">Descrição</h3>
+                <div>
+                  <Label>Texto Descritivo</Label>
+                  <Textarea
+                    value={settings.hero_description || ""}
+                    onChange={(e) => setSettings({ ...settings, hero_description: e.target.value })}
+                    placeholder="Transforme a luz do sol em economia real..."
+                    className="mt-1.5 min-h-[80px]"
+                  />
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-foreground">Botões</h3>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label>Botão Principal</Label>
+                    <Input
+                      value={settings.hero_button_primary || ""}
+                      onChange={(e) => setSettings({ ...settings, hero_button_primary: e.target.value })}
+                      placeholder="Simular Economia"
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label>Botão Secundário</Label>
+                    <Input
+                      value={settings.hero_button_secondary || ""}
+                      onChange={(e) => setSettings({ ...settings, hero_button_secondary: e.target.value })}
+                      placeholder="Agendar Visita Técnica"
+                      className="mt-1.5"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Statistics */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-foreground">Estatísticas</h3>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="p-4 bg-muted rounded-xl space-y-3">
+                    <p className="text-sm font-medium">Estatística 1</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        value={settings.hero_stat_1_value || ""}
+                        onChange={(e) => setSettings({ ...settings, hero_stat_1_value: e.target.value })}
+                        placeholder="500+"
+                      />
+                      <Input
+                        value={settings.hero_stat_1_label || ""}
+                        onChange={(e) => setSettings({ ...settings, hero_stat_1_label: e.target.value })}
+                        placeholder="Projetos Instalados"
+                      />
+                    </div>
+                  </div>
+                  <div className="p-4 bg-muted rounded-xl space-y-3">
+                    <p className="text-sm font-medium">Estatística 2 (Destaque)</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        value={settings.hero_stat_2_value || ""}
+                        onChange={(e) => setSettings({ ...settings, hero_stat_2_value: e.target.value })}
+                        placeholder="95%"
+                      />
+                      <Input
+                        value={settings.hero_stat_2_label || ""}
+                        onChange={(e) => setSettings({ ...settings, hero_stat_2_label: e.target.value })}
+                        placeholder="Economia Média"
+                      />
+                    </div>
+                  </div>
+                  <div className="p-4 bg-muted rounded-xl space-y-3">
+                    <p className="text-sm font-medium">Estatística 3</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        value={settings.hero_stat_3_value || ""}
+                        onChange={(e) => setSettings({ ...settings, hero_stat_3_value: e.target.value })}
+                        placeholder="25"
+                      />
+                      <Input
+                        value={settings.hero_stat_3_label || ""}
+                        onChange={(e) => setSettings({ ...settings, hero_stat_3_label: e.target.value })}
+                        placeholder="Anos de Garantia"
+                      />
+                    </div>
+                  </div>
+                  <div className="p-4 bg-muted rounded-xl space-y-3">
+                    <p className="text-sm font-medium">Estatística 4</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        value={settings.hero_stat_4_value || ""}
+                        onChange={(e) => setSettings({ ...settings, hero_stat_4_value: e.target.value })}
+                        placeholder="10+"
+                      />
+                      <Input
+                        value={settings.hero_stat_4_label || ""}
+                        onChange={(e) => setSettings({ ...settings, hero_stat_4_label: e.target.value })}
+                        placeholder="Anos no Mercado"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </TabsContent>
