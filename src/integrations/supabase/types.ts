@@ -362,6 +362,48 @@ export type Database = {
           },
         ]
       }
+      notification_logs: {
+        Row: {
+          id: string
+          installation_id: string
+          message_content: string | null
+          message_type: string
+          sent_at: string
+          sent_by: string | null
+        }
+        Insert: {
+          id?: string
+          installation_id: string
+          message_content?: string | null
+          message_type: string
+          sent_at?: string
+          sent_by?: string | null
+        }
+        Update: {
+          id?: string
+          installation_id?: string
+          message_content?: string | null
+          message_type?: string
+          sent_at?: string
+          sent_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_logs_installation_id_fkey"
+            columns: ["installation_id"]
+            isOneToOne: false
+            referencedRelation: "installations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_logs_sent_by_fkey"
+            columns: ["sent_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

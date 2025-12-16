@@ -2,54 +2,91 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import heroBanner1 from "@/assets/hero-banner-1.jpg";
 import heroBanner2 from "@/assets/hero-banner-2.jpg";
 
 interface Slide {
   id: string;
   title: string;
-  subtitle: string;
-  image: string;
-  buttonText: string;
-  buttonLink: string;
+  subtitle: string | null;
+  image_url: string;
+  button_text: string | null;
+  button_link: string | null;
 }
 
-const slides: Slide[] = [
+// Default slides as fallback
+const defaultSlides: Slide[] = [
   {
     id: "1",
     title: "Financiamento Facilitado",
     subtitle: "Parcelas que cabem no seu bolso, sem entrada. Comece a economizar desde o primeiro mês!",
-    image: heroBanner1,
-    buttonText: "Simular Financiamento",
-    buttonLink: "#contato",
+    image_url: heroBanner1,
+    button_text: "Simular Financiamento",
+    button_link: "#contato",
   },
   {
     id: "2",
     title: "Instalação Profissional",
     subtitle: "Equipe certificada com mais de 500 projetos instalados. Qualidade e segurança garantidas.",
-    image: heroBanner2,
-    buttonText: "Agendar Visita",
-    buttonLink: "#contato",
+    image_url: heroBanner2,
+    button_text: "Agendar Visita",
+    button_link: "#contato",
   },
 ];
 
 export function HeroCarousel() {
+  const [slides, setSlides] = useState<Slide[]>(defaultSlides);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
+  useEffect(() => {
+    fetchSlides();
+  }, []);
+
+  const fetchSlides = async () => {
+    const { data, error } = await supabase
+      .from("hero_slides")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
+
+    if (!error && data && data.length > 0) {
+      setSlides(data.map(slide => ({
+        id: slide.id,
+        title: slide.title,
+        subtitle: slide.subtitle,
+        image_url: slide.image_url,
+        button_text: slide.button_text,
+        button_link: slide.button_link,
+      })));
+    }
+  };
+
   const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % slides.length);
-  }, []);
+  }, [slides.length]);
 
   const prevSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
-  }, []);
+  }, [slides.length]);
 
   useEffect(() => {
-    if (!isAutoPlaying) return;
+    if (!isAutoPlaying || slides.length <= 1) return;
     const interval = setInterval(nextSlide, 6000);
     return () => clearInterval(interval);
-  }, [isAutoPlaying, nextSlide]);
+  }, [isAutoPlaying, nextSlide, slides.length]);
+
+  // Reset index if slides change
+  useEffect(() => {
+    if (currentIndex >= slides.length) {
+      setCurrentIndex(0);
+    }
+  }, [slides.length, currentIndex]);
+
+  if (slides.length === 0) return null;
+
+  const currentSlide = slides[currentIndex];
 
   return (
     <section className="relative overflow-hidden">
@@ -62,7 +99,7 @@ export function HeroCarousel() {
           transition={{ duration: 0.5 }}
           className="relative h-[500px] md:h-[600px]"
           style={{
-            backgroundImage: `url(${slides[currentIndex].image})`,
+            backgroundImage: `url(${currentSlide.image_url})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -83,62 +120,70 @@ export function HeroCarousel() {
               </span>
 
               <h2 className="text-3xl md:text-5xl font-display font-bold text-card mb-4">
-                {slides[currentIndex].title}
+                {currentSlide.title}
               </h2>
 
               <p className="text-card/80 text-lg mb-8">
-                {slides[currentIndex].subtitle}
+                {currentSlide.subtitle}
               </p>
 
-              <Button
-                variant="hero"
-                size="lg"
-                onClick={() => {
-                  document.querySelector(slides[currentIndex].buttonLink)?.scrollIntoView({ behavior: "smooth" });
-                }}
-              >
-                {slides[currentIndex].buttonText}
-                <ArrowRight className="w-5 h-5" />
-              </Button>
+              {currentSlide.button_text && (
+                <Button
+                  variant="hero"
+                  size="lg"
+                  onClick={() => {
+                    if (currentSlide.button_link?.startsWith("#")) {
+                      document.querySelector(currentSlide.button_link)?.scrollIntoView({ behavior: "smooth" });
+                    } else if (currentSlide.button_link) {
+                      window.open(currentSlide.button_link, "_blank");
+                    }
+                  }}
+                >
+                  {currentSlide.button_text}
+                  <ArrowRight className="w-5 h-5" />
+                </Button>
+              )}
             </motion.div>
           </div>
         </motion.div>
       </AnimatePresence>
 
-      {/* Navigation */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">
-        <button
-          onClick={prevSlide}
-          onMouseEnter={() => setIsAutoPlaying(false)}
-          onMouseLeave={() => setIsAutoPlaying(true)}
-          className="w-10 h-10 rounded-full bg-card/20 backdrop-blur-md border border-card/30 flex items-center justify-center hover:bg-card/30 transition-colors text-card"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
+      {/* Navigation - only show if more than 1 slide */}
+      {slides.length > 1 && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">
+          <button
+            onClick={prevSlide}
+            onMouseEnter={() => setIsAutoPlaying(false)}
+            onMouseLeave={() => setIsAutoPlaying(true)}
+            className="w-10 h-10 rounded-full bg-card/20 backdrop-blur-md border border-card/30 flex items-center justify-center hover:bg-card/30 transition-colors text-card"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
 
-        <div className="flex gap-2">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index)}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                index === currentIndex
-                  ? "w-8 bg-secondary"
-                  : "w-2 bg-card/50 hover:bg-card/70"
-              }`}
-            />
-          ))}
+          <div className="flex gap-2">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  index === currentIndex
+                    ? "w-8 bg-secondary"
+                    : "w-2 bg-card/50 hover:bg-card/70"
+                }`}
+              />
+            ))}
+          </div>
+
+          <button
+            onClick={nextSlide}
+            onMouseEnter={() => setIsAutoPlaying(false)}
+            onMouseLeave={() => setIsAutoPlaying(true)}
+            className="w-10 h-10 rounded-full bg-card/20 backdrop-blur-md border border-card/30 flex items-center justify-center hover:bg-card/30 transition-colors text-card"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </div>
-
-        <button
-          onClick={nextSlide}
-          onMouseEnter={() => setIsAutoPlaying(false)}
-          onMouseLeave={() => setIsAutoPlaying(true)}
-          className="w-10 h-10 rounded-full bg-card/20 backdrop-blur-md border border-card/30 flex items-center justify-center hover:bg-card/30 transition-colors text-card"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
-      </div>
+      )}
     </section>
   );
 }

@@ -1,34 +1,59 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Star, Quote, MapPin } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
-const testimonials = [
+interface Testimonial {
+  id: string;
+  client_name: string;
+  client_location: string | null;
+  message: string;
+  rating: number;
+}
+
+const defaultTestimonials = [
   {
-    name: "Diana Darc",
-    location: "Russas-CE",
-    text: "Excelente trabalho! O sistema foi instalado em menos de uma semana e minha conta de luz reduziu 93%. Recomendo a todos!",
+    id: "1",
+    client_name: "Diana Darc",
+    client_location: "Russas-CE",
+    message: "Excelente trabalho! O sistema foi instalado em menos de uma semana e minha conta de luz reduziu 93%. Recomendo a todos!",
     rating: 5,
-    economia: "R$ 13.439/ano",
-    potencia: "10,37 kWp",
   },
   {
-    name: "Carlos Eduardo",
-    location: "Limoeiro do Norte-CE",
-    text: "Profissionais competentes e atenciosos. Todo o processo foi transparente e o suporte pós-venda é impecável.",
+    id: "2",
+    client_name: "Carlos Eduardo",
+    client_location: "Limoeiro do Norte-CE",
+    message: "Profissionais competentes e atenciosos. Todo o processo foi transparente e o suporte pós-venda é impecável.",
     rating: 5,
-    economia: "R$ 8.200/ano",
-    potencia: "6,12 kWp",
   },
   {
-    name: "Maria Santos",
-    location: "Mossoró-RN",
-    text: "Melhor investimento que fiz! Em 4 anos já recuperei todo o valor investido. Minha conta de luz não passa de R$ 50.",
+    id: "3",
+    client_name: "Maria Santos",
+    client_location: "Mossoró-RN",
+    message: "Melhor investimento que fiz! Em 4 anos já recuperei todo o valor investido. Minha conta de luz não passa de R$ 50.",
     rating: 5,
-    economia: "R$ 15.600/ano",
-    potencia: "12,24 kWp",
   },
 ];
 
 export function Testimonials() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(defaultTestimonials);
+
+  useEffect(() => {
+    fetchTestimonials();
+  }, []);
+
+  const fetchTestimonials = async () => {
+    const { data, error } = await supabase
+      .from("testimonials")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
+
+    if (!error && data && data.length > 0) {
+      setTestimonials(data);
+    }
+  };
+
   return (
     <section id="depoimentos" className="py-20 md:py-32 bg-background">
       <div className="container">
@@ -55,7 +80,7 @@ export function Testimonials() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <motion.div
-              key={testimonial.name}
+              key={testimonial.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -76,32 +101,22 @@ export function Testimonials() {
 
               {/* Text */}
               <p className="text-foreground/80 leading-relaxed mb-6">
-                "{testimonial.text}"
+                "{testimonial.message}"
               </p>
-
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <div className="bg-success/10 rounded-lg p-3 text-center">
-                  <p className="text-success font-bold text-lg">{testimonial.economia}</p>
-                  <p className="text-xs text-muted-foreground">Economia anual</p>
-                </div>
-                <div className="bg-primary/10 rounded-lg p-3 text-center">
-                  <p className="text-primary font-bold text-lg">{testimonial.potencia}</p>
-                  <p className="text-xs text-muted-foreground">Potência instalada</p>
-                </div>
-              </div>
 
               {/* Author */}
               <div className="flex items-center gap-3 pt-4 border-t border-border">
                 <div className="w-12 h-12 bg-gradient-to-br from-primary to-solar-blue-light rounded-full flex items-center justify-center text-primary-foreground font-bold text-lg">
-                  {testimonial.name.charAt(0)}
+                  {testimonial.client_name.charAt(0)}
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">{testimonial.name}</p>
-                  <p className="text-sm text-muted-foreground flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    {testimonial.location}
-                  </p>
+                  <p className="font-semibold text-foreground">{testimonial.client_name}</p>
+                  {testimonial.client_location && (
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {testimonial.client_location}
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>

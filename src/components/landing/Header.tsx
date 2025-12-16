@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, User, LogOut, MessageCircle } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, MessageCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import logoNn from "@/assets/logo-nn-energia-solar.png";
 
 const navLinks = [
@@ -16,21 +15,7 @@ const navLinks = [
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
   const [isScrolled, setIsScrolled] = useState(false);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,11 +24,6 @@ export function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
-  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
@@ -72,7 +52,7 @@ export function Header() {
             ))}
           </div>
 
-          {/* CTA & Auth */}
+          {/* CTA & WhatsApp */}
           <div className="hidden md:flex items-center gap-2">
             {/* WhatsApp Button */}
             <a 
@@ -83,41 +63,9 @@ export function Header() {
             >
               <MessageCircle className="w-5 h-5" />
             </a>
-            {user ? (
-              <>
-                <Button 
-                  variant="hero-outline" 
-                  size="sm" 
-                  asChild
-                >
-                  <Link to="/dashboard">
-                    <User className="w-4 h-4" />
-                    Dashboard
-                  </Link>
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={handleLogout}
-                  className="text-card hover:bg-card/10"
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button 
-                  variant="hero-outline" 
-                  size="sm" 
-                  asChild
-                >
-                  <Link to="/auth">Entrar</Link>
-                </Button>
-                <Button variant="cta" size="sm" asChild>
-                  <a href="#simulador">Simular Economia</a>
-                </Button>
-              </>
-            )}
+            <Button variant="cta" size="sm" asChild>
+              <a href="#simulador">Simular Economia</a>
+            </Button>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -150,31 +98,11 @@ export function Header() {
                   </a>
                 ))}
                 <div className="flex flex-col gap-2 pt-4 border-t border-border mt-2">
-                  {user ? (
-                    <>
-                      <Button variant="outline" asChild>
-                        <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
-                          Dashboard
-                        </Link>
-                      </Button>
-                      <Button variant="ghost" onClick={() => { handleLogout(); setIsMenuOpen(false); }}>
-                        Sair
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button variant="outline" asChild>
-                        <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
-                          Entrar
-                        </Link>
-                      </Button>
-                      <Button variant="cta" asChild>
-                        <a href="#simulador" onClick={() => setIsMenuOpen(false)}>
-                          Simular Economia
-                        </a>
-                      </Button>
-                    </>
-                  )}
+                  <Button variant="cta" asChild>
+                    <a href="#simulador" onClick={() => setIsMenuOpen(false)}>
+                      Simular Economia
+                    </a>
+                  </Button>
                 </div>
               </div>
             </motion.div>

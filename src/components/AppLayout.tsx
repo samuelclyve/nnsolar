@@ -1,5 +1,6 @@
 import { useEffect, useState, ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "./AppSidebar";
 import { Bell, Moon } from "lucide-react";
@@ -10,11 +11,19 @@ interface AppLayoutProps {
   title: string;
 }
 
+const pageVariants = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+};
+
 export function AppLayout({ children, title }: AppLayoutProps) {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -60,10 +69,15 @@ export function AppLayout({ children, title }: AppLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background flex w-full">
-      <AppSidebar user={user} profile={profile} />
+      <AppSidebar 
+        user={user} 
+        profile={profile} 
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
+      />
       
       {/* Main content */}
-      <main className="flex-1 lg:ml-64">
+      <main className={`flex-1 transition-all duration-300 ${isCollapsed ? "lg:ml-16" : "lg:ml-64"}`}>
         {/* Top bar */}
         <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-md">
           <div className="flex items-center justify-end px-6 lg:px-8 h-16">
@@ -80,10 +94,20 @@ export function AppLayout({ children, title }: AppLayoutProps) {
           </div>
         </header>
 
-        {/* Content */}
-        <div className="p-6 lg:p-8">
-          {children}
-        </div>
+        {/* Content with page transition */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={pageVariants}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="p-6 lg:p-8"
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </main>
     </div>
   );
