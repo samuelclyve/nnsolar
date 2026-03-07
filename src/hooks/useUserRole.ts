@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type UserRole = "admin" | "manager" | "comercial" | "technician" | "client";
+export type UserRole = "admin" | "manager" | "comercial" | "technician" | "client" | "super_admin";
 
 export function useUserRole() {
   const [roles, setRoles] = useState<string[]>([]);
@@ -40,10 +40,11 @@ export function useUserRole() {
     return roles.includes(role);
   };
 
-  const isAdmin = () => hasRole("admin");
-  const isManager = () => hasRole(["admin", "manager"]);
-  const isComercial = () => hasRole(["admin", "manager", "comercial"]);
-  const isTechnician = () => hasRole(["admin", "manager", "technician"]);
+  const isSuperAdmin = () => roles.includes("super_admin");
+  const isAdmin = () => hasRole("admin") || isSuperAdmin();
+  const isManager = () => hasRole(["admin", "manager"]) || isSuperAdmin();
+  const isComercial = () => hasRole(["admin", "manager", "comercial"]) || isSuperAdmin();
+  const isTechnician = () => hasRole(["admin", "manager", "technician"]) || isSuperAdmin();
   const isClient = () => hasRole("client") || roles.length === 0;
 
   return {
@@ -51,6 +52,7 @@ export function useUserRole() {
     isLoading,
     userId,
     hasRole,
+    isSuperAdmin,
     isAdmin,
     isManager,
     isComercial,
