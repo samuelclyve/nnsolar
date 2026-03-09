@@ -99,7 +99,8 @@ export default function SiteEditor() {
 
     const { data: settingsData } = await supabase
       .from("site_settings")
-      .select("*");
+      .select("*")
+      .eq("workspace_id", workspaceId!);
     
     const settingsMap: Record<string, string> = {};
     (settingsData || []).forEach((s: SiteSetting) => {
