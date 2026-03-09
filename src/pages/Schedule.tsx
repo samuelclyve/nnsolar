@@ -218,10 +218,11 @@ export default function Schedule() {
       },
     })
   );
+  const { workspaceId } = useWorkspace();
 
   useEffect(() => {
-    fetchInstallations();
-  }, []);
+    if (workspaceId) fetchInstallations();
+  }, [workspaceId]);
 
   const fetchInstallations = async () => {
     try {
