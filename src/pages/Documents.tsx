@@ -141,7 +141,7 @@ export default function Documents() {
     } finally {
       setLoading(false);
     }
-  }, [categoryFilter, clientFilter, installationFilter, searchQuery]);
+  }, [categoryFilter, clientFilter, installationFilter, searchQuery, workspaceId]);
 
   useEffect(() => {
     fetchDocuments();
