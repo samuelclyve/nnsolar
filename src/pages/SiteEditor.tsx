@@ -86,12 +86,14 @@ export default function SiteEditor() {
     const { data: slidesData } = await supabase
       .from("hero_slides")
       .select("*")
+      .eq("workspace_id", workspaceId!)
       .order("sort_order", { ascending: true });
     setSlides(slidesData || []);
 
     const { data: testimonialsData } = await supabase
       .from("testimonials")
       .select("*")
+      .eq("workspace_id", workspaceId!)
       .order("sort_order", { ascending: true });
     setTestimonials(testimonialsData || []);
 
