@@ -273,6 +273,7 @@ export default function SiteEditor() {
       rating: testimonialForm.rating,
       is_active: testimonialForm.is_active,
       sort_order: editingTestimonial?.sort_order ?? testimonials.length,
+      workspace_id: workspaceId,
     };
 
     if (editingTestimonial) {
