@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { AppLayout } from "@/components/AppLayout";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface Installation {
   id: string;
@@ -217,16 +218,18 @@ export default function Schedule() {
       },
     })
   );
+  const { workspaceId } = useWorkspace();
 
   useEffect(() => {
-    fetchInstallations();
-  }, []);
+    if (workspaceId) fetchInstallations();
+  }, [workspaceId]);
 
   const fetchInstallations = async () => {
     try {
       const { data, error } = await supabase
         .from("installations")
         .select("*")
+        .eq("workspace_id", workspaceId!)
         .order("created_at", { ascending: false });
 
       if (error) throw error;

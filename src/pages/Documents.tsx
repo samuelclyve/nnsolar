@@ -28,6 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
+import { useWorkspace } from "@/hooks/useWorkspace";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -89,30 +90,30 @@ export default function Documents() {
   const [uploadTags, setUploadTags] = useState("");
   const [uploadClientId, setUploadClientId] = useState<string>("none");
   const [uploadInstallationId, setUploadInstallationId] = useState<string>("none");
+  const { workspaceId } = useWorkspace();
 
   // Fetch clients and installations for filters
   useEffect(() => {
+    if (!workspaceId) return;
     const fetchClientsAndInstallations = async () => {
       const [clientsRes, installationsRes] = await Promise.all([
-        supabase.from("clients").select("id, full_name").order("full_name"),
-        supabase.from("installations").select("id, client_name").order("client_name"),
+        supabase.from("clients").select("id, full_name").eq("workspace_id", workspaceId).order("full_name"),
+        supabase.from("installations").select("id, client_name").eq("workspace_id", workspaceId).order("client_name"),
       ]);
       if (clientsRes.data) setClients(clientsRes.data);
       if (installationsRes.data) setInstallations(installationsRes.data);
     };
     fetchClientsAndInstallations();
-  }, []);
+  }, [workspaceId]);
 
   const fetchDocuments = useCallback(async () => {
+    if (!workspaceId) return;
     setLoading(true);
     try {
       let query = supabase
         .from("documents")
-        .select(`
-          *,
-          clients(full_name),
-          installations(client_name)
-        `)
+        .select(`*, clients(full_name), installations(client_name)`)
+        .eq("workspace_id", workspaceId)
         .order("created_at", { ascending: false });
 
       if (categoryFilter !== "all") {
@@ -140,7 +141,7 @@ export default function Documents() {
     } finally {
       setLoading(false);
     }
-  }, [categoryFilter, clientFilter, installationFilter, searchQuery]);
+  }, [categoryFilter, clientFilter, installationFilter, searchQuery, workspaceId]);
 
   useEffect(() => {
     fetchDocuments();
@@ -189,6 +190,7 @@ export default function Documents() {
           uploaded_by: user.id,
           client_id: uploadClientId !== "none" ? uploadClientId : null,
           installation_id: uploadInstallationId !== "none" ? uploadInstallationId : null,
+          workspace_id: workspaceId,
         });
 
       if (insertError) throw insertError;

@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
+import { useWorkspace } from "@/hooks/useWorkspace";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle
 } from "@/components/ui/dialog";
@@ -75,27 +76,31 @@ export default function SiteEditor() {
   const slideImageInputRef = useRef<HTMLInputElement>(null);
   const heroBackgroundInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { workspaceId } = useWorkspace();
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (workspaceId) fetchData();
+  }, [workspaceId]);
 
   const fetchData = async () => {
     const { data: slidesData } = await supabase
       .from("hero_slides")
       .select("*")
+      .eq("workspace_id", workspaceId!)
       .order("sort_order", { ascending: true });
     setSlides(slidesData || []);
 
     const { data: testimonialsData } = await supabase
       .from("testimonials")
       .select("*")
+      .eq("workspace_id", workspaceId!)
       .order("sort_order", { ascending: true });
     setTestimonials(testimonialsData || []);
 
     const { data: settingsData } = await supabase
       .from("site_settings")
-      .select("*");
+      .select("*")
+      .eq("workspace_id", workspaceId!);
     
     const settingsMap: Record<string, string> = {};
     (settingsData || []).forEach((s: SiteSetting) => {
@@ -191,6 +196,7 @@ export default function SiteEditor() {
       button_link: slideForm.button_link || null,
       is_active: slideForm.is_active,
       sort_order: editingSlide?.sort_order ?? slides.length,
+      workspace_id: workspaceId,
     };
 
     if (editingSlide) {
@@ -267,6 +273,7 @@ export default function SiteEditor() {
       rating: testimonialForm.rating,
       is_active: testimonialForm.is_active,
       sort_order: editingTestimonial?.sort_order ?? testimonials.length,
+      workspace_id: workspaceId,
     };
 
     if (editingTestimonial) {
@@ -310,7 +317,7 @@ export default function SiteEditor() {
         const { error } = await supabase
           .from("site_settings")
           .upsert(
-            { setting_key: key, setting_value: value, setting_type: "text" },
+            { setting_key: key, setting_value: value, setting_type: "text", workspace_id: workspaceId },
             { onConflict: "setting_key" }
           );
         

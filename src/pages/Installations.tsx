@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface Installation {
   id: string;
@@ -165,10 +166,11 @@ export default function Installations() {
     panel_count: "",
   });
   const { toast } = useToast();
+  const { workspaceId } = useWorkspace();
 
   useEffect(() => {
-    fetchInstallations();
-  }, []);
+    if (workspaceId) fetchInstallations();
+  }, [workspaceId]);
 
   useEffect(() => {
     if (selectedInstallation) {
@@ -188,6 +190,7 @@ export default function Installations() {
     const { data, error } = await supabase
       .from("installations")
       .select("*")
+      .eq("workspace_id", workspaceId!)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -249,6 +252,7 @@ export default function Installations() {
       city: newInstallation.city || null,
       power_kwp: newInstallation.power_kwp ? parseFloat(newInstallation.power_kwp) : null,
       panel_count: newInstallation.panel_count ? parseInt(newInstallation.panel_count) : null,
+      workspace_id: workspaceId,
     });
 
     if (error) {

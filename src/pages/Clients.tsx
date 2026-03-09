@@ -12,6 +12,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface Client {
   id: string;
@@ -42,15 +43,17 @@ export default function Clients() {
     notes: "",
   });
   const { toast } = useToast();
+  const { workspaceId } = useWorkspace();
 
   useEffect(() => {
-    fetchClients();
-  }, []);
+    if (workspaceId) fetchClients();
+  }, [workspaceId]);
 
   const fetchClients = async () => {
     const { data, error } = await supabase
       .from("clients")
       .select("*")
+      .eq("workspace_id", workspaceId!)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -110,6 +113,7 @@ export default function Clients() {
       cpf: formData.cpf || null,
       notes: formData.notes || null,
       user_id: user.id,
+      workspace_id: workspaceId,
     };
 
     if (editingClient) {
