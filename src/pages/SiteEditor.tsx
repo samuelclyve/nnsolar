@@ -76,10 +76,11 @@ export default function SiteEditor() {
   const slideImageInputRef = useRef<HTMLInputElement>(null);
   const heroBackgroundInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { workspaceId } = useWorkspace();
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (workspaceId) fetchData();
+  }, [workspaceId]);
 
   const fetchData = async () => {
     const { data: slidesData } = await supabase
