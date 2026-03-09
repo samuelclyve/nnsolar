@@ -43,10 +43,11 @@ export default function Clients() {
     notes: "",
   });
   const { toast } = useToast();
+  const { workspaceId } = useWorkspace();
 
   useEffect(() => {
-    fetchClients();
-  }, []);
+    if (workspaceId) fetchClients();
+  }, [workspaceId]);
 
   const fetchClients = async () => {
     const { data, error } = await supabase
