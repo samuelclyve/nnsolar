@@ -94,16 +94,17 @@ export default function Documents() {
 
   // Fetch clients and installations for filters
   useEffect(() => {
+    if (!workspaceId) return;
     const fetchClientsAndInstallations = async () => {
       const [clientsRes, installationsRes] = await Promise.all([
-        supabase.from("clients").select("id, full_name").order("full_name"),
-        supabase.from("installations").select("id, client_name").order("client_name"),
+        supabase.from("clients").select("id, full_name").eq("workspace_id", workspaceId).order("full_name"),
+        supabase.from("installations").select("id, client_name").eq("workspace_id", workspaceId).order("client_name"),
       ]);
       if (clientsRes.data) setClients(clientsRes.data);
       if (installationsRes.data) setInstallations(installationsRes.data);
     };
     fetchClientsAndInstallations();
-  }, []);
+  }, [workspaceId]);
 
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
