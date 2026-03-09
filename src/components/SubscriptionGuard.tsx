@@ -34,7 +34,7 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
               Seu período de acesso expirou. Para continuar usando o Solarize, 
               ative sua assinatura.
             </p>
-            <div className="space-y-3">
+            <div className="space-y-3 mb-6">
               <div className="bg-muted rounded-xl p-4">
                 <p className="text-sm text-muted-foreground mb-1">Plano Mensal</p>
                 <p className="text-2xl font-bold text-foreground">R$ 179,90<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
@@ -44,8 +44,14 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
                 <p className="text-2xl font-bold text-foreground">R$ 143,92<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
               </div>
             </div>
+            <Link to="/checkout">
+              <Button variant="cta" size="lg" className="w-full gap-2">
+                <CreditCard className="w-5 h-5" />
+                Ativar Assinatura
+              </Button>
+            </Link>
             <p className="text-xs text-muted-foreground mt-4">
-              Entre em contato com o suporte para ativar sua assinatura.
+              Pagamento seguro via PIX, cartão ou boleto.
             </p>
           </CardContent>
         </Card>
