@@ -53,6 +53,7 @@ export default function Clients() {
     const { data, error } = await supabase
       .from("clients")
       .select("*")
+      .eq("workspace_id", workspaceId!)
       .order("created_at", { ascending: false });
 
     if (error) {
