@@ -90,6 +90,7 @@ export default function Documents() {
   const [uploadTags, setUploadTags] = useState("");
   const [uploadClientId, setUploadClientId] = useState<string>("none");
   const [uploadInstallationId, setUploadInstallationId] = useState<string>("none");
+  const { workspaceId } = useWorkspace();
 
   // Fetch clients and installations for filters
   useEffect(() => {
