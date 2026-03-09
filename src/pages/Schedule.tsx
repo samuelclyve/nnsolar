@@ -229,6 +229,7 @@ export default function Schedule() {
       const { data, error } = await supabase
         .from("installations")
         .select("*")
+        .eq("workspace_id", workspaceId!)
         .order("created_at", { ascending: false });
 
       if (error) throw error;

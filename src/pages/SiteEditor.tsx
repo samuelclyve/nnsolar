@@ -317,7 +317,7 @@ export default function SiteEditor() {
         const { error } = await supabase
           .from("site_settings")
           .upsert(
-            { setting_key: key, setting_value: value, setting_type: "text" },
+            { setting_key: key, setting_value: value, setting_type: "text", workspace_id: workspaceId },
             { onConflict: "setting_key" }
           );
         

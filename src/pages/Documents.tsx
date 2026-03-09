@@ -190,6 +190,7 @@ export default function Documents() {
           uploaded_by: user.id,
           client_id: uploadClientId !== "none" ? uploadClientId : null,
           installation_id: uploadInstallationId !== "none" ? uploadInstallationId : null,
+          workspace_id: workspaceId,
         });
 
       if (insertError) throw insertError;
