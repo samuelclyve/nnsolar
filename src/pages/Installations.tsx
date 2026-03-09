@@ -166,10 +166,11 @@ export default function Installations() {
     panel_count: "",
   });
   const { toast } = useToast();
+  const { workspaceId } = useWorkspace();
 
   useEffect(() => {
-    fetchInstallations();
-  }, []);
+    if (workspaceId) fetchInstallations();
+  }, [workspaceId]);
 
   useEffect(() => {
     if (selectedInstallation) {
