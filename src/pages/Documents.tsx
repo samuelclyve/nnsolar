@@ -107,15 +107,13 @@ export default function Documents() {
   }, [workspaceId]);
 
   const fetchDocuments = useCallback(async () => {
+    if (!workspaceId) return;
     setLoading(true);
     try {
       let query = supabase
         .from("documents")
-        .select(`
-          *,
-          clients(full_name),
-          installations(client_name)
-        `)
+        .select(`*, clients(full_name), installations(client_name)`)
+        .eq("workspace_id", workspaceId)
         .order("created_at", { ascending: false });
 
       if (categoryFilter !== "all") {
