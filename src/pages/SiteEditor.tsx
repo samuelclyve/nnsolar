@@ -196,6 +196,7 @@ export default function SiteEditor() {
       button_link: slideForm.button_link || null,
       is_active: slideForm.is_active,
       sort_order: editingSlide?.sort_order ?? slides.length,
+      workspace_id: workspaceId,
     };
 
     if (editingSlide) {
