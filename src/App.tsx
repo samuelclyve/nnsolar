@@ -7,6 +7,7 @@ import { WorkspaceProvider } from "@/hooks/useWorkspace";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Signup from "./pages/Signup";
+import Checkout from "./pages/Checkout";
 import Dashboard from "./pages/Dashboard";
 import CRM from "./pages/CRM";
 import Installations from "./pages/Installations";
