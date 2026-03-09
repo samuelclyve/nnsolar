@@ -190,6 +190,7 @@ export default function Installations() {
     const { data, error } = await supabase
       .from("installations")
       .select("*")
+      .eq("workspace_id", workspaceId!)
       .order("created_at", { ascending: false });
 
     if (error) {
