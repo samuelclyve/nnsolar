@@ -252,6 +252,7 @@ export default function Installations() {
       city: newInstallation.city || null,
       power_kwp: newInstallation.power_kwp ? parseFloat(newInstallation.power_kwp) : null,
       panel_count: newInstallation.panel_count ? parseInt(newInstallation.panel_count) : null,
+      workspace_id: workspaceId,
     });
 
     if (error) {

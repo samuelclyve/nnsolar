@@ -113,6 +113,7 @@ export default function Clients() {
       cpf: formData.cpf || null,
       notes: formData.notes || null,
       user_id: user.id,
+      workspace_id: workspaceId,
     };
 
     if (editingClient) {
