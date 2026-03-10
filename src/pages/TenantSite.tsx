@@ -339,8 +339,8 @@ export default function TenantSite() {
               </p>
               <div className="space-y-4">
                 {whatsappLink && (
-                  <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/30 rounded-xl hover:bg-green-100 dark:hover:bg-green-950/50 transition-colors">
-                    <MessageCircle className="w-6 h-6 text-green-600" />
+                  <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-success/10 rounded-xl hover:bg-success/20 transition-colors">
+                    <MessageCircle className="w-6 h-6 text-success" />
                     <div>
                       <p className="font-medium text-foreground text-sm">WhatsApp</p>
                       <p className="text-xs text-muted-foreground">{ws.whatsapp}</p>
