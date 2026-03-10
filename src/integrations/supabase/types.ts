@@ -823,40 +823,73 @@ export type Database = {
       }
       workspaces: {
         Row: {
+          address: string | null
+          cep: string | null
+          city: string | null
+          cnpj: string | null
           created_at: string | null
+          description: string | null
+          email: string | null
           id: string
+          instagram: string | null
           logo_url: string | null
           name: string
           owner_id: string
+          phone: string | null
           plan: string
           slug: string
+          state: string | null
           subscription_status: string
           trial_ends_at: string | null
           updated_at: string | null
+          website: string | null
+          whatsapp: string | null
         }
         Insert: {
+          address?: string | null
+          cep?: string | null
+          city?: string | null
+          cnpj?: string | null
           created_at?: string | null
+          description?: string | null
+          email?: string | null
           id?: string
+          instagram?: string | null
           logo_url?: string | null
           name: string
           owner_id: string
+          phone?: string | null
           plan?: string
           slug: string
+          state?: string | null
           subscription_status?: string
           trial_ends_at?: string | null
           updated_at?: string | null
+          website?: string | null
+          whatsapp?: string | null
         }
         Update: {
+          address?: string | null
+          cep?: string | null
+          city?: string | null
+          cnpj?: string | null
           created_at?: string | null
+          description?: string | null
+          email?: string | null
           id?: string
+          instagram?: string | null
           logo_url?: string | null
           name?: string
           owner_id?: string
+          phone?: string | null
           plan?: string
           slug?: string
+          state?: string | null
           subscription_status?: string
           trial_ends_at?: string | null
           updated_at?: string | null
+          website?: string | null
+          whatsapp?: string | null
         }
         Relationships: []
       }
