@@ -2,7 +2,7 @@ import { useState, useEffect, createContext, useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, BarChart3, Wrench, Users, Calendar, FileText, 
-  LogOut, Menu, X, Globe, Search, ChevronLeft, UserCircle, Sun, Shield
+  LogOut, Menu, X, Globe, Search, ChevronLeft, UserCircle, Sun, Shield, Receipt
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
