@@ -59,14 +59,26 @@ export default function Checkout() {
   const handleCheckout = async (planId: string) => {
     setIsLoading(true);
     try {
-      const { data: session } = await supabase.auth.getSession();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      if (!token) {
+        // User not logged in — open checkout URL directly with no email prefill
+        const offerIds: Record<string, string> = {
+          monthly: "gcwi2tz_800072",
+          annual: "3daq6qh_800085",
+        };
+        window.open(`https://pay.cakto.com.br/${offerIds[planId]}`, "_blank");
+        return;
+      }
+
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cakto-webhook?action=generate-checkout`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.session?.access_token}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ plan_id: planId }),
         }
