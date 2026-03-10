@@ -76,7 +76,7 @@ export default function SiteEditor() {
   const slideImageInputRef = useRef<HTMLInputElement>(null);
   const heroBackgroundInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { workspaceId } = useWorkspace();
+  const { workspaceId, workspace } = useWorkspace();
 
   useEffect(() => {
     if (workspaceId) fetchData();
