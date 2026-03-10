@@ -59,13 +59,6 @@ export default function Checkout() {
   const handleCheckout = async (planId: string) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("cakto-webhook", {
-        body: { plan_id: planId },
-        headers: { "Content-Type": "application/json" },
-        method: "POST",
-      });
-
-      // The function uses ?action=generate-checkout, so we need the query param
       const { data: session } = await supabase.auth.getSession();
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cakto-webhook?action=generate-checkout`,
@@ -85,7 +78,6 @@ export default function Checkout() {
         throw new Error(result.error || "Erro ao gerar checkout");
       }
 
-      // Open Cakto checkout in new tab
       window.open(result.checkout_url, "_blank");
     } catch (err: any) {
       console.error("Checkout error:", err);
