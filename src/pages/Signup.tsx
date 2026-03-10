@@ -61,12 +61,18 @@ export default function Signup() {
 
       if (wsError) throw wsError;
 
-      // Update profile with phone
-      if (formData.phone) {
+      // Update profile with details
+      await supabase
+        .from("profiles")
+        .update({ phone: formData.phone, full_name: formData.ownerName, city: formData.city })
+        .eq("user_id", authData.user.id);
+
+      // Update workspace with CNPJ and city
+      if (formData.cnpj || formData.city) {
         await supabase
-          .from("profiles")
-          .update({ phone: formData.phone, full_name: formData.companyName })
-          .eq("user_id", authData.user.id);
+          .from("workspaces")
+          .update({ cnpj: formData.cnpj, city: formData.city, phone: formData.phone, email: formData.email } as any)
+          .eq("owner_id", authData.user.id);
       }
 
       toast({
