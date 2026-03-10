@@ -26,6 +26,7 @@ const menuItems: MenuItem[] = [
   { icon: Globe, label: "Edição Site", href: "/site-editor", roles: ["admin", "manager", "super_admin"] },
   { icon: Users, label: "Usuários", href: "/users", roles: ["admin", "super_admin"] },
   { icon: FileText, label: "Documentos", href: "/documents", roles: ["admin", "manager", "comercial", "technician", "super_admin"] },
+  { icon: Receipt, label: "Pagamentos", href: "/payment-history", roles: ["admin", "super_admin"] },
 ];
 
 interface SidebarContextType {

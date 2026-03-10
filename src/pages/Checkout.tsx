@@ -71,12 +71,9 @@ export default function Checkout() {
       const token = sessionData?.session?.access_token;
 
       if (!token) {
-        // User not logged in — open checkout URL directly with no email prefill
-        const offerIds: Record<string, string> = {
-          monthly: "gcwi2tz_800072",
-          annual: "3daq6qh_800085",
-        };
-        window.open(`https://pay.cakto.com.br/${offerIds[planId]}`, "_blank");
+        // Redirect to signup, then back to checkout
+        toast.info("Crie sua conta para continuar com a assinatura.");
+        navigate("/signup?redirect=/checkout");
         return;
       }
 
