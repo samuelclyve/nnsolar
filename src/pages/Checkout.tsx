@@ -54,7 +54,15 @@ const plans = [
 export default function Checkout() {
   const [selectedPlan, setSelectedPlan] = useState("annual");
   const [isLoading, setIsLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const { workspace } = useWorkspace();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setIsAuthenticated(!!data.session);
+    });
+  }, []);
 
   const handleCheckout = async (planId: string) => {
     setIsLoading(true);
