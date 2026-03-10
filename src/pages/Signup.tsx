@@ -43,7 +43,7 @@ export default function Signup() {
         email: formData.email,
         password: formData.password,
         options: {
-          data: { full_name: formData.companyName },
+          data: { full_name: formData.ownerName },
           emailRedirectTo: window.location.origin,
         },
       });
