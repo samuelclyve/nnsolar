@@ -346,7 +346,7 @@ export default function SiteEditor() {
             <p className="text-muted-foreground">Gerencie todo o conteúdo do site</p>
           </div>
           <Button variant="outline" asChild>
-            <a href="/" target="_blank">
+            <a href={`/s/${workspace?.slug || ""}`} target="_blank">
               <Eye className="w-4 h-4" />
               Ver Site
             </a>
