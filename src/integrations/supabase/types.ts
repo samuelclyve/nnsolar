@@ -559,6 +559,53 @@ export type Database = {
           },
         ]
       }
+      payment_history: {
+        Row: {
+          amount: number
+          cakto_transaction_id: string
+          created_at: string | null
+          currency: string
+          id: string
+          payment_method: string | null
+          status: string
+          user_id: string
+          webhook_data: Json | null
+          workspace_id: string | null
+        }
+        Insert: {
+          amount: number
+          cakto_transaction_id: string
+          created_at?: string | null
+          currency?: string
+          id?: string
+          payment_method?: string | null
+          status: string
+          user_id: string
+          webhook_data?: Json | null
+          workspace_id?: string | null
+        }
+        Update: {
+          amount?: number
+          cakto_transaction_id?: string
+          created_at?: string | null
+          currency?: string
+          id?: string
+          payment_method?: string | null
+          status?: string
+          user_id?: string
+          webhook_data?: Json | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_history_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
