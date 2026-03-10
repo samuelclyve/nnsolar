@@ -18,6 +18,54 @@ interface SiteData {
   testimonials: any[];
 }
 
+// Convert hex to HSL values string like "28 100% 50%"
+function hexToHsl(hex: string): string {
+  hex = hex.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
+
+// Generate a lighter version for accent
+function hexToHslLighter(hex: string): string {
+  hex = hex.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.min(Math.round(l * 100) + 10, 90)}%`;
+}
+
 export default function TenantSite() {
   const { slug } = useParams<{ slug: string }>();
   const [data, setData] = useState<SiteData | null>(null);
@@ -50,12 +98,7 @@ export default function TenantSite() {
     const settingsMap: Record<string, string> = {};
     settingsRes.data?.forEach(s => { settingsMap[s.setting_key] = s.setting_value || ""; });
 
-    setData({
-      workspace: ws,
-      settings: settingsMap,
-      slides: slidesRes.data || [],
-      testimonials: testimonialsRes.data || [],
-    });
+    setData({ workspace: ws, settings: settingsMap, slides: slidesRes.data || [], testimonials: testimonialsRes.data || [] });
     setIsLoading(false);
   };
 
@@ -81,16 +124,45 @@ export default function TenantSite() {
 
   const { workspace, settings, slides, testimonials } = data;
 
+  // Merge contact info: site_settings override workspace fields
+  const mergedWorkspace = {
+    ...workspace,
+    phone: settings.contact_phone || workspace.phone,
+    whatsapp: settings.contact_whatsapp || workspace.whatsapp,
+    email: settings.contact_email || workspace.email,
+    instagram: settings.contact_instagram || workspace.instagram,
+    website: settings.contact_website || workspace.website,
+    logo_url: settings.site_logo_url || workspace.logo_url,
+    name: settings.site_company_name || workspace.name,
+    description: settings.about_text || workspace.description,
+  };
+
+  // Build custom CSS variables from brand colors
+  const brandPrimary = settings.brand_color_primary || "#FF8C00";
+  const brandSecondary = settings.brand_color_secondary || "#1B3A5C";
+
+  const customStyles: React.CSSProperties & Record<string, string> = {
+    "--primary": hexToHsl(brandPrimary),
+    "--primary-foreground": "0 0% 100%",
+    "--secondary": hexToHsl(brandSecondary),
+    "--secondary-foreground": "0 0% 100%",
+    "--accent": hexToHslLighter(brandPrimary),
+    "--accent-foreground": "0 0% 100%",
+    "--ring": hexToHsl(brandPrimary),
+    "--gradient-hero": `linear-gradient(135deg, hsl(${hexToHsl(brandSecondary)}) 0%, hsl(${hexToHslLighter(brandSecondary)}) 100%)`,
+    "--shadow-orange-glow": `0 10px 40px -10px hsl(${hexToHsl(brandPrimary)} / 0.4)`,
+  } as any;
+
   return (
-    <div className="min-h-screen bg-background">
-      <TenantHeader workspace={workspace} />
-      <TenantHero settings={settings} workspace={workspace} />
+    <div className="min-h-screen bg-background" style={customStyles}>
+      <TenantHeader workspace={mergedWorkspace} />
+      <TenantHero settings={settings} workspace={mergedWorkspace} />
       <TenantCarousel slides={slides} />
       <TenantSimulator />
       <TenantHowItWorks />
       <TenantTestimonials testimonials={testimonials} />
-      <TenantLeadForm workspace={workspace} />
-      <TenantFooter workspace={workspace} />
+      <TenantLeadForm workspace={mergedWorkspace} />
+      <TenantFooter workspace={mergedWorkspace} />
     </div>
   );
 }
