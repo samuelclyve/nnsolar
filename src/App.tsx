@@ -18,6 +18,7 @@ import SiteEditor from "./pages/SiteEditor";
 import UserManagement from "./pages/UserManagement";
 import SuperAdmin from "./pages/SuperAdmin";
 import TenantSite from "./pages/TenantSite";
+import PaymentHistory from "./pages/PaymentHistory";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/site-editor" element={<SiteEditor />} />
             <Route path="/users" element={<UserManagement />} />
             <Route path="/super-admin" element={<SuperAdmin />} />
+            <Route path="/payment-history" element={<PaymentHistory />} />
             <Route path="/s/:slug" element={<TenantSite />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

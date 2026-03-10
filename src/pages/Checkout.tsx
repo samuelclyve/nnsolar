@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Sun, Check, Crown, Zap, ArrowLeft, Shield, CreditCard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,9 +32,9 @@ const plans = [
   {
     id: "annual",
     name: "Anual",
-    price: "R$ 143,92",
-    priceDetail: "/mês",
-    totalLabel: "R$ 1.727,04/ano (economia de R$ 431,76)",
+    price: "R$ 1.727,04",
+    priceDetail: " pagamento único",
+    totalLabel: "Equivale a R$ 143,92/mês — economia de R$ 431,76",
     highlight: true,
     badge: "-20%",
     features: [
@@ -54,7 +54,15 @@ const plans = [
 export default function Checkout() {
   const [selectedPlan, setSelectedPlan] = useState("annual");
   const [isLoading, setIsLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const { workspace } = useWorkspace();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setIsAuthenticated(!!data.session);
+    });
+  }, []);
 
   const handleCheckout = async (planId: string) => {
     setIsLoading(true);
@@ -63,12 +71,9 @@ export default function Checkout() {
       const token = sessionData?.session?.access_token;
 
       if (!token) {
-        // User not logged in — open checkout URL directly with no email prefill
-        const offerIds: Record<string, string> = {
-          monthly: "gcwi2tz_800072",
-          annual: "3daq6qh_800085",
-        };
-        window.open(`https://pay.cakto.com.br/${offerIds[planId]}`, "_blank");
+        // Redirect to signup, then back to checkout
+        toast.info("Crie sua conta para continuar com a assinatura.");
+        navigate("/signup?redirect=/checkout");
         return;
       }
 
