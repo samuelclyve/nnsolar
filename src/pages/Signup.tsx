@@ -11,10 +11,13 @@ export default function Signup() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
+    ownerName: "",
     companyName: "",
     email: "",
     password: "",
     phone: "",
+    city: "",
+    cnpj: "",
   });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
