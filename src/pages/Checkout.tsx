@@ -32,9 +32,9 @@ const plans = [
   {
     id: "annual",
     name: "Anual",
-    price: "R$ 143,92",
-    priceDetail: "/mês",
-    totalLabel: "R$ 1.727,04/ano (economia de R$ 431,76)",
+    price: "R$ 1.727,04",
+    priceDetail: " pagamento único",
+    totalLabel: "Equivale a R$ 143,92/mês — economia de R$ 431,76",
     highlight: true,
     badge: "-20%",
     features: [
