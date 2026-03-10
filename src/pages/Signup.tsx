@@ -194,12 +194,35 @@ export default function Signup() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
+                placeholder="Seu nome completo"
+                value={formData.ownerName}
+                onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
+                className="h-12 rounded-xl bg-muted/50 border-border px-4"
+                required
+              />
+
+              <Input
                 placeholder="Nome da empresa"
                 value={formData.companyName}
                 onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                 className="h-12 rounded-xl bg-muted/50 border-border px-4"
                 required
               />
+
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  placeholder="CNPJ (opcional)"
+                  value={formData.cnpj}
+                  onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+                  className="h-12 rounded-xl bg-muted/50 border-border px-4"
+                />
+                <Input
+                  placeholder="Cidade"
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  className="h-12 rounded-xl bg-muted/50 border-border px-4"
+                />
+              </div>
 
               <Input
                 type="email"
@@ -212,7 +235,7 @@ export default function Signup() {
 
               <Input
                 type="tel"
-                placeholder="Telefone (opcional)"
+                placeholder="WhatsApp / Telefone"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 className="h-12 rounded-xl bg-muted/50 border-border px-4"
