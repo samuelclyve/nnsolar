@@ -11,10 +11,13 @@ export default function Signup() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
+    ownerName: "",
     companyName: "",
     email: "",
     password: "",
     phone: "",
+    city: "",
+    cnpj: "",
   });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -40,7 +43,7 @@ export default function Signup() {
         email: formData.email,
         password: formData.password,
         options: {
-          data: { full_name: formData.companyName },
+          data: { full_name: formData.ownerName },
           emailRedirectTo: window.location.origin,
         },
       });
@@ -58,12 +61,18 @@ export default function Signup() {
 
       if (wsError) throw wsError;
 
-      // Update profile with phone
-      if (formData.phone) {
+      // Update profile with details
+      await supabase
+        .from("profiles")
+        .update({ phone: formData.phone, full_name: formData.ownerName, city: formData.city })
+        .eq("user_id", authData.user.id);
+
+      // Update workspace with CNPJ and city
+      if (formData.cnpj || formData.city) {
         await supabase
-          .from("profiles")
-          .update({ phone: formData.phone, full_name: formData.companyName })
-          .eq("user_id", authData.user.id);
+          .from("workspaces")
+          .update({ cnpj: formData.cnpj, city: formData.city, phone: formData.phone, email: formData.email } as any)
+          .eq("owner_id", authData.user.id);
       }
 
       toast({
@@ -185,12 +194,35 @@ export default function Signup() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
+                placeholder="Seu nome completo"
+                value={formData.ownerName}
+                onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
+                className="h-12 rounded-xl bg-muted/50 border-border px-4"
+                required
+              />
+
+              <Input
                 placeholder="Nome da empresa"
                 value={formData.companyName}
                 onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                 className="h-12 rounded-xl bg-muted/50 border-border px-4"
                 required
               />
+
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  placeholder="CNPJ (opcional)"
+                  value={formData.cnpj}
+                  onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+                  className="h-12 rounded-xl bg-muted/50 border-border px-4"
+                />
+                <Input
+                  placeholder="Cidade"
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  className="h-12 rounded-xl bg-muted/50 border-border px-4"
+                />
+              </div>
 
               <Input
                 type="email"
@@ -203,7 +235,7 @@ export default function Signup() {
 
               <Input
                 type="tel"
-                placeholder="Telefone (opcional)"
+                placeholder="WhatsApp / Telefone"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 className="h-12 rounded-xl bg-muted/50 border-border px-4"

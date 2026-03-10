@@ -1,0 +1,255 @@
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { AppLayout } from "@/components/AppLayout";
+import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Building2, Save, Globe, Instagram, Phone, Mail, MapPin, FileText, Image } from "lucide-react";
+
+export default function CompanyProfile() {
+  const { workspace, workspaceId, refetch } = useWorkspace();
+  const [isLoading, setIsLoading] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    cnpj: "",
+    email: "",
+    phone: "",
+    whatsapp: "",
+    address: "",
+    city: "",
+    state: "",
+    cep: "",
+    description: "",
+    website: "",
+    instagram: "",
+    logo_url: "",
+  });
+
+  useEffect(() => {
+    if (workspace) {
+      setForm({
+        name: workspace.name || "",
+        cnpj: (workspace as any).cnpj || "",
+        email: (workspace as any).email || "",
+        phone: (workspace as any).phone || "",
+        whatsapp: (workspace as any).whatsapp || "",
+        address: (workspace as any).address || "",
+        city: (workspace as any).city || "",
+        state: (workspace as any).state || "",
+        cep: (workspace as any).cep || "",
+        description: (workspace as any).description || "",
+        website: (workspace as any).website || "",
+        instagram: (workspace as any).instagram || "",
+        logo_url: workspace.logo_url || "",
+      });
+    }
+  }, [workspace]);
+
+  const handleSave = async () => {
+    if (!workspaceId) return;
+    setIsLoading(true);
+
+    const { error } = await supabase
+      .from("workspaces")
+      .update({
+        name: form.name,
+        cnpj: form.cnpj,
+        email: form.email,
+        phone: form.phone,
+        whatsapp: form.whatsapp,
+        address: form.address,
+        city: form.city,
+        state: form.state,
+        cep: form.cep,
+        description: form.description,
+        website: form.website,
+        instagram: form.instagram,
+        logo_url: form.logo_url,
+      } as any)
+      .eq("id", workspaceId);
+
+    if (error) {
+      toast.error("Erro ao salvar: " + error.message);
+    } else {
+      toast.success("Perfil da empresa atualizado!");
+      await refetch();
+    }
+    setIsLoading(false);
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !workspaceId) return;
+    setLogoUploading(true);
+
+    const ext = file.name.split(".").pop();
+    const path = `logos/${workspaceId}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("documents")
+      .upload(path, file, { upsert: true });
+
+    if (uploadError) {
+      toast.error("Erro ao enviar logo");
+      setLogoUploading(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from("documents").getPublicUrl(path);
+    setForm({ ...form, logo_url: urlData.publicUrl });
+    setLogoUploading(false);
+  };
+
+  const siteUrl = workspace?.slug
+    ? `${window.location.origin}/s/${workspace.slug}`
+    : null;
+
+  return (
+    <AppLayout title="Perfil da Empresa">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          {/* Header with site link */}
+          {siteUrl && (
+            <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <Globe className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Seu site personalizado</p>
+                  <a href={siteUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
+                    {siteUrl}
+                  </a>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => navigator.clipboard.writeText(siteUrl).then(() => toast.success("Link copiado!"))}>
+                Copiar link
+              </Button>
+            </div>
+          )}
+
+          {/* Logo & Name */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-primary" />
+                Informações Gerais
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-start gap-6">
+                <div className="flex-shrink-0">
+                  <div className="w-24 h-24 rounded-2xl bg-muted border-2 border-dashed border-border flex items-center justify-center overflow-hidden">
+                    {form.logo_url ? (
+                      <img src={form.logo_url} alt="Logo" className="w-full h-full object-cover rounded-2xl" />
+                    ) : (
+                      <Image className="w-8 h-8 text-muted-foreground" />
+                    )}
+                  </div>
+                  <label className="mt-2 block">
+                    <span className="text-xs text-primary cursor-pointer hover:underline">
+                      {logoUploading ? "Enviando..." : "Alterar logo"}
+                    </span>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={logoUploading} />
+                  </label>
+                </div>
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Nome da Empresa</Label>
+                    <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label>CNPJ</Label>
+                    <Input value={form.cnpj} onChange={(e) => setForm({ ...form, cnpj: e.target.value })} placeholder="00.000.000/0000-00" className="mt-1" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label>Descrição da empresa</Label>
+                <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  placeholder="Conte um pouco sobre sua empresa de energia solar..." className="mt-1" rows={3} />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Contact */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Phone className="w-5 h-5 text-primary" />
+                Contato
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Email</Label>
+                  <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="contato@empresa.com" className="mt-1" />
+                </div>
+                <div>
+                  <Label>Telefone</Label>
+                  <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(11) 3000-0000" className="mt-1" />
+                </div>
+                <div>
+                  <Label>WhatsApp</Label>
+                  <Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} placeholder="(11) 99999-9999" className="mt-1" />
+                </div>
+                <div>
+                  <Label>Website</Label>
+                  <Input value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} placeholder="https://minhaempresa.com" className="mt-1" />
+                </div>
+                <div>
+                  <Label>Instagram</Label>
+                  <Input value={form.instagram} onChange={(e) => setForm({ ...form, instagram: e.target.value })} placeholder="@minhaempresa" className="mt-1" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Address */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-primary" />
+                Endereço
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <Label>Endereço</Label>
+                  <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Rua, número, bairro" className="mt-1" />
+                </div>
+                <div>
+                  <Label>Cidade</Label>
+                  <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="mt-1" />
+                </div>
+                <div>
+                  <Label>Estado</Label>
+                  <Input value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} placeholder="SP" className="mt-1" />
+                </div>
+                <div>
+                  <Label>CEP</Label>
+                  <Input value={form.cep} onChange={(e) => setForm({ ...form, cep: e.target.value })} placeholder="00000-000" className="mt-1" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Save */}
+          <div className="flex justify-end">
+            <Button variant="cta" size="lg" className="gap-2" onClick={handleSave} disabled={isLoading}>
+              <Save className="w-5 h-5" />
+              {isLoading ? "Salvando..." : "Salvar alterações"}
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    </AppLayout>
+  );
+}
