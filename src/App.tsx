@@ -19,6 +19,7 @@ import UserManagement from "./pages/UserManagement";
 import SuperAdmin from "./pages/SuperAdmin";
 import TenantSite from "./pages/TenantSite";
 import PaymentHistory from "./pages/PaymentHistory";
+import CompanyProfile from "./pages/CompanyProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
