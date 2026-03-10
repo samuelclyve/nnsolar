@@ -2,8 +2,9 @@ import { useState, useEffect, createContext, useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, BarChart3, Wrench, Users, Calendar, FileText, 
-  LogOut, Menu, X, Globe, Search, ChevronLeft, UserCircle, Sun, Shield, Receipt, Building2
+  LogOut, Menu, X, Globe, Search, ChevronLeft, UserCircle, Shield, Receipt, Building2
 } from "lucide-react";
+import logoSolarizeBranca from "@/assets/logo-solarize-branca.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";

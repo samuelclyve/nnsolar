@@ -1,12 +1,14 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { 
-  Sun, BarChart3, Users, Wrench, Globe, Calendar, 
+  BarChart3, Users, Wrench, Globe, Calendar, 
   FileText, Shield, ArrowRight, Check, Zap, Star,
-  ChevronRight
+  ChevronRight, BookOpen, Download, Mail, Instagram, Phone, MapPin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import logoSolarize from "@/assets/logo-solarize.png";
+import logoSolarizeBranca from "@/assets/logo-solarize-branca.png";
 
 const features = [
   { icon: BarChart3, title: "CRM Completo", description: "Gerencie leads do primeiro contato ao fechamento com Kanban drag-and-drop." },
@@ -49,16 +51,15 @@ export default function Index() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Sun className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-display font-bold text-foreground">Solarize</span>
+          <Link to="/" className="flex items-center">
+            <img src={logoSolarize} alt="Solarize" className="h-8 w-auto object-contain" />
           </Link>
           <nav className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Funcionalidades</a>
             <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Preços</a>
             <a href="#testimonials" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Depoimentos</a>
+            <a href="#blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</a>
+            <a href="#materiais" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Materiais</a>
           </nav>
           <div className="flex items-center gap-3">
             <Link to="/auth">
@@ -289,18 +290,88 @@ export default function Index() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-12">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-                <Sun className="w-4 h-4 text-primary-foreground" />
+      <footer className="bg-foreground text-background">
+        <div className="container mx-auto px-4 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+            {/* Brand */}
+            <div className="lg:col-span-1">
+              <img src={logoSolarizeBranca} alt="Solarize" className="h-9 w-auto object-contain mb-4" />
+              <p className="text-background/60 text-sm leading-relaxed mb-6">
+                A plataforma completa para empresas de energia solar. CRM, gestão de instalações, site e muito mais.
+              </p>
+              <div className="flex gap-3">
+                <a href="https://instagram.com/saborize.app" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 bg-background/10 rounded-full flex items-center justify-center hover:bg-primary transition-colors group">
+                  <Instagram className="w-4 h-4 text-background/70 group-hover:text-primary-foreground" />
+                </a>
+                <a href="mailto:contato@solarize.app"
+                  className="w-9 h-9 bg-background/10 rounded-full flex items-center justify-center hover:bg-primary transition-colors group">
+                  <Mail className="w-4 h-4 text-background/70 group-hover:text-primary-foreground" />
+                </a>
               </div>
-              <span className="font-display font-bold text-foreground">Solarize</span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Solarize. Todos os direitos reservados.
-            </p>
+
+            {/* Produto */}
+            <div>
+              <h4 className="font-bold text-sm uppercase tracking-wider text-background/90 mb-4">Produto</h4>
+              <ul className="space-y-3">
+                <li><a href="#features" className="text-sm text-background/60 hover:text-primary transition-colors">Funcionalidades</a></li>
+                <li><a href="#pricing" className="text-sm text-background/60 hover:text-primary transition-colors">Preços</a></li>
+                <li><a href="#testimonials" className="text-sm text-background/60 hover:text-primary transition-colors">Depoimentos</a></li>
+                <li><Link to="/signup" className="text-sm text-background/60 hover:text-primary transition-colors">Começar grátis</Link></li>
+                <li><Link to="/auth" className="text-sm text-background/60 hover:text-primary transition-colors">Entrar</Link></li>
+              </ul>
+            </div>
+
+            {/* Conteúdo */}
+            <div>
+              <h4 className="font-bold text-sm uppercase tracking-wider text-background/90 mb-4">Conteúdo</h4>
+              <ul className="space-y-3">
+                <li>
+                  <a href="#blog" className="text-sm text-background/60 hover:text-primary transition-colors flex items-center gap-2">
+                    <BookOpen className="w-3.5 h-3.5" /> Blog
+                  </a>
+                </li>
+                <li>
+                  <a href="#materiais" className="text-sm text-background/60 hover:text-primary transition-colors flex items-center gap-2">
+                    <Download className="w-3.5 h-3.5" /> Materiais para Download
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-sm text-background/60 hover:text-primary transition-colors">Guia: Como abrir uma empresa solar</a>
+                </li>
+                <li>
+                  <a href="#" className="text-sm text-background/60 hover:text-primary transition-colors">E-book: Marketing para solar</a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Suporte */}
+            <div>
+              <h4 className="font-bold text-sm uppercase tracking-wider text-background/90 mb-4">Suporte</h4>
+              <ul className="space-y-3">
+                <li>
+                  <a href="mailto:contato@solarize.app" className="text-sm text-background/60 hover:text-primary transition-colors flex items-center gap-2">
+                    <Mail className="w-3.5 h-3.5" /> contato@solarize.app
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-sm text-background/60 hover:text-primary transition-colors">Central de Ajuda</a>
+                </li>
+                <li>
+                  <a href="#" className="text-sm text-background/60 hover:text-primary transition-colors">Termos de Uso</a>
+                </li>
+                <li>
+                  <a href="#" className="text-sm text-background/60 hover:text-primary transition-colors">Política de Privacidade</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom */}
+          <div className="pt-8 border-t border-background/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-background/50">
+            <p>© {new Date().getFullYear()} Solarize. Todos os direitos reservados.</p>
+            <p className="text-background/40">Feito com ☀️ para empresas de energia solar</p>
           </div>
         </div>
       </footer>
