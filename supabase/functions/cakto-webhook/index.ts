@@ -5,21 +5,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function getCaktoToken(): Promise<string> {
-  const clientId = Deno.env.get("CAKTO_CLIENT_ID")!;
-  const clientSecret = Deno.env.get("CAKTO_CLIENT_SECRET")!;
-
-  const res = await fetch("https://api.cakto.com.br/public_api/token/", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret }),
-  });
-
-  if (!res.ok) throw new Error("Failed to authenticate with Cakto");
-  const data = await res.json();
-  return data.access_token;
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -34,38 +19,90 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
 
-    // ACTION: webhook - receives Cakto payment notifications
+    // ACTION: generate-checkout - create checkout URL for authenticated user
+    if (action === "generate-checkout") {
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader?.startsWith("Bearer ")) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const supabaseUser = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader } } }
+      );
+
+      const { data: userData, error: userError } = await supabaseUser.auth.getUser();
+      if (userError || !userData.user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const body = await req.json();
+      const planId = body.plan_id; // "monthly" or "annual"
+
+      const offerIds: Record<string, string> = {
+        monthly: "gcwi2tz_800072",
+        annual: "3daq6qh_800085",
+      };
+
+      const offerId = offerIds[planId];
+      if (!offerId) {
+        return new Response(JSON.stringify({ error: "Invalid plan" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Build checkout URL with user email for auto-fill
+      const params = new URLSearchParams({ email: userData.user.email || "" });
+      const checkoutUrl = `https://pay.cakto.com.br/${offerId}?${params.toString()}`;
+
+      return new Response(JSON.stringify({ checkout_url: checkoutUrl }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ACTION: webhook (default POST) - receives Cakto payment notifications
     if (req.method === "POST" && (!action || action === "webhook")) {
-      const payload = await req.json();
-      console.log("Cakto webhook received:", JSON.stringify(payload));
+      const webhookData = await req.json();
+      console.log("Cakto webhook received:", JSON.stringify(webhookData));
 
-      // Cakto sends order data with customer email
-      const customerEmail = payload?.customer?.email || payload?.email;
-      const orderStatus = payload?.status;
-      const orderType = payload?.type; // "unique" or "subscription"
-      const amount = parseFloat(payload?.amount || "0");
+      // Validate webhook secret
+      const webhookSecret = Deno.env.get("CAKTO_WEBHOOK_SECRET");
+      if (webhookData.secret !== webhookSecret) {
+        console.error("Invalid webhook secret");
+        return new Response(JSON.stringify({ error: "Invalid signature" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
-      if (!customerEmail) {
+      const event = webhookData.event;
+      const data = webhookData.data;
+      const customer = data?.customer;
+      const transactionId = data?.id;
+      const amount = data?.amount || 0;
+      const paymentMethod = data?.paymentMethod || "unknown";
+
+      if (!customer?.email) {
         return new Response(JSON.stringify({ error: "No customer email" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      // Find workspace by owner email
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id")
-        .eq("user_id", (
-          await supabase.auth.admin.listUsers()
-        ).data.users.find((u: any) => u.email === customerEmail)?.id || "");
-
-      // Alternative: find workspace where owner email matches
+      // Find user by email
       const { data: users } = await supabase.auth.admin.listUsers();
-      const user = users.users.find((u: any) => u.email === customerEmail);
+      const user = users.users.find((u: any) => u.email === customer.email);
 
       if (!user) {
-        console.log("User not found for email:", customerEmail);
+        console.log("User not found for email:", customer.email);
         return new Response(JSON.stringify({ ok: true, message: "User not found" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -85,7 +122,8 @@ Deno.serve(async (req) => {
 
       const workspaceId = members[0].workspace_id;
 
-      if (orderStatus === "paid" || orderStatus === "approved") {
+      // Handle events
+      if (event === "purchase_approved") {
         // Determine plan type based on amount
         const planType = amount >= 1500 ? "annual" : "monthly";
         const periodEnd = new Date();
@@ -113,63 +151,62 @@ Deno.serve(async (req) => {
           { onConflict: "workspace_id" }
         );
 
+        // Record payment history
+        await supabase.from("payment_history").insert({
+          user_id: user.id,
+          workspace_id: workspaceId,
+          cakto_transaction_id: transactionId,
+          amount: amount,
+          currency: "BRL",
+          status: "completed",
+          payment_method: paymentMethod,
+          webhook_data: data,
+        });
+
         console.log(`Workspace ${workspaceId} activated with ${planType} plan`);
-      } else if (orderStatus === "refunded" || orderStatus === "canceled" || orderStatus === "chargedback") {
+
+      } else if (event === "refund") {
         await supabase
           .from("workspaces")
-          .update({ subscription_status: "cancelled" })
+          .update({ subscription_status: "cancelled", plan: "free" })
           .eq("id", workspaceId);
 
+        await supabase.from("payment_history").insert({
+          user_id: user.id,
+          workspace_id: workspaceId,
+          cakto_transaction_id: `refund_${transactionId}`,
+          amount: -amount,
+          currency: "BRL",
+          status: "refunded",
+          payment_method: "refund",
+          webhook_data: data,
+        });
+
+        console.log(`Workspace ${workspaceId} refunded`);
+
+      } else if (event === "subscription_cancelled") {
+        await supabase
+          .from("workspaces")
+          .update({ subscription_status: "cancelled", plan: "free" })
+          .eq("id", workspaceId);
+
+        await supabase.from("payment_history").insert({
+          user_id: user.id,
+          workspace_id: workspaceId,
+          cakto_transaction_id: `cancel_${transactionId}`,
+          amount: 0,
+          currency: "BRL",
+          status: "cancelled",
+          payment_method: "cancellation",
+          webhook_data: data,
+        });
+
         console.log(`Workspace ${workspaceId} cancelled`);
+      } else {
+        console.log(`Unhandled event: ${event}`);
       }
 
-      return new Response(JSON.stringify({ ok: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // ACTION: check-orders - verify payment status for a workspace
-    if (action === "check-orders") {
-      const authHeader = req.headers.get("Authorization");
-      if (!authHeader?.startsWith("Bearer ")) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      const supabaseUser = createClient(
-        Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SUPABASE_ANON_KEY")!,
-        { global: { headers: { Authorization: authHeader } } }
-      );
-
-      const { data: claimsData, error: claimsError } = await supabaseUser.auth.getUser();
-      if (claimsError || !claimsData.user) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      const userEmail = claimsData.user.email;
-      const token = await getCaktoToken();
-
-      // Check orders for this email
-      const ordersRes = await fetch(
-        `https://api.cakto.com.br/public_api/orders/?customer=${encodeURIComponent(userEmail || "")}&status=paid&ordering=-paidAt&limit=5`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (!ordersRes.ok) {
-        return new Response(JSON.stringify({ error: "Failed to fetch orders" }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      const orders = await ordersRes.json();
-      return new Response(JSON.stringify({ orders: orders.results || [] }), {
+      return new Response(JSON.stringify({ ok: true, event }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
