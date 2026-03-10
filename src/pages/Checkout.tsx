@@ -1,17 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Sun, Check, Crown, Zap, ArrowLeft, Shield, CreditCard } from "lucide-react";
+import { Sun, Check, Crown, Zap, ArrowLeft, Shield, CreditCard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useWorkspace } from "@/hooks/useWorkspace";
-
-// TODO: Replace with actual Cakto offer IDs after creating products in Cakto dashboard
-const CAKTO_OFFERS = {
-  monthly: "SOLARIZE_MENSAL", // Replace with actual offer ID from Cakto
-  annual: "SOLARIZE_ANUAL",   // Replace with actual offer ID from Cakto
-};
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const plans = [
   {
@@ -57,19 +53,50 @@ const plans = [
 
 export default function Checkout() {
   const [selectedPlan, setSelectedPlan] = useState("annual");
+  const [isLoading, setIsLoading] = useState(false);
   const { workspace } = useWorkspace();
 
-  const handleCheckout = (planId: string) => {
-    const offerId = planId === "annual" ? CAKTO_OFFERS.annual : CAKTO_OFFERS.monthly;
-    // Redirect to Cakto checkout with workspace context
-    const checkoutUrl = `https://pay.cakto.com.br/${offerId}`;
-    // Add email as query param if available for auto-fill
-    window.open(checkoutUrl, "_blank");
+  const handleCheckout = async (planId: string) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("cakto-webhook", {
+        body: { plan_id: planId },
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
+
+      // The function uses ?action=generate-checkout, so we need the query param
+      const { data: session } = await supabase.auth.getSession();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cakto-webhook?action=generate-checkout`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.session?.access_token}`,
+          },
+          body: JSON.stringify({ plan_id: planId }),
+        }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok || !result.checkout_url) {
+        throw new Error(result.error || "Erro ao gerar checkout");
+      }
+
+      // Open Cakto checkout in new tab
+      window.open(result.checkout_url, "_blank");
+    } catch (err: any) {
+      console.error("Checkout error:", err);
+      toast.error("Erro ao iniciar pagamento. Tente novamente.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -89,7 +116,6 @@ export default function Checkout() {
       </header>
 
       <div className="container mx-auto px-4 py-12 max-w-5xl">
-        {/* Title */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -105,7 +131,6 @@ export default function Checkout() {
           </p>
         </motion.div>
 
-        {/* Plans */}
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           {plans.map((plan, i) => (
             <motion.div
@@ -166,12 +191,17 @@ export default function Checkout() {
                     variant={plan.highlight ? "cta" : "outline"}
                     size="lg"
                     className="w-full gap-2"
+                    disabled={isLoading}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleCheckout(plan.id);
                     }}
                   >
-                    <CreditCard className="w-5 h-5" />
+                    {isLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <CreditCard className="w-5 h-5" />
+                    )}
                     {plan.highlight ? "Assinar Plano Anual" : "Assinar Plano Mensal"}
                   </Button>
                 </CardContent>
@@ -180,7 +210,6 @@ export default function Checkout() {
           ))}
         </div>
 
-        {/* Trust indicators */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
