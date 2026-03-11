@@ -9,12 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Building2, Save, Globe, Instagram, Phone, Mail, MapPin, FileText, Image } from "lucide-react";
+import { Building2, Save, Globe, Instagram, Phone, Mail, MapPin, Image, User, Shield } from "lucide-react";
 
 export default function CompanyProfile() {
   const { workspace, workspaceId, refetch } = useWorkspace();
   const [isLoading, setIsLoading] = useState(false);
   const [logoUploading, setLogoUploading] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+  const [userRoleLabel, setUserRoleLabel] = useState("Administrador");
   const [form, setForm] = useState({
     name: "",
     cnpj: "",
@@ -26,7 +29,6 @@ export default function CompanyProfile() {
     state: "",
     cep: "",
     description: "",
-    website: "",
     instagram: "",
     logo_url: "",
   });
@@ -44,12 +46,36 @@ export default function CompanyProfile() {
         state: (workspace as any).state || "",
         cep: (workspace as any).cep || "",
         description: (workspace as any).description || "",
-        website: (workspace as any).website || "",
         instagram: (workspace as any).instagram || "",
         logo_url: workspace.logo_url || "",
       });
     }
   }, [workspace]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const userId = session.user.id;
+
+    const [profileRes, rolesRes] = await Promise.all([
+      supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle(),
+      supabase.from("user_roles").select("role").eq("user_id", userId),
+    ]);
+
+    if (profileRes.data) setProfile(profileRes.data);
+
+    const roles = rolesRes.data?.map(r => r.role) || [];
+    if (roles.includes("super_admin")) setUserRoleLabel("Super Admin");
+    else if (roles.includes("admin")) setUserRoleLabel("Administrador");
+    else if (roles.includes("manager")) setUserRoleLabel("Gerente");
+    else if (roles.includes("comercial")) setUserRoleLabel("Comercial");
+    else if (roles.includes("technician")) setUserRoleLabel("Técnico");
+    else setUserRoleLabel("Staff");
+  };
 
   const handleSave = async () => {
     if (!workspaceId) return;
@@ -68,16 +94,20 @@ export default function CompanyProfile() {
         state: form.state,
         cep: form.cep,
         description: form.description,
-        website: form.website,
         instagram: form.instagram,
         logo_url: form.logo_url,
       } as any)
       .eq("id", workspaceId);
 
+    // Save profile name too
+    if (profile) {
+      await supabase.from("profiles").update({ full_name: profile.full_name }).eq("id", profile.id);
+    }
+
     if (error) {
       toast.error("Erro ao salvar: " + error.message);
     } else {
-      toast.success("Perfil da empresa atualizado!");
+      toast.success("Perfil atualizado!");
       await refetch();
     }
     setIsLoading(false);
@@ -91,39 +121,45 @@ export default function CompanyProfile() {
     const ext = file.name.split(".").pop();
     const path = `logos/${workspaceId}.${ext}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from("documents")
-      .upload(path, file, { upsert: true });
-
-    if (uploadError) {
-      toast.error("Erro ao enviar logo");
-      setLogoUploading(false);
-      return;
-    }
+    const { error: uploadError } = await supabase.storage.from("documents").upload(path, file, { upsert: true });
+    if (uploadError) { toast.error("Erro ao enviar logo"); setLogoUploading(false); return; }
 
     const { data: urlData } = supabase.storage.from("documents").getPublicUrl(path);
     setForm({ ...form, logo_url: urlData.publicUrl });
     setLogoUploading(false);
   };
 
-  const siteUrl = workspace?.slug
-    ? `${window.location.origin}/s/${workspace.slug}`
-    : null;
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+    setAvatarUploading(true);
+
+    const ext = file.name.split(".").pop();
+    const path = `avatars/${profile.user_id}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage.from("documents").upload(path, file, { upsert: true });
+    if (uploadError) { toast.error("Erro ao enviar foto"); setAvatarUploading(false); return; }
+
+    const { data: urlData } = supabase.storage.from("documents").getPublicUrl(path);
+    await supabase.from("profiles").update({ avatar_url: urlData.publicUrl }).eq("id", profile.id);
+    setProfile({ ...profile, avatar_url: urlData.publicUrl });
+    setAvatarUploading(false);
+    toast.success("Foto atualizada!");
+  };
+
+  const siteUrl = workspace?.slug ? `${window.location.origin}/s/${workspace.slug}` : null;
 
   return (
     <AppLayout title="Perfil da Empresa">
       <div className="max-w-4xl mx-auto space-y-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          {/* Header with site link */}
           {siteUrl && (
             <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-3">
                 <Globe className="w-5 h-5 text-primary" />
                 <div>
                   <p className="text-sm font-medium text-foreground">Seu site personalizado</p>
-                  <a href={siteUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
-                    {siteUrl}
-                  </a>
+                  <a href={siteUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">{siteUrl}</a>
                 </div>
               </div>
               <Button variant="outline" size="sm" onClick={() => navigator.clipboard.writeText(siteUrl).then(() => toast.success("Link copiado!"))}>
@@ -132,7 +168,51 @@ export default function CompanyProfile() {
             </div>
           )}
 
-          {/* Logo & Name */}
+          {/* User Profile Section */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="w-5 h-5 text-primary" />
+                Dados do Usuário
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-start gap-6">
+                <div className="flex-shrink-0 text-center">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center overflow-hidden">
+                    {profile?.avatar_url ? (
+                      <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-2xl font-bold text-primary-foreground">
+                        {profile?.full_name?.charAt(0) || "U"}
+                      </span>
+                    )}
+                  </div>
+                  <label className="mt-2 block">
+                    <span className="text-xs text-primary cursor-pointer hover:underline">
+                      {avatarUploading ? "Enviando..." : "Alterar foto"}
+                    </span>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={avatarUploading} />
+                  </label>
+                </div>
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Nome</Label>
+                    <Input value={profile?.full_name || ""} onChange={(e) => setProfile({ ...profile, full_name: e.target.value })} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label>Cargo</Label>
+                    <div className="mt-1 flex items-center gap-2 h-10 px-3 rounded-md border border-border bg-muted/50">
+                      <Shield className="w-4 h-4 text-primary" />
+                      <span className="text-sm text-foreground">{userRoleLabel}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Logo & Company Name */}
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -198,10 +278,6 @@ export default function CompanyProfile() {
                 <div>
                   <Label>WhatsApp</Label>
                   <Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} placeholder="(11) 99999-9999" className="mt-1" />
-                </div>
-                <div>
-                  <Label>Website</Label>
-                  <Input value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} placeholder="https://minhaempresa.com" className="mt-1" />
                 </div>
                 <div>
                   <Label>Instagram</Label>

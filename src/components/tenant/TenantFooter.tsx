@@ -38,14 +38,14 @@ export function TenantFooter({ workspace }: TenantFooterProps) {
                   <Instagram className="w-5 h-5 text-primary group-hover:text-primary-foreground" />
                 </a>
               )}
-              {ws.website && (
+              {whatsappLink && (
                 <a
-                  href={ws.website}
+                  href={whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 bg-secondary-foreground/10 rounded-full flex items-center justify-center hover:bg-primary transition-colors group"
                 >
-                  <Globe className="w-5 h-5 text-primary group-hover:text-primary-foreground" />
+                  <MessageCircle className="w-5 h-5 text-primary group-hover:text-primary-foreground" />
                 </a>
               )}
               {whatsappLink && (
