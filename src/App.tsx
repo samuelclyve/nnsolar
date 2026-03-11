@@ -20,6 +20,7 @@ import SuperAdmin from "./pages/SuperAdmin";
 import TenantSite from "./pages/TenantSite";
 import PaymentHistory from "./pages/PaymentHistory";
 import CompanyProfile from "./pages/CompanyProfile";
+import Blog from "./pages/Blog";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/blog" element={<Blog />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/checkout" element={<Checkout />} />

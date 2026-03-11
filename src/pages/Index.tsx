@@ -52,7 +52,7 @@ export default function Index() {
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center">
-            <img src={logoSolarize} alt="Solarize" className="h-8 w-auto object-contain" />
+            <img src={logoSolarize} alt="Solarize" className="h-5 w-auto object-contain" />
           </Link>
           <nav className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Funcionalidades</a>
@@ -326,9 +326,9 @@ export default function Index() {
               <h4 className="font-bold text-sm uppercase tracking-wider text-primary-foreground/90 mb-4">Conteúdo</h4>
               <ul className="space-y-3">
                 <li>
-                  <a href="#blog" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors flex items-center gap-2">
+                  <Link to="/blog" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors flex items-center gap-2">
                     <BookOpen className="w-3.5 h-3.5" /> Blog
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <a href="#materiais" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors flex items-center gap-2">
