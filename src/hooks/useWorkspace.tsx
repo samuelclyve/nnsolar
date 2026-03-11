@@ -10,6 +10,7 @@ interface Workspace {
   trial_ends_at: string | null;
   subscription_status: string;
   owner_id: string;
+  created_at: string | null;
 }
 
 interface WorkspaceContextType {
