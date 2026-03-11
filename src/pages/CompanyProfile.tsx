@@ -101,7 +101,12 @@ export default function CompanyProfile() {
 
     // Save profile name too
     if (profile) {
-      await supabase.from("profiles").update({ full_name: profile.full_name }).eq("id", profile.id);
+      const { error: profileError } = await supabase.from("profiles").update({ full_name: profile.full_name }).eq("user_id", profile.user_id);
+      if (profileError) {
+        toast.error("Erro ao salvar perfil: " + profileError.message);
+        setIsLoading(false);
+        return;
+      }
     }
 
     if (error) {
