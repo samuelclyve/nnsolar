@@ -94,8 +94,8 @@ export function FeaturesMegaMenu({ isOpen, onClose, onMouseEnter, onMouseLeave }
                 <ul className="space-y-1">
                   {cat.items.map((item) => (
                     <li key={item.name}>
-                      <a
-                        href={item.href}
+                      <Link
+                        to={item.href}
                         className="flex items-start gap-2.5 p-2.5 rounded-xl hover:bg-muted/60 transition-colors group"
                         onClick={onClose}
                       >
@@ -106,7 +106,7 @@ export function FeaturesMegaMenu({ isOpen, onClose, onMouseEnter, onMouseLeave }
                           <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{item.name}</p>
                           <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
                         </div>
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>
