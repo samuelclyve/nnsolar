@@ -22,6 +22,7 @@ import PaymentHistory from "./pages/PaymentHistory";
 import CompanyProfile from "./pages/CompanyProfile";
 import Blog from "./pages/Blog";
 import Materials from "./pages/Materials";
+import Integrations from "./pages/Integrations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
