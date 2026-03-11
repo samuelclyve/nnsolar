@@ -207,7 +207,7 @@ export default function SiteEditor() {
   const color2 = settings.brand_color_secondary || "#1B3A5C";
 
   return (
-    <AppLayout title="Edição do Site">
+    <>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
