@@ -43,6 +43,11 @@ export function AppLayout() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Re-fetch profile on route change to pick up name/avatar updates
+  useEffect(() => {
+    if (user) fetchProfile(user.id);
+  }, [location.pathname]);
+
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle();
     if (data) setProfile(data);
