@@ -245,7 +245,7 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
                     location.pathname === "/super-admin" ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                   }`}>
-                  <Shield className="w-4 h-4 flex-shrink-0" />
+                  <Shield className="w-[18px] h-[18px] flex-shrink-0" />
                   {!isCollapsed && <span>Super Admin</span>}
                 </Link>
               </div>
