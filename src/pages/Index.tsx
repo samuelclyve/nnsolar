@@ -331,9 +331,9 @@ export default function Index() {
                   </Link>
                 </li>
                 <li>
-                  <a href="#materiais" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors flex items-center gap-2">
+                  <Link to="/materiais" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors flex items-center gap-2">
                     <Download className="w-3.5 h-3.5" /> Materiais para Download
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <a href="#" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Guia: Como abrir uma empresa solar</a>
