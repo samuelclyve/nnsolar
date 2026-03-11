@@ -131,10 +131,11 @@ export default function TenantSite() {
     whatsapp: settings.contact_whatsapp || workspace.whatsapp,
     email: settings.contact_email || workspace.email,
     instagram: settings.contact_instagram || workspace.instagram,
-    website: settings.contact_website || workspace.website,
+    region: settings.contact_region || "",
     logo_url: settings.site_logo_url || workspace.logo_url,
     name: settings.site_company_name || workspace.name,
     description: settings.about_text || workspace.description,
+    cnpj: workspace.cnpj,
   };
 
   // Build custom CSS variables from brand colors

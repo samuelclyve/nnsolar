@@ -1,4 +1,4 @@
-import { Phone, Mail, MapPin, Instagram, Globe, MessageCircle, Sun } from "lucide-react";
+import { Phone, Mail, MapPin, Instagram, MessageCircle, Sun, FileText, Globe } from "lucide-react";
 
 interface TenantFooterProps {
   workspace: any;
@@ -38,14 +38,14 @@ export function TenantFooter({ workspace }: TenantFooterProps) {
                   <Instagram className="w-5 h-5 text-primary group-hover:text-primary-foreground" />
                 </a>
               )}
-              {ws.website && (
+              {whatsappLink && (
                 <a
-                  href={ws.website}
+                  href={whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 bg-secondary-foreground/10 rounded-full flex items-center justify-center hover:bg-primary transition-colors group"
                 >
-                  <Globe className="w-5 h-5 text-primary group-hover:text-primary-foreground" />
+                  <MessageCircle className="w-5 h-5 text-primary group-hover:text-primary-foreground" />
                 </a>
               )}
               {whatsappLink && (
@@ -107,6 +107,18 @@ export function TenantFooter({ workspace }: TenantFooterProps) {
                 <li className="flex items-start gap-3 text-secondary-foreground/70">
                   <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                   <span>{[ws.city, ws.state].filter(Boolean).join(" - ")}</span>
+                </li>
+              )}
+              {ws.region && (
+                <li className="flex items-start gap-3 text-secondary-foreground/70">
+                  <Globe className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span>Região: {ws.region}</span>
+                </li>
+              )}
+              {ws.cnpj && (
+                <li className="flex items-start gap-3 text-secondary-foreground/70">
+                  <FileText className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span>CNPJ: {ws.cnpj}</span>
                 </li>
               )}
             </ul>

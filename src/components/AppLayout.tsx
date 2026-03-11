@@ -7,6 +7,7 @@ import { SubscriptionGuard } from "./SubscriptionGuard";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotificationsPanel } from "./NotificationsPanel";
+import { SupportChat } from "./SupportChat";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -81,6 +82,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
                   {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                 </Button>
                 <NotificationsPanel userId={user?.id} />
+                <SupportChat />
               </div>
             </div>
           </header>
