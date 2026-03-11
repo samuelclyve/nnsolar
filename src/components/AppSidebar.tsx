@@ -198,8 +198,8 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
                           return (
                             <div key={item.label}
                               title={isCollapsed ? item.label : undefined}
-                              className={`flex items-center gap-2.5 ${isCollapsed ? "justify-center px-1.5" : "px-2.5"} py-1.5 rounded-lg text-xs font-medium opacity-40 cursor-not-allowed`}>
-                              <item.icon className="w-4 h-4 flex-shrink-0 text-sidebar-muted" />
+                              className={`flex items-center gap-3 ${isCollapsed ? "justify-center px-2" : "px-3"} py-2 rounded-lg text-sm font-medium opacity-40 cursor-not-allowed`}>
+                              <item.icon className="w-[18px] h-[18px] flex-shrink-0 text-sidebar-muted" />
                               {!isCollapsed && (
                                 <>
                                   <span className="text-sidebar-muted">{item.label}</span>
