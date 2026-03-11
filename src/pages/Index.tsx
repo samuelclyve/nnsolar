@@ -1,3 +1,4 @@
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { 
@@ -6,13 +7,16 @@ import {
   BookOpen, Download, Mail, Instagram, 
   TrendingUp, Shield, Clock, Sparkles,
   MessageCircle, PieChart, Settings, Smartphone,
-  Target, LayoutDashboard, Bell, Lock
+  Target, LayoutDashboard, Bell, Lock, ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { FeaturesMegaMenu } from "@/components/landing/FeaturesMegaMenu";
 import logoSolarize from "@/assets/logo-solarize.png";
 import logoSolarizeBranca from "@/assets/logo-solarize-branca.png";
 import iconeSolarize from "@/assets/icone-solarize.png";
+
+const MENU_CLOSE_DELAY = 200;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -117,6 +121,24 @@ const testimonials = [
 ];
 
 export default function Index() {
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const megaMenuTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (megaMenuTimeout.current) clearTimeout(megaMenuTimeout.current);
+    };
+  }, []);
+
+  const handleMegaMenuEnter = useCallback(() => {
+    if (megaMenuTimeout.current) clearTimeout(megaMenuTimeout.current);
+    setMegaMenuOpen(true);
+  }, []);
+
+  const handleMegaMenuLeave = useCallback(() => {
+    megaMenuTimeout.current = setTimeout(() => setMegaMenuOpen(false), MENU_CLOSE_DELAY);
+  }, []);
+
   return (
     <div className="min-h-screen bg-card">
       {/* Header - Orange with grid and icon */}
@@ -142,30 +164,32 @@ export default function Index() {
 
             {/* Nav links */}
             <div className="hidden md:flex items-center gap-1 relative z-10">
-              {[
-                { label: "Funcionalidades", href: "#features" },
-                { label: "Preços", href: "#pricing" },
-                { label: "Depoimentos", href: "#testimonials" },
-                { label: "Blog", href: "/blog" },
-              ].map((link) => (
-                link.href.startsWith("/") ? (
-                  <Link
-                    key={link.label}
-                    to={link.href}
-                    className="px-4 py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors rounded-full hover:bg-primary-foreground/10"
-                  >
-                    {link.label}
-                  </Link>
-                ) : (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    className="px-4 py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors rounded-full hover:bg-primary-foreground/10"
-                  >
-                    {link.label}
-                  </a>
-                )
-              ))}
+              {/* Funcionalidades with mega menu */}
+              <div
+                className="relative"
+                onMouseEnter={handleMegaMenuEnter}
+                onMouseLeave={handleMegaMenuLeave}
+              >
+                <button className="flex items-center gap-1 px-4 py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors rounded-full hover:bg-primary-foreground/10">
+                  Funcionalidades
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${megaMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                <FeaturesMegaMenu
+                  isOpen={megaMenuOpen}
+                  onClose={() => setMegaMenuOpen(false)}
+                  onMouseEnter={handleMegaMenuEnter}
+                  onMouseLeave={handleMegaMenuLeave}
+                />
+              </div>
+              <a href="#pricing" className="px-4 py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors rounded-full hover:bg-primary-foreground/10">
+                Preços
+              </a>
+              <a href="#testimonials" className="px-4 py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors rounded-full hover:bg-primary-foreground/10">
+                Depoimentos
+              </a>
+              <Link to="/integracoes" className="px-4 py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors rounded-full hover:bg-primary-foreground/10">
+                Integrações
+              </Link>
             </div>
 
             {/* CTAs */}

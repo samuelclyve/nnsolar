@@ -22,6 +22,7 @@ import PaymentHistory from "./pages/PaymentHistory";
 import CompanyProfile from "./pages/CompanyProfile";
 import Blog from "./pages/Blog";
 import Materials from "./pages/Materials";
+import Integrations from "./pages/Integrations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/materiais" element={<Materials />} />
+            <Route path="/integracoes" element={<Integrations />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/checkout" element={<Checkout />} />
