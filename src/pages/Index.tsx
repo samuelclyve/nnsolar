@@ -77,10 +77,16 @@ const platformFeatures = [
 ];
 
 const useCases = [
-  { icon: BarChart3, title: "CRM Solar", description: "Pipeline completo de vendas com Kanban" },
-  { icon: Wrench, title: "Gestão de Obras", description: "Controle de instalações passo a passo" },
-  { icon: Globe, title: "Site da Empresa", description: "Landing page com simulador integrado" },
-  { icon: Calendar, title: "Agenda", description: "Calendário inteligente de visitas" },
+  { icon: Target, title: "CRM Solar", description: "Pipeline completo de vendas com Kanban visual" },
+  { icon: Wrench, title: "Gestão de Instalações", description: "Controle cada etapa da obra em tempo real" },
+  { icon: Globe, title: "Site Personalizável", description: "Landing page com simulador solar integrado" },
+  { icon: Calendar, title: "Agenda Inteligente", description: "Calendário drag-and-drop de visitas e obras" },
+  { icon: BarChart3, title: "Dashboard & Relatórios", description: "Métricas de vendas, instalações e performance" },
+  { icon: Users, title: "Gestão de Clientes", description: "Base completa com histórico e documentos" },
+  { icon: FileText, title: "Documentos & Contratos", description: "Armazene e organize contratos e projetos" },
+  { icon: Shield, title: "Controle Financeiro", description: "Parcelas, cobranças e fluxo de recebimentos" },
+  { icon: Bell, title: "Notificações Automáticas", description: "Alertas por e-mail e WhatsApp para clientes" },
+  { icon: Lock, title: "Gestão de Equipe", description: "Controle de acessos e permissões por função" },
 ];
 
 const industries = [
@@ -233,7 +239,7 @@ export default function Index() {
               transition={{ duration: 0.6 }}
               className="text-5xl md:text-7xl font-display font-bold text-foreground mb-6 leading-[1.08] tracking-tight"
             >
-              O sistema completo para sua{" "}
+               O ecossistema completo para sua{" "}
               <span className="text-gradient-orange">empresa solar</span>
             </motion.h1>
 
@@ -462,9 +468,9 @@ export default function Index() {
             viewport={{ once: true }}
             className="text-2xl md:text-3xl font-display font-bold text-foreground mb-12"
           >
-            Módulos do sistema
+            Módulos do ecossistema
           </motion.h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
             {useCases.map((uc, i) => (
               <motion.div
                 key={uc.title}
@@ -771,7 +777,7 @@ export default function Index() {
             <div className="lg:col-span-1">
               <img src={logoSolarizeBranca} alt="Solarize" className="h-8 w-auto object-contain mb-5" />
               <p className="text-secondary-foreground/60 text-sm leading-relaxed mb-6">
-                A plataforma completa para empresas de energia solar. CRM, gestão de instalações, site e muito mais.
+                O ecossistema completo para empresas de energia solar. CRM, gestão de instalações, site e muito mais.
               </p>
               <div className="flex gap-3">
                 <a href="https://instagram.com/solarize.app" target="_blank" rel="noopener noreferrer"

@@ -18,7 +18,8 @@ const categories = [
     iconColor: "text-primary",
     items: [
       { icon: Target, name: "CRM com Kanban", description: "Pipeline visual de vendas", href: "#features" },
-      { icon: BarChart3, name: "Dashboard", description: "Métricas e relatórios", href: "#features" },
+      { icon: BarChart3, name: "Dashboard & Relatórios", description: "Métricas e performance", href: "#features" },
+      { icon: Users, name: "Gestão de Clientes", description: "Base completa com histórico", href: "#features" },
     ],
   },
   {
@@ -28,6 +29,7 @@ const categories = [
     items: [
       { icon: Wrench, name: "Gestão de Instalações", description: "Acompanhe cada etapa", href: "#features" },
       { icon: Calendar, name: "Agenda Inteligente", description: "Calendário drag-and-drop", href: "#features" },
+      { icon: ChevronRight, name: "Notificações Automáticas", description: "Alertas por e-mail e WhatsApp", href: "#features" },
     ],
   },
   {
@@ -44,8 +46,9 @@ const categories = [
     color: "bg-accent/10 border-accent/20",
     iconColor: "text-accent",
     items: [
-      { icon: FileText, name: "Documentos", description: "Contratos e projetos", href: "#features" },
+      { icon: FileText, name: "Documentos & Contratos", description: "Armazene e organize", href: "#features" },
       { icon: Users, name: "Gestão de Equipe", description: "Controle de acessos", href: "#features" },
+      { icon: ChevronRight, name: "Controle Financeiro", description: "Parcelas e cobranças", href: "#features" },
     ],
   },
 ];
@@ -64,8 +67,8 @@ export function FeaturesMegaMenu({ isOpen, onClose, onMouseEnter, onMouseLeave }
         {/* Header */}
         <div className="bg-primary/5 px-6 py-4 border-b border-border flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-foreground text-sm">Módulos do Solarize</h3>
-            <p className="text-xs text-muted-foreground">Solução completa para empresas de energia solar</p>
+            <h3 className="font-semibold text-foreground text-sm">Ecossistema Solarize</h3>
+            <p className="text-xs text-muted-foreground">Tudo que sua empresa solar precisa em um só lugar</p>
           </div>
           <a
             href="#features"
