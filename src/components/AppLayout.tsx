@@ -9,18 +9,13 @@ import { Button } from "@/components/ui/button";
 import { NotificationsPanel } from "./NotificationsPanel";
 import { SupportChat } from "./SupportChat";
 
-interface AppLayoutProps {
-  children: ReactNode;
-  title: string;
-}
-
 const pageVariants = {
   initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -8 },
 };
 
-export function AppLayout({ children, title }: AppLayoutProps) {
+export function AppLayout() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
