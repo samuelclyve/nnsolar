@@ -109,6 +109,18 @@ export function TenantFooter({ workspace }: TenantFooterProps) {
                   <span>{[ws.city, ws.state].filter(Boolean).join(" - ")}</span>
                 </li>
               )}
+              {ws.region && (
+                <li className="flex items-start gap-3 text-secondary-foreground/70">
+                  <Globe className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span>Região: {ws.region}</span>
+                </li>
+              )}
+              {ws.cnpj && (
+                <li className="flex items-start gap-3 text-secondary-foreground/70">
+                  <FileText className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span>CNPJ: {ws.cnpj}</span>
+                </li>
+              )}
             </ul>
           </div>
         </div>
