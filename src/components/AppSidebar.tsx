@@ -2,7 +2,8 @@ import { useState, useEffect, createContext, useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, BarChart3, Wrench, Users, Calendar, FileText, 
-  LogOut, Menu, X, Globe, Search, ChevronLeft, UserCircle, Shield, Receipt, Building2, ClipboardList
+  LogOut, Menu, X, Globe, Search, ChevronLeft, UserCircle, Shield, 
+  Building2, ClipboardList, Plug, CreditCard
 } from "lucide-react";
 import logoSolarizeBranca from "@/assets/logo-solarize-branca.png";
 import { Button } from "@/components/ui/button";
@@ -16,19 +17,51 @@ interface MenuItem {
   label: string;
   href: string;
   roles?: string[];
+  disabled?: boolean;
+  badge?: string;
 }
 
-const menuItems: MenuItem[] = [
-  { icon: Home, label: "Visão Geral", href: "/dashboard" },
-  { icon: BarChart3, label: "CRM", href: "/crm", roles: ["admin", "manager", "comercial", "super_admin"] },
-  { icon: Wrench, label: "Instalações", href: "/installations", roles: ["admin", "manager", "technician", "comercial", "super_admin"] },
-  { icon: UserCircle, label: "Clientes", href: "/clients", roles: ["admin", "manager", "comercial", "super_admin"] },
-  { icon: Calendar, label: "Agenda", href: "/schedule", roles: ["admin", "manager", "technician", "comercial", "super_admin"] },
-  { icon: Globe, label: "Edição Site", href: "/site-editor", roles: ["admin", "manager", "super_admin"] },
-  { icon: Users, label: "Usuários", href: "/users", roles: ["admin", "super_admin"] },
-  { icon: FileText, label: "Documentos", href: "/documents", roles: ["admin", "manager", "comercial", "technician", "super_admin"] },
-  { icon: ClipboardList, label: "Relatórios", href: "/reports", roles: ["admin", "manager", "super_admin"] },
-  { icon: Receipt, label: "Pagamentos", href: "/payment-history", roles: ["admin", "super_admin"] },
+interface MenuGroup {
+  label: string;
+  items: MenuItem[];
+}
+
+const menuGroups: MenuGroup[] = [
+  {
+    label: "Principal",
+    items: [
+      { icon: Home, label: "Visão Geral", href: "/dashboard" },
+    ],
+  },
+  {
+    label: "Comercial",
+    items: [
+      { icon: BarChart3, label: "CRM", href: "/crm", roles: ["admin", "manager", "comercial", "super_admin"] },
+      { icon: UserCircle, label: "Clientes", href: "/clients", roles: ["admin", "manager", "comercial", "super_admin"] },
+      { icon: Calendar, label: "Agenda", href: "/schedule", roles: ["admin", "manager", "technician", "comercial", "super_admin"] },
+    ],
+  },
+  {
+    label: "Operações",
+    items: [
+      { icon: Wrench, label: "Instalações", href: "/installations", roles: ["admin", "manager", "technician", "comercial", "super_admin"] },
+      { icon: FileText, label: "Documentos", href: "/documents", roles: ["admin", "manager", "comercial", "technician", "super_admin"] },
+    ],
+  },
+  {
+    label: "Gestão",
+    items: [
+      { icon: ClipboardList, label: "Relatórios", href: "/reports", roles: ["admin", "manager", "super_admin"] },
+      { icon: Users, label: "Usuários", href: "/users", roles: ["admin", "super_admin"] },
+    ],
+  },
+  {
+    label: "Social",
+    items: [
+      { icon: Globe, label: "Edição Site", href: "/site-editor", roles: ["admin", "manager", "super_admin"] },
+      { icon: Plug, label: "Integrações", href: "/integrations", roles: ["admin", "manager", "super_admin"], disabled: true, badge: "Em breve" },
+    ],
+  },
 ];
 
 interface SidebarContextType {
@@ -74,11 +107,12 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
 
   const isSuperAdmin = userRoles.includes("super_admin");
 
-  const filteredMenuItems = menuItems.filter(item => {
-    if (!item.roles) return true;
-    if (userRoles.length === 0) return false;
-    return item.roles.some(role => userRoles.includes(role));
-  });
+  const filterItems = (items: MenuItem[]) =>
+    items.filter(item => {
+      if (!item.roles) return true;
+      if (userRoles.length === 0) return false;
+      return item.roles.some(role => userRoles.includes(role));
+    });
 
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
@@ -95,11 +129,11 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
         isMobileOpen ? "translate-x-0" : "-translate-x-full"
       } ${isCollapsed ? "w-16" : "w-64"}`}>
         <div className="flex flex-col h-full">
-          {/* Logo */}
+          {/* Logo - reduced by 1/3 */}
           <div className={`p-4 flex items-center ${isCollapsed ? "justify-center" : "justify-between"} cursor-pointer`}
             onClick={() => isCollapsed && setIsCollapsed(false)}>
-             <div className="h-10 flex items-center gap-2">
-              <img src={logoSolarizeBranca} alt="Solarize" className={`${isCollapsed ? "h-8 w-8 object-contain" : "h-9 w-auto"} object-contain`} />
+            <div className="h-7 flex items-center gap-2">
+              <img src={logoSolarizeBranca} alt="Solarize" className={`${isCollapsed ? "h-6 w-6 object-contain" : "h-6 w-auto"} object-contain`} />
             </div>
             {!isCollapsed && (
               <button onClick={(e) => { e.stopPropagation(); toggleCollapse(); }}
@@ -120,64 +154,100 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
 
           {/* Search */}
           {!isCollapsed && (
-            <div className="px-4 mb-4">
+            <div className="px-4 mb-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-sidebar-muted" />
                 <Input placeholder="Buscar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 bg-sidebar-accent border-0 text-sidebar-foreground placeholder:text-sidebar-muted rounded-xl h-10" />
+                  className="pl-9 bg-sidebar-accent border-0 text-sidebar-foreground placeholder:text-sidebar-muted rounded-xl h-9 text-sm" />
               </div>
             </div>
           )}
 
-          {!isCollapsed && (
-            <div className="px-5 mb-2">
-              <span className="text-xs font-medium text-sidebar-muted uppercase tracking-wider">Menu Principal</span>
-            </div>
-          )}
+          {/* Grouped Nav */}
+          <nav className={`flex-1 ${isCollapsed ? "px-2" : "px-3"} overflow-y-auto`}>
+            {menuGroups.map((group) => {
+              const visibleItems = filterItems(group.items);
+              if (visibleItems.length === 0) return null;
 
-          {/* Nav */}
-          <nav className={`flex-1 ${isCollapsed ? "px-2" : "px-3"} space-y-1 overflow-y-auto`}>
-            {filteredMenuItems.map((item) => {
-              const isActive = location.pathname === item.href;
               return (
-                <Link key={item.label} to={item.href} onClick={() => setIsMobileOpen(false)}
-                  title={isCollapsed ? item.label : undefined}
-                  className={`flex items-center gap-3 ${isCollapsed ? "justify-center px-2" : "px-3"} py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                    isActive ? "bg-primary text-primary-foreground shadow-md"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                  }`}>
-                  <item.icon className="w-5 h-5 flex-shrink-0" />
-                  {!isCollapsed && <span>{item.label}</span>}
-                </Link>
+                <div key={group.label} className="mb-3">
+                  {!isCollapsed && (
+                    <div className="px-2 mb-1.5">
+                      <span className="text-[10px] font-semibold text-sidebar-muted uppercase tracking-widest">{group.label}</span>
+                    </div>
+                  )}
+                  <div className="space-y-0.5">
+                    {visibleItems.map((item) => {
+                      const isActive = location.pathname === item.href;
+                      if (item.disabled) {
+                        return (
+                          <div key={item.label}
+                            title={isCollapsed ? item.label : undefined}
+                            className={`flex items-center gap-3 ${isCollapsed ? "justify-center px-2" : "px-3"} py-2 rounded-xl text-sm font-medium opacity-40 cursor-not-allowed`}>
+                            <item.icon className="w-4.5 h-4.5 flex-shrink-0 text-sidebar-muted" />
+                            {!isCollapsed && (
+                              <>
+                                <span className="text-sidebar-muted">{item.label}</span>
+                                {item.badge && (
+                                  <Badge className="ml-auto bg-accent/80 text-accent-foreground text-[9px] px-1.5 py-0 h-4 font-medium">
+                                    {item.badge}
+                                  </Badge>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        );
+                      }
+                      return (
+                        <Link key={item.label} to={item.href} onClick={() => setIsMobileOpen(false)}
+                          title={isCollapsed ? item.label : undefined}
+                          className={`flex items-center gap-3 ${isCollapsed ? "justify-center px-2" : "px-3"} py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                            isActive ? "bg-primary text-primary-foreground shadow-md"
+                              : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                          }`}>
+                          <item.icon className="w-4.5 h-4.5 flex-shrink-0" />
+                          {!isCollapsed && <span>{item.label}</span>}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
 
             {/* Super Admin link */}
             {isSuperAdmin && (
-              <Link to="/super-admin" onClick={() => setIsMobileOpen(false)}
-                title={isCollapsed ? "Super Admin" : undefined}
-                className={`flex items-center gap-3 ${isCollapsed ? "justify-center px-2" : "px-3"} py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  location.pathname === "/super-admin" ? "bg-primary text-primary-foreground shadow-md"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                }`}>
-                <Shield className="w-5 h-5 flex-shrink-0" />
-                {!isCollapsed && <span>Super Admin</span>}
-              </Link>
+              <div className="mb-3">
+                {!isCollapsed && (
+                  <div className="px-2 mb-1.5">
+                    <span className="text-[10px] font-semibold text-sidebar-muted uppercase tracking-widest">Sistema</span>
+                  </div>
+                )}
+                <Link to="/super-admin" onClick={() => setIsMobileOpen(false)}
+                  title={isCollapsed ? "Super Admin" : undefined}
+                  className={`flex items-center gap-3 ${isCollapsed ? "justify-center px-2" : "px-3"} py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    location.pathname === "/super-admin" ? "bg-primary text-primary-foreground shadow-md"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                  }`}>
+                  <Shield className="w-4.5 h-4.5 flex-shrink-0" />
+                  {!isCollapsed && <span>Super Admin</span>}
+                </Link>
+              </div>
             )}
           </nav>
 
-          {/* User */}
-          <div className={`p-4 border-t border-sidebar-border ${isCollapsed ? "flex flex-col items-center gap-2" : ""}`}>
+          {/* User Profile + Subscription + Logout */}
+          <div className={`p-3 border-t border-sidebar-border ${isCollapsed ? "flex flex-col items-center gap-2" : ""}`}>
             {!isCollapsed ? (
               <>
                 <Link to="/company-profile" onClick={() => setIsMobileOpen(false)}
-                  className="flex items-center gap-3 mb-3 p-2 -m-2 rounded-xl hover:bg-sidebar-accent transition-colors cursor-pointer">
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-primary-foreground font-semibold text-sm">
+                  className="flex items-center gap-3 mb-1.5 p-2 rounded-xl hover:bg-sidebar-accent transition-colors cursor-pointer">
+                  <div className="w-9 h-9 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-primary-foreground font-semibold text-xs">
                     {profile?.full_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-sidebar-foreground truncate">{profile?.full_name || "Usuário"}</p>
-                    <p className="text-xs text-sidebar-muted truncate">
+                    <p className="text-[10px] text-sidebar-muted truncate">
                       {isSuperAdmin ? 'Super Admin' :
                        userRoles.includes('admin') ? 'Administrador' : 
                        userRoles.includes('manager') ? 'Gerente' :
@@ -187,8 +257,13 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
                   </div>
                   <Building2 className="w-4 h-4 text-sidebar-muted" />
                 </Link>
+                <Link to="/subscription" onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center gap-3 px-3 py-1.5 rounded-xl text-xs font-medium text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors">
+                  <CreditCard className="w-4 h-4" />
+                  <span>Assinatura</span>
+                </Link>
                 <Button variant="ghost" size="sm"
-                  className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                  className="w-full justify-start text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent mt-0.5 h-8 text-xs"
                   onClick={handleLogout}>
                   <LogOut className="w-4 h-4 mr-2" /> Sair
                 </Button>
@@ -198,6 +273,10 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
                 <Link to="/company-profile" title="Perfil Empresa" onClick={() => setIsMobileOpen(false)}
                   className="p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
                   <Building2 className="w-5 h-5" />
+                </Link>
+                <Link to="/subscription" title="Assinatura" onClick={() => setIsMobileOpen(false)}
+                  className="p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
+                  <CreditCard className="w-5 h-5" />
                 </Link>
                 <button onClick={handleLogout} title="Sair"
                   className="p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
