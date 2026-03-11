@@ -49,6 +49,7 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/s/:slug" element={<TenantSite />} />
+            <Route path="/:slug" element={<TenantSite />} />
             <Route path="/super-admin" element={<SuperAdmin />} />
 
             {/* Dashboard routes share AppLayout — mounts once, no white flash */}
