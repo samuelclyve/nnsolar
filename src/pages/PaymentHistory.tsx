@@ -121,6 +121,6 @@ export default function PaymentHistory() {
           </CardContent>
         </Card>
       </motion.div>
-    </AppLayout>
+    </>
   );
 }

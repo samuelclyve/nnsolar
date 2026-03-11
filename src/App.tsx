@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WorkspaceProvider } from "@/hooks/useWorkspace";
+import { AppLayout } from "@/components/AppLayout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Signup from "./pages/Signup";
@@ -46,20 +47,25 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/crm" element={<CRM />} />
-            <Route path="/installations" element={<Installations />} />
-            <Route path="/clients" element={<Clients />} />
-            <Route path="/schedule" element={<Schedule />} />
-            <Route path="/documents" element={<Documents />} />
-            <Route path="/site-editor" element={<SiteEditor />} />
-            <Route path="/users" element={<UserManagement />} />
-            <Route path="/super-admin" element={<SuperAdmin />} />
-            <Route path="/payment-history" element={<PaymentHistory />} />
-            <Route path="/company-profile" element={<CompanyProfile />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/subscription" element={<Subscription />} />
             <Route path="/s/:slug" element={<TenantSite />} />
+            <Route path="/super-admin" element={<SuperAdmin />} />
+
+            {/* Dashboard routes share AppLayout — mounts once, no white flash */}
+            <Route element={<AppLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/crm" element={<CRM />} />
+              <Route path="/installations" element={<Installations />} />
+              <Route path="/clients" element={<Clients />} />
+              <Route path="/schedule" element={<Schedule />} />
+              <Route path="/documents" element={<Documents />} />
+              <Route path="/site-editor" element={<SiteEditor />} />
+              <Route path="/users" element={<UserManagement />} />
+              <Route path="/payment-history" element={<PaymentHistory />} />
+              <Route path="/company-profile" element={<CompanyProfile />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/subscription" element={<Subscription />} />
+            </Route>
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

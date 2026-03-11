@@ -326,6 +326,6 @@ export default function UserManagement() {
           </div>
         </div>
       </motion.div>
-    </AppLayout>
+    </>
   );
 }

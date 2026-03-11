@@ -204,6 +204,6 @@ export default function CRM() {
           ) : null}
         </DragOverlay>
       </DndContext>
-    </AppLayout>
+    </>
   );
 }

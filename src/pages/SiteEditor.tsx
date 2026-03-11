@@ -735,6 +735,6 @@ export default function SiteEditor() {
           </div>
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </>
   );
 }

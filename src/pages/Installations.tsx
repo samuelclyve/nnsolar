@@ -945,6 +945,6 @@ export default function Installations() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </>
   );
 }

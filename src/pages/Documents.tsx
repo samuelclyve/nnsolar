@@ -720,6 +720,6 @@ export default function Documents() {
           </Card>
         )}
       </div>
-    </AppLayout>
+    </>
   );
 }

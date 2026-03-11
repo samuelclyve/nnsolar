@@ -326,6 +326,6 @@ export default function CompanyProfile() {
           </div>
         </motion.div>
       </div>
-    </AppLayout>
+    </>
   );
 }

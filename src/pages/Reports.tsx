@@ -526,6 +526,6 @@ export default function Reports() {
           </div>
         </TabsContent>
       </Tabs>
-    </AppLayout>
+    </>
   );
 }

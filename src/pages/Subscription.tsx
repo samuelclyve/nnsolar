@@ -286,6 +286,6 @@ export default function Subscription() {
           </CardContent>
         </Card>
       </motion.div>
-    </AppLayout>
+    </>
   );
 }
