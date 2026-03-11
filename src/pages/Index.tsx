@@ -294,17 +294,17 @@ export default function Index() {
             {/* Brand */}
             <div className="lg:col-span-1">
               <img src={logoSolarizeBranca} alt="Solarize" className="h-9 w-auto object-contain mb-4" />
-              <p className="text-background/60 text-sm leading-relaxed mb-6">
+              <p className="text-primary-foreground/70 text-sm leading-relaxed mb-6">
                 A plataforma completa para empresas de energia solar. CRM, gestão de instalações, site e muito mais.
               </p>
               <div className="flex gap-3">
-                <a href="https://instagram.com/saborize.app" target="_blank" rel="noopener noreferrer"
-                  className="w-9 h-9 bg-background/10 rounded-full flex items-center justify-center hover:bg-primary transition-colors group">
-                  <Instagram className="w-4 h-4 text-background/70 group-hover:text-primary-foreground" />
+                <a href="https://instagram.com/solarize.app" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 bg-primary-foreground/15 rounded-full flex items-center justify-center hover:bg-primary-foreground/25 transition-colors">
+                  <Instagram className="w-4 h-4 text-primary-foreground" />
                 </a>
                 <a href="mailto:contato@solarize.app"
-                  className="w-9 h-9 bg-background/10 rounded-full flex items-center justify-center hover:bg-primary transition-colors group">
-                  <Mail className="w-4 h-4 text-background/70 group-hover:text-primary-foreground" />
+                  className="w-9 h-9 bg-primary-foreground/15 rounded-full flex items-center justify-center hover:bg-primary-foreground/25 transition-colors">
+                  <Mail className="w-4 h-4 text-primary-foreground" />
                 </a>
               </div>
             </div>
