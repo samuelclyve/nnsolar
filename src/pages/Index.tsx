@@ -311,13 +311,13 @@ export default function Index() {
 
             {/* Produto */}
             <div>
-              <h4 className="font-bold text-sm uppercase tracking-wider text-background/90 mb-4">Produto</h4>
+              <h4 className="font-bold text-sm uppercase tracking-wider text-primary-foreground/90 mb-4">Produto</h4>
               <ul className="space-y-3">
-                <li><a href="#features" className="text-sm text-background/60 hover:text-primary transition-colors">Funcionalidades</a></li>
-                <li><a href="#pricing" className="text-sm text-background/60 hover:text-primary transition-colors">Preços</a></li>
-                <li><a href="#testimonials" className="text-sm text-background/60 hover:text-primary transition-colors">Depoimentos</a></li>
-                <li><Link to="/signup" className="text-sm text-background/60 hover:text-primary transition-colors">Começar grátis</Link></li>
-                <li><Link to="/auth" className="text-sm text-background/60 hover:text-primary transition-colors">Entrar</Link></li>
+                <li><a href="#features" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Funcionalidades</a></li>
+                <li><a href="#pricing" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Preços</a></li>
+                <li><a href="#testimonials" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Depoimentos</a></li>
+                <li><Link to="/signup" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Começar grátis</Link></li>
+                <li><Link to="/auth" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Entrar</Link></li>
               </ul>
             </div>
 
