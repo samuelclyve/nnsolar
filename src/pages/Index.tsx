@@ -481,14 +481,20 @@ export default function Index() {
             {industries.map((item, i) => (
               <motion.div
                 key={item.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 25, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: i * 0.06, duration: 0.5, type: "spring" }}
               >
-                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                <motion.div
+                  initial={{ scale: 0, rotate: -10 }}
+                  whileInView={{ scale: 1, rotate: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.06 + 0.15, type: "spring", stiffness: 250 }}
+                  className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4"
+                >
                   <item.icon className="w-5 h-5 text-primary" />
-                </div>
+                </motion.div>
                 <h3 className="font-bold text-foreground text-sm mb-1">{item.title}</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
               </motion.div>
