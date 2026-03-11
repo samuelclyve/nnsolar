@@ -124,7 +124,7 @@ export default function SiteEditor() {
       for (const [key, value] of Object.entries(settings)) {
         await supabase.from("site_settings").upsert(
           { setting_key: key, setting_value: value, setting_type: "text", workspace_id: workspaceId },
-          { onConflict: "setting_key" }
+          { onConflict: "workspace_id,setting_key" }
         );
       }
       toast({ title: "Configurações salvas com sucesso!" });
