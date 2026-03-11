@@ -168,7 +168,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <AppLayout title="Dashboard">
+    <>
       {showOnboarding && (
         <Onboarding onComplete={() => setShowOnboarding(false)} />
       )}
