@@ -253,17 +253,17 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
           </nav>
 
           {/* User Profile + Subscription + Logout */}
-          <div className={`p-2 border-t border-sidebar-border ${isCollapsed ? "flex flex-col items-center gap-1" : ""}`}>
+          <div className={`p-2.5 border-t border-sidebar-border ${isCollapsed ? "flex flex-col items-center gap-1.5" : ""}`}>
             {!isCollapsed ? (
               <>
                 <Link to="/company-profile" onClick={() => setIsMobileOpen(false)}
-                  className="flex items-center gap-2.5 mb-1 p-1.5 rounded-lg hover:bg-sidebar-accent transition-colors cursor-pointer">
-                  <div className="w-7 h-7 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-primary-foreground font-semibold text-[10px]">
+                  className="flex items-center gap-3 mb-1.5 p-2 rounded-lg hover:bg-sidebar-accent transition-colors cursor-pointer">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-primary-foreground font-semibold text-xs">
                     {profile?.full_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-sidebar-foreground truncate">{profile?.full_name || "Usuário"}</p>
-                    <p className="text-[9px] text-sidebar-muted truncate">
+                    <p className="text-sm font-medium text-sidebar-foreground truncate">{profile?.full_name || "Usuário"}</p>
+                    <p className="text-[10px] text-sidebar-muted truncate">
                       {isSuperAdmin ? 'Super Admin' :
                        userRoles.includes('admin') ? 'Administrador' : 
                        userRoles.includes('manager') ? 'Gerente' :
@@ -271,17 +271,17 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
                        userRoles.includes('technician') ? 'Técnico' : 'Staff'}
                     </p>
                   </div>
-                  <Building2 className="w-3.5 h-3.5 text-sidebar-muted" />
+                  <Building2 className="w-4 h-4 text-sidebar-muted" />
                 </Link>
                 <Link to="/subscription" onClick={() => setIsMobileOpen(false)}
-                  className="flex items-center gap-2.5 px-2.5 py-1 rounded-lg text-[10px] font-medium text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors">
-                  <CreditCard className="w-3.5 h-3.5" />
+                  className="flex items-center gap-3 px-3 py-1.5 rounded-lg text-xs font-medium text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors">
+                  <CreditCard className="w-4 h-4" />
                   <span>Assinatura</span>
                 </Link>
                 <Button variant="ghost" size="sm"
-                  className="w-full justify-start text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent mt-0.5 h-6 text-[10px] px-2.5"
+                  className="w-full justify-start text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent mt-0.5 h-7 text-xs px-3"
                   onClick={handleLogout}>
-                  <LogOut className="w-3.5 h-3.5 mr-2" /> Sair
+                  <LogOut className="w-4 h-4 mr-2" /> Sair
                 </Button>
               </>
             ) : (
