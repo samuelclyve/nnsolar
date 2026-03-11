@@ -58,6 +58,7 @@ const App = () => (
             <Route path="/payment-history" element={<PaymentHistory />} />
             <Route path="/company-profile" element={<CompanyProfile />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/subscription" element={<Subscription />} />
             <Route path="/s/:slug" element={<TenantSite />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
