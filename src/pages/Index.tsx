@@ -1,22 +1,17 @@
-import { useState, useCallback, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { 
   BarChart3, Users, Wrench, Globe, Calendar, 
   FileText, ArrowRight, Check, Zap, Star,
   BookOpen, Download, Mail, Instagram, 
-  TrendingUp, Shield, Clock, Sparkles,
+  TrendingUp, Shield, Sparkles,
   MessageCircle, PieChart, Settings, Smartphone,
-  Target, LayoutDashboard, Bell, Lock, ChevronDown
+  Target, LayoutDashboard, Bell, Lock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MainHeader } from "@/components/landing/MainHeader";
-import logoSolarize from "@/assets/logo-solarize.png";
 import logoSolarizeBranca from "@/assets/logo-solarize-branca.png";
-import iconeSolarize from "@/assets/icone-solarize.png";
-
-const MENU_CLOSE_DELAY = 200;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
