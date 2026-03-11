@@ -275,6 +275,41 @@ export default function SiteEditor() {
                       <p className="text-xs text-muted-foreground">PNG ou JPG, máx. 2MB</p>
                     </div>
                   </div>
+                  {/* Logo variant selector */}
+                  <div className="mt-4 space-y-3">
+                    <Label className="text-sm font-medium">Versão do logo no cabeçalho</Label>
+                    <p className="text-xs text-muted-foreground">Escolha a versão do logo que melhor contrasta com o fundo do cabeçalho do seu site.</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { value: "original", label: "Original", bg: "bg-muted", textColor: "text-foreground" },
+                        { value: "white", label: "Branca", bg: "bg-gray-800", textColor: "text-white" },
+                        { value: "black", label: "Preta", bg: "bg-white border border-border", textColor: "text-black" },
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setSettings({ ...settings, header_logo_variant: opt.value })}
+                          className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-all ${opt.bg} ${
+                            (settings.header_logo_variant || "original") === opt.value
+                              ? "ring-2 ring-primary ring-offset-2"
+                              : "opacity-70 hover:opacity-100"
+                          }`}
+                        >
+                          {(settings.site_logo_url || workspace?.logo_url) ? (
+                            <img
+                              src={settings.site_logo_url || workspace?.logo_url || ""}
+                              alt="Logo preview"
+                              className={`h-8 w-auto object-contain ${opt.value === "white" ? "brightness-0 invert" : opt.value === "black" ? "brightness-0" : ""}`}
+                            />
+                          ) : (
+                            <Image className={`w-6 h-6 ${opt.textColor}`} />
+                          )}
+                          <span className={`text-xs font-medium ${opt.textColor}`}>{opt.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Logo example */}
                   <div className="mt-4 p-4 bg-muted/50 rounded-xl border border-border">
                     <p className="text-xs font-medium text-foreground mb-2">📐 Exemplo de como enviar seu logotipo:</p>

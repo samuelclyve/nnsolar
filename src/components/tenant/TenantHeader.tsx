@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, MessageCircle, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TenantHeaderProps {
   workspace: any;
+  settings?: Record<string, string>;
 }
 
 const navLinks = [
@@ -15,12 +16,20 @@ const navLinks = [
   { label: "Contato", href: "#contato" },
 ];
 
-export function TenantHeader({ workspace }: TenantHeaderProps) {
+export function TenantHeader({ workspace, settings = {} }: TenantHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const whatsappLink = workspace.whatsapp
     ? `https://wa.me/55${workspace.whatsapp.replace(/\D/g, "")}`
     : null;
+
+  const logoVariant = settings.header_logo_variant || "original";
+  const logoFilterClass =
+    logoVariant === "white"
+      ? "brightness-0 invert"
+      : logoVariant === "black"
+        ? "brightness-0"
+        : "";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
@@ -28,7 +37,11 @@ export function TenantHeader({ workspace }: TenantHeaderProps) {
         <div className="container flex items-center justify-between h-20">
           <a href="#home" className="flex items-center">
             {workspace.logo_url ? (
-              <img src={workspace.logo_url} alt={workspace.name} className="h-7 md:h-8 w-auto object-contain" />
+              <img
+                src={workspace.logo_url}
+                alt={workspace.name}
+                className={`h-7 md:h-8 w-auto object-contain ${logoFilterClass}`}
+              />
             ) : (
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">

@@ -156,7 +156,7 @@ export default function TenantSite() {
 
   return (
     <div className="min-h-screen bg-background" style={customStyles}>
-      <TenantHeader workspace={mergedWorkspace} />
+      <TenantHeader workspace={mergedWorkspace} settings={settings} />
       <TenantHero settings={settings} workspace={mergedWorkspace} />
       <TenantCarousel slides={slides} />
       <TenantSimulator />
