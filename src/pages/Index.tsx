@@ -433,14 +433,22 @@ export default function Index() {
             {useCases.map((uc, i) => (
               <motion.div
                 key={uc.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 25, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
+                transition={{ delay: i * 0.06, duration: 0.5, type: "spring" }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="cursor-pointer"
               >
-                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  whileInView={{ scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.06 + 0.2, type: "spring", stiffness: 300 }}
+                  className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4"
+                >
                   <uc.icon className="w-5 h-5 text-primary" />
-                </div>
+                </motion.div>
                 <h3 className="font-bold text-foreground mb-1">{uc.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{uc.description}</p>
                 <a href="#pricing" className="inline-flex items-center gap-1 text-primary text-sm font-medium mt-3 hover:gap-2 transition-all">
