@@ -216,6 +216,15 @@ export default function Installations() {
     setIsLoading(false);
   };
 
+  const fetchClients = async () => {
+    const { data } = await supabase
+      .from("clients")
+      .select("id, full_name, phone, email, address, city")
+      .eq("workspace_id", workspaceId!)
+      .order("full_name");
+    if (data) setClients(data);
+  };
+
   const fetchDocuments = async (installationId: string) => {
     const { data, error } = await supabase
       .from("installation_documents")
@@ -252,13 +261,33 @@ export default function Installations() {
     })));
   };
 
+  const handleClientSelect = (clientId: string) => {
+    setSelectedClientId(clientId);
+    const client = clients.find(c => c.id === clientId);
+    if (client) {
+      setNewInstallation(prev => ({
+        ...prev,
+        client_name: client.full_name,
+        client_phone: client.phone || "",
+        client_email: client.email || "",
+        address: client.address || prev.address,
+        city: client.city || prev.city,
+      }));
+    }
+  };
+
   const createInstallation = async () => {
+    if (!selectedClientId) {
+      toast({ title: "Selecione um cliente", variant: "destructive" });
+      return;
+    }
     if (!newInstallation.client_name) {
       toast({ title: "Preencha o nome do cliente", variant: "destructive" });
       return;
     }
 
     const { error } = await supabase.from("installations").insert({
+      client_id: selectedClientId,
       client_name: newInstallation.client_name,
       client_phone: newInstallation.client_phone || null,
       client_email: newInstallation.client_email || null,
@@ -276,6 +305,7 @@ export default function Installations() {
 
     toast({ title: "Instalação criada com sucesso!" });
     setNewInstallation({ client_name: "", client_phone: "", client_email: "", address: "", city: "", power_kwp: "", panel_count: "" });
+    setSelectedClientId("");
     setIsDialogOpen(false);
     fetchInstallations();
   };
