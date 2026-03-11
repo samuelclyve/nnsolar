@@ -1,19 +1,15 @@
-import { useState, useCallback, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { 
   ArrowRight, Zap, Cpu, 
   Smartphone, MessageCircle, 
-  Construction, Plug, ChevronDown, Database,
+  Construction, Plug, Database,
   Mail, Instagram, BookOpen, Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { FeaturesMegaMenu } from "@/components/landing/FeaturesMegaMenu";
+import { MainHeader } from "@/components/landing/MainHeader";
 import logoSolarizeBranca from "@/assets/logo-solarize-branca.png";
-import iconeSolarize from "@/assets/icone-solarize.png";
-
-const MENU_CLOSE_DELAY = 200;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
