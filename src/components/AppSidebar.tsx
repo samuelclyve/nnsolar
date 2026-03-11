@@ -204,7 +204,7 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
                                 <>
                                   <span className="text-sidebar-muted">{item.label}</span>
                                   {item.badge && (
-                                    <Badge className="ml-auto bg-accent/80 text-accent-foreground text-[8px] px-1 py-0 h-3.5 font-medium">
+                                    <Badge className="ml-auto bg-accent/80 text-accent-foreground text-[10px] px-1.5 py-0 h-4 font-medium">
                                       {item.badge}
                                     </Badge>
                                   )}
