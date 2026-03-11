@@ -288,7 +288,7 @@ export default function Index() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-primary text-primary-foreground">
+      <footer className="text-primary-foreground" style={{ backgroundColor: 'hsl(28, 100%, 50%)' }}>
         <div className="container mx-auto px-4 py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
             {/* Brand */}
