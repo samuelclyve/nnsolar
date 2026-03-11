@@ -26,6 +26,7 @@ import Materials from "./pages/Materials";
 import Integrations from "./pages/Integrations";
 import FeatureDetail from "./pages/FeatureDetail";
 import Reports from "./pages/Reports";
+import Financeiro from "./pages/Financeiro";
 import Subscription from "./pages/Subscription";
 import NotFound from "./pages/NotFound";
 
