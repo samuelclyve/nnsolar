@@ -275,6 +275,23 @@ export default function SiteEditor() {
                       <p className="text-xs text-muted-foreground">PNG ou JPG, máx. 2MB</p>
                     </div>
                   </div>
+                  {/* Logo example */}
+                  <div className="mt-4 p-4 bg-muted/50 rounded-xl border border-border">
+                    <p className="text-xs font-medium text-foreground mb-2">📐 Exemplo de como enviar seu logotipo:</p>
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20 rounded-xl bg-secondary flex items-center justify-center overflow-hidden p-2">
+                        <img src="/src/assets/logo-solarize-branca.png" alt="Exemplo logo" className="w-full h-full object-contain" />
+                      </div>
+                      <div className="flex-1">
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          <li>✅ Formato <strong>PNG</strong> com fundo transparente</li>
+                          <li>✅ Logotipo horizontal (retangular)</li>
+                          <li>✅ Boa resolução (mínimo 400px de largura)</li>
+                          <li>❌ Evite fotos ou imagens quadradas</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
