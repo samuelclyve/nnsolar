@@ -1,19 +1,15 @@
-import { useState, useCallback, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { 
   ArrowRight, Zap, Cpu, 
   Smartphone, MessageCircle, 
-  Construction, Plug, ChevronDown, Database,
+  Construction, Plug, Database,
   Mail, Instagram, BookOpen, Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { FeaturesMegaMenu } from "@/components/landing/FeaturesMegaMenu";
+import { MainHeader } from "@/components/landing/MainHeader";
 import logoSolarizeBranca from "@/assets/logo-solarize-branca.png";
-import iconeSolarize from "@/assets/icone-solarize.png";
-
-const MENU_CLOSE_DELAY = 200;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -39,85 +35,9 @@ const statusColors: Record<string, string> = {
 };
 
 export default function Integrations() {
-  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
-  const megaMenuTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (megaMenuTimeout.current) clearTimeout(megaMenuTimeout.current);
-    };
-  }, []);
-
-  const handleMegaMenuEnter = useCallback(() => {
-    if (megaMenuTimeout.current) clearTimeout(megaMenuTimeout.current);
-    setMegaMenuOpen(true);
-  }, []);
-
-  const handleMegaMenuLeave = useCallback(() => {
-    megaMenuTimeout.current = setTimeout(() => setMegaMenuOpen(false), MENU_CLOSE_DELAY);
-  }, []);
-
   return (
     <div className="min-h-screen bg-card">
-      {/* Header - Same as Index */}
-      <header className="fixed top-0 left-0 right-0 z-50">
-        <div className="container mx-auto px-4 pt-4">
-          <nav className="relative flex items-center justify-between h-14 px-6 rounded-full overflow-hidden border border-primary/20 shadow-sm">
-            <div className="absolute inset-0 bg-primary/90 backdrop-blur-xl" />
-            <div className="absolute inset-0 opacity-[0.08]" style={{
-              backgroundImage: `linear-gradient(hsl(0 0% 100% / 0.5) 1px, transparent 1px), linear-gradient(90deg, hsl(0 0% 100% / 0.5) 1px, transparent 1px)`,
-              backgroundSize: '24px 24px',
-            }} />
-            
-            <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-15 pointer-events-none">
-              <img src={iconeSolarize} alt="" className="h-24 w-auto object-contain -ml-4" />
-            </div>
-
-            <Link to="/" className="flex items-center relative z-10">
-              <img src={logoSolarizeBranca} alt="Solarize" className="h-5 w-auto object-contain" />
-            </Link>
-
-            <div className="hidden md:flex items-center gap-1 relative z-10">
-              <div
-                className="relative"
-                onMouseEnter={handleMegaMenuEnter}
-                onMouseLeave={handleMegaMenuLeave}
-              >
-                <button className="flex items-center gap-1 px-4 py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors rounded-full hover:bg-primary-foreground/10">
-                  Funcionalidades
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${megaMenuOpen ? 'rotate-180' : ''}`} />
-                </button>
-                <FeaturesMegaMenu
-                  isOpen={megaMenuOpen}
-                  onClose={() => setMegaMenuOpen(false)}
-                  onMouseEnter={handleMegaMenuEnter}
-                  onMouseLeave={handleMegaMenuLeave}
-                />
-              </div>
-              <a href="/#pricing" className="px-4 py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors rounded-full hover:bg-primary-foreground/10">
-                Preços
-              </a>
-              <a href="/#testimonials" className="px-4 py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors rounded-full hover:bg-primary-foreground/10">
-                Depoimentos
-              </a>
-              <Link to="/integracoes" className="px-4 py-2 text-sm text-primary-foreground bg-primary-foreground/15 transition-colors rounded-full">
-                Integrações
-              </Link>
-            </div>
-
-            <div className="flex items-center gap-2 relative z-10">
-              <Link to="/auth">
-                <Button variant="ghost" size="sm" className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">Entrar</Button>
-              </Link>
-              <Link to="/signup">
-                <Button size="sm" className="gap-1.5 bg-card text-foreground hover:bg-card/90">
-                  Começar grátis <ArrowRight className="w-3.5 h-3.5" />
-                </Button>
-              </Link>
-            </div>
-          </nav>
-        </div>
-      </header>
+      <MainHeader activeLink="integracoes" />
 
       {/* Hero */}
       <section className="pt-32 pb-20 relative overflow-hidden">
