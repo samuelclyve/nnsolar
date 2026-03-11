@@ -156,7 +156,7 @@ export default function CRM() {
   const activeLead = activeId ? leads.find(l => l.id === activeId) : null;
 
   return (
-    <AppLayout title="CRM - Gestão de Leads">
+    <>
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
