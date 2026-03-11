@@ -58,8 +58,6 @@ export default function Index() {
             <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Funcionalidades</a>
             <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Preços</a>
             <a href="#testimonials" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Depoimentos</a>
-            <a href="#blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</a>
-            <a href="#materiais" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Materiais</a>
           </nav>
           <div className="flex items-center gap-3">
             <Link to="/auth">
@@ -290,88 +288,88 @@ export default function Index() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-foreground text-background">
+      <footer className="bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
             {/* Brand */}
             <div className="lg:col-span-1">
               <img src={logoSolarizeBranca} alt="Solarize" className="h-9 w-auto object-contain mb-4" />
-              <p className="text-background/60 text-sm leading-relaxed mb-6">
+              <p className="text-primary-foreground/70 text-sm leading-relaxed mb-6">
                 A plataforma completa para empresas de energia solar. CRM, gestão de instalações, site e muito mais.
               </p>
               <div className="flex gap-3">
-                <a href="https://instagram.com/saborize.app" target="_blank" rel="noopener noreferrer"
-                  className="w-9 h-9 bg-background/10 rounded-full flex items-center justify-center hover:bg-primary transition-colors group">
-                  <Instagram className="w-4 h-4 text-background/70 group-hover:text-primary-foreground" />
+                <a href="https://instagram.com/solarize.app" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 bg-primary-foreground/15 rounded-full flex items-center justify-center hover:bg-primary-foreground/25 transition-colors">
+                  <Instagram className="w-4 h-4 text-primary-foreground" />
                 </a>
                 <a href="mailto:contato@solarize.app"
-                  className="w-9 h-9 bg-background/10 rounded-full flex items-center justify-center hover:bg-primary transition-colors group">
-                  <Mail className="w-4 h-4 text-background/70 group-hover:text-primary-foreground" />
+                  className="w-9 h-9 bg-primary-foreground/15 rounded-full flex items-center justify-center hover:bg-primary-foreground/25 transition-colors">
+                  <Mail className="w-4 h-4 text-primary-foreground" />
                 </a>
               </div>
             </div>
 
             {/* Produto */}
             <div>
-              <h4 className="font-bold text-sm uppercase tracking-wider text-background/90 mb-4">Produto</h4>
+              <h4 className="font-bold text-sm uppercase tracking-wider text-primary-foreground/90 mb-4">Produto</h4>
               <ul className="space-y-3">
-                <li><a href="#features" className="text-sm text-background/60 hover:text-primary transition-colors">Funcionalidades</a></li>
-                <li><a href="#pricing" className="text-sm text-background/60 hover:text-primary transition-colors">Preços</a></li>
-                <li><a href="#testimonials" className="text-sm text-background/60 hover:text-primary transition-colors">Depoimentos</a></li>
-                <li><Link to="/signup" className="text-sm text-background/60 hover:text-primary transition-colors">Começar grátis</Link></li>
-                <li><Link to="/auth" className="text-sm text-background/60 hover:text-primary transition-colors">Entrar</Link></li>
+                <li><a href="#features" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Funcionalidades</a></li>
+                <li><a href="#pricing" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Preços</a></li>
+                <li><a href="#testimonials" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Depoimentos</a></li>
+                <li><Link to="/signup" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Começar grátis</Link></li>
+                <li><Link to="/auth" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Entrar</Link></li>
               </ul>
             </div>
 
             {/* Conteúdo */}
             <div>
-              <h4 className="font-bold text-sm uppercase tracking-wider text-background/90 mb-4">Conteúdo</h4>
+              <h4 className="font-bold text-sm uppercase tracking-wider text-primary-foreground/90 mb-4">Conteúdo</h4>
               <ul className="space-y-3">
                 <li>
-                  <a href="#blog" className="text-sm text-background/60 hover:text-primary transition-colors flex items-center gap-2">
+                  <a href="#blog" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors flex items-center gap-2">
                     <BookOpen className="w-3.5 h-3.5" /> Blog
                   </a>
                 </li>
                 <li>
-                  <a href="#materiais" className="text-sm text-background/60 hover:text-primary transition-colors flex items-center gap-2">
+                  <a href="#materiais" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors flex items-center gap-2">
                     <Download className="w-3.5 h-3.5" /> Materiais para Download
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-background/60 hover:text-primary transition-colors">Guia: Como abrir uma empresa solar</a>
+                  <a href="#" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Guia: Como abrir uma empresa solar</a>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-background/60 hover:text-primary transition-colors">E-book: Marketing para solar</a>
+                  <a href="#" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">E-book: Marketing para solar</a>
                 </li>
               </ul>
             </div>
 
             {/* Suporte */}
             <div>
-              <h4 className="font-bold text-sm uppercase tracking-wider text-background/90 mb-4">Suporte</h4>
+              <h4 className="font-bold text-sm uppercase tracking-wider text-primary-foreground/90 mb-4">Suporte</h4>
               <ul className="space-y-3">
                 <li>
-                  <a href="mailto:contato@solarize.app" className="text-sm text-background/60 hover:text-primary transition-colors flex items-center gap-2">
+                  <a href="mailto:contato@solarize.app" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors flex items-center gap-2">
                     <Mail className="w-3.5 h-3.5" /> contato@solarize.app
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-background/60 hover:text-primary transition-colors">Central de Ajuda</a>
+                  <a href="#" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Central de Ajuda</a>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-background/60 hover:text-primary transition-colors">Termos de Uso</a>
+                  <a href="#" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Termos de Uso</a>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-background/60 hover:text-primary transition-colors">Política de Privacidade</a>
+                  <a href="#" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Política de Privacidade</a>
                 </li>
               </ul>
             </div>
           </div>
 
           {/* Bottom */}
-          <div className="pt-8 border-t border-background/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-background/50">
+          <div className="pt-8 border-t border-primary-foreground/15 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-primary-foreground/60">
             <p>© {new Date().getFullYear()} Solarize. Todos os direitos reservados.</p>
-            <p className="text-background/40">Feito com ☀️ para empresas de energia solar</p>
+            <p className="text-primary-foreground/50">Feito com ☀️ para empresas de energia solar</p>
           </div>
         </div>
       </footer>
