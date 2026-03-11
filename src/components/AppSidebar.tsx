@@ -236,12 +236,12 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
               <div className="mb-1">
                 {!isCollapsed && (
                   <div className="px-2 py-1">
-                    <span className="text-[9px] font-semibold text-sidebar-muted uppercase tracking-widest">Sistema</span>
+                    <span className="text-[10px] font-semibold text-sidebar-muted uppercase tracking-widest">Sistema</span>
                   </div>
                 )}
                 <Link to="/super-admin" onClick={() => setIsMobileOpen(false)}
                   title={isCollapsed ? "Super Admin" : undefined}
-                  className={`flex items-center gap-2.5 ${isCollapsed ? "justify-center px-1.5" : "px-2.5"} py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                  className={`flex items-center gap-3 ${isCollapsed ? "justify-center px-2" : "px-3"} py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     location.pathname === "/super-admin" ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                   }`}>
