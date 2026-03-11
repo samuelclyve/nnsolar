@@ -323,23 +323,23 @@ export default function Index() {
 
             {/* Conteúdo */}
             <div>
-              <h4 className="font-bold text-sm uppercase tracking-wider text-background/90 mb-4">Conteúdo</h4>
+              <h4 className="font-bold text-sm uppercase tracking-wider text-primary-foreground/90 mb-4">Conteúdo</h4>
               <ul className="space-y-3">
                 <li>
-                  <a href="#blog" className="text-sm text-background/60 hover:text-primary transition-colors flex items-center gap-2">
+                  <a href="#blog" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors flex items-center gap-2">
                     <BookOpen className="w-3.5 h-3.5" /> Blog
                   </a>
                 </li>
                 <li>
-                  <a href="#materiais" className="text-sm text-background/60 hover:text-primary transition-colors flex items-center gap-2">
+                  <a href="#materiais" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors flex items-center gap-2">
                     <Download className="w-3.5 h-3.5" /> Materiais para Download
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-background/60 hover:text-primary transition-colors">Guia: Como abrir uma empresa solar</a>
+                  <a href="#" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Guia: Como abrir uma empresa solar</a>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-background/60 hover:text-primary transition-colors">E-book: Marketing para solar</a>
+                  <a href="#" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">E-book: Marketing para solar</a>
                 </li>
               </ul>
             </div>
