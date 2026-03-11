@@ -367,9 +367,9 @@ export default function Index() {
           </div>
 
           {/* Bottom */}
-          <div className="pt-8 border-t border-background/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-background/50">
+          <div className="pt-8 border-t border-primary-foreground/15 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-primary-foreground/60">
             <p>© {new Date().getFullYear()} Solarize. Todos os direitos reservados.</p>
-            <p className="text-background/40">Feito com ☀️ para empresas de energia solar</p>
+            <p className="text-primary-foreground/50">Feito com ☀️ para empresas de energia solar</p>
           </div>
         </div>
       </footer>
