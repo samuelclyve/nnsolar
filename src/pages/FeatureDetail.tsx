@@ -394,6 +394,94 @@ function FeatureMockup({ type }: { type: string }) {
   }
 }
 
+function FeatureDetailSection({ feature }: { feature: FeatureData }) {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+
+  const mockupY = useTransform(scrollYProgress, [0, 1], [60, -60]);
+  const mockupRotate = useTransform(scrollYProgress, [0, 0.5, 1], [2, 0, -2]);
+  const textY = useTransform(scrollYProgress, [0, 1], [30, -30]);
+
+  return (
+    <section ref={sectionRef} className="py-24 bg-background relative overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.02]" style={gridBg} />
+      <div className="container mx-auto px-4 relative">
+        <div className="flex flex-col lg:flex-row items-start gap-12 lg:gap-20 max-w-6xl mx-auto">
+          {/* Bullets with stagger */}
+          <motion.div className="flex-1" style={{ y: textY }}>
+            <motion.h2
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="text-2xl md:text-3xl font-display font-bold text-foreground mb-8"
+            >
+              O que você pode fazer
+            </motion.h2>
+            <ul className="space-y-4">
+              {feature.bullets.map((bullet, i) => (
+                <motion.li
+                  key={bullet}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08, duration: 0.5 }}
+                  className="flex items-start gap-3"
+                >
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    whileInView={{ scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.08 + 0.2, type: "spring", stiffness: 300 }}
+                    className="w-6 h-6 rounded-full bg-success/15 flex items-center justify-center flex-shrink-0 mt-0.5"
+                  >
+                    <Check className="w-3.5 h-3.5 text-success" />
+                  </motion.div>
+                  <span className="text-foreground">{bullet}</span>
+                </motion.li>
+              ))}
+            </ul>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="mt-10 p-6 rounded-2xl bg-primary/5 border border-primary/10"
+            >
+              <p className="text-sm text-muted-foreground mb-1">Incluído em todos os planos</p>
+              <p className="font-bold text-foreground">14 dias grátis — sem cartão de crédito</p>
+            </motion.div>
+          </motion.div>
+
+          {/* Parallax Mockup */}
+          <div className="flex-1 w-full">
+            <motion.div
+              style={{ y: mockupY, rotateZ: mockupRotate }}
+              className="rounded-2xl overflow-hidden border border-border/60 bg-card shadow-2xl relative"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, type: "spring" }}
+                className="relative"
+              >
+                <div className="absolute inset-0 opacity-[0.03]" style={gridBg} />
+                <div className="p-8 md:p-10 relative">
+                  <FeatureMockup type={feature.mockup} />
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function FeatureDetail() {
   const { slug } = useParams<{ slug: string }>();
   const feature = features.find((f) => f.slug === slug);
