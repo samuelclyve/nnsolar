@@ -165,9 +165,9 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
           {!isCollapsed && (
             <div className="px-3 mb-2">
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-sidebar-muted" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-sidebar-muted" />
                 <Input placeholder="Buscar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 bg-sidebar-accent border-0 text-sidebar-foreground placeholder:text-sidebar-muted rounded-lg h-7 text-xs" />
+                  className="pl-8 bg-sidebar-accent border-0 text-sidebar-foreground placeholder:text-sidebar-muted rounded-lg h-8 text-sm" />
               </div>
             </div>
           )}
