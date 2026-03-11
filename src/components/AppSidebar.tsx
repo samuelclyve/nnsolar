@@ -2,7 +2,7 @@ import { useState, useEffect, createContext, useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, BarChart3, Wrench, Users, Calendar, FileText, 
-  LogOut, Menu, X, Globe, Search, ChevronLeft, UserCircle, Shield, Receipt, Building2
+  LogOut, Menu, X, Globe, Search, ChevronLeft, UserCircle, Shield, Receipt, Building2, ClipboardList
 } from "lucide-react";
 import logoSolarizeBranca from "@/assets/logo-solarize-branca.png";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ const menuItems: MenuItem[] = [
   { icon: Globe, label: "Edição Site", href: "/site-editor", roles: ["admin", "manager", "super_admin"] },
   { icon: Users, label: "Usuários", href: "/users", roles: ["admin", "super_admin"] },
   { icon: FileText, label: "Documentos", href: "/documents", roles: ["admin", "manager", "comercial", "technician", "super_admin"] },
+  { icon: ClipboardList, label: "Relatórios", href: "/reports", roles: ["admin", "manager", "super_admin"] },
   { icon: Receipt, label: "Pagamentos", href: "/payment-history", roles: ["admin", "super_admin"] },
   { icon: Building2, label: "Perfil Empresa", href: "/company-profile", roles: ["admin", "super_admin"] },
 ];
