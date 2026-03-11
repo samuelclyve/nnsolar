@@ -52,6 +52,7 @@ const menuGroups: MenuGroup[] = [
   {
     label: "Gestão",
     items: [
+      { icon: CreditCard, label: "Financeiro", href: "/financeiro", roles: ["admin", "manager", "super_admin"] },
       { icon: ClipboardList, label: "Relatórios", href: "/reports", roles: ["admin", "manager", "super_admin"] },
       { icon: Users, label: "Usuários", href: "/users", roles: ["admin", "super_admin"] },
     ],
