@@ -63,7 +63,7 @@ export default function PaymentHistory() {
   };
 
   return (
-    <AppLayout title="Histórico de Pagamentos">
+    <>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card>
           <CardHeader>
