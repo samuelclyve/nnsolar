@@ -140,8 +140,18 @@ interface NotificationLog {
   sender_name?: string;
 }
 
+interface ClientOption {
+  id: string;
+  full_name: string;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  city: string | null;
+}
+
 export default function Installations() {
   const [installations, setInstallations] = useState<Installation[]>([]);
+  const [clients, setClients] = useState<ClientOption[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
@@ -156,6 +166,7 @@ export default function Installations() {
   const [customDate, setCustomDate] = useState("");
   const [customMessage, setCustomMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [newInstallation, setNewInstallation] = useState({
     client_name: "",
     client_phone: "",
@@ -169,7 +180,10 @@ export default function Installations() {
   const { workspaceId } = useWorkspace();
 
   useEffect(() => {
-    if (workspaceId) fetchInstallations();
+    if (workspaceId) {
+      fetchInstallations();
+      fetchClients();
+    }
   }, [workspaceId]);
 
   useEffect(() => {
@@ -200,6 +214,15 @@ export default function Installations() {
 
     setInstallations(data || []);
     setIsLoading(false);
+  };
+
+  const fetchClients = async () => {
+    const { data } = await supabase
+      .from("clients")
+      .select("id, full_name, phone, email, address, city")
+      .eq("workspace_id", workspaceId!)
+      .order("full_name");
+    if (data) setClients(data);
   };
 
   const fetchDocuments = async (installationId: string) => {
@@ -238,13 +261,33 @@ export default function Installations() {
     })));
   };
 
+  const handleClientSelect = (clientId: string) => {
+    setSelectedClientId(clientId);
+    const client = clients.find(c => c.id === clientId);
+    if (client) {
+      setNewInstallation(prev => ({
+        ...prev,
+        client_name: client.full_name,
+        client_phone: client.phone || "",
+        client_email: client.email || "",
+        address: client.address || prev.address,
+        city: client.city || prev.city,
+      }));
+    }
+  };
+
   const createInstallation = async () => {
+    if (!selectedClientId) {
+      toast({ title: "Selecione um cliente", variant: "destructive" });
+      return;
+    }
     if (!newInstallation.client_name) {
       toast({ title: "Preencha o nome do cliente", variant: "destructive" });
       return;
     }
 
     const { error } = await supabase.from("installations").insert({
+      client_id: selectedClientId,
       client_name: newInstallation.client_name,
       client_phone: newInstallation.client_phone || null,
       client_email: newInstallation.client_email || null,
@@ -262,6 +305,7 @@ export default function Installations() {
 
     toast({ title: "Instalação criada com sucesso!" });
     setNewInstallation({ client_name: "", client_phone: "", client_email: "", address: "", city: "", power_kwp: "", panel_count: "" });
+    setSelectedClientId("");
     setIsDialogOpen(false);
     fetchInstallations();
   };
@@ -454,31 +498,32 @@ export default function Installations() {
             </DialogHeader>
             <div className="space-y-4 mt-4">
               <div>
-                <Label>Nome do Cliente *</Label>
-                <Input
-                  value={newInstallation.client_name}
-                  onChange={(e) => setNewInstallation({ ...newInstallation, client_name: e.target.value })}
-                  placeholder="Nome completo"
-                />
+                <Label>Cliente *</Label>
+                <Select value={selectedClientId} onValueChange={handleClientSelect}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um cliente cadastrado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.map(client => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.full_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {clients.length === 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Nenhum cliente cadastrado. Cadastre um cliente primeiro.
+                  </p>
+                )}
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Telefone</Label>
-                  <Input
-                    value={newInstallation.client_phone}
-                    onChange={(e) => setNewInstallation({ ...newInstallation, client_phone: e.target.value })}
-                    placeholder="(00) 00000-0000"
-                  />
+              {selectedClientId && (
+                <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground space-y-1">
+                  <p className="font-medium text-foreground">{newInstallation.client_name}</p>
+                  {newInstallation.client_phone && <p>📱 {newInstallation.client_phone}</p>}
+                  {newInstallation.client_email && <p>✉️ {newInstallation.client_email}</p>}
                 </div>
-                <div>
-                  <Label>Email</Label>
-                  <Input
-                    value={newInstallation.client_email}
-                    onChange={(e) => setNewInstallation({ ...newInstallation, client_email: e.target.value })}
-                    placeholder="email@exemplo.com"
-                  />
-                </div>
-              </div>
+              )}
               <div>
                 <Label>Endereço</Label>
                 <Input

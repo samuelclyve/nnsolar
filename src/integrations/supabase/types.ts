@@ -454,6 +454,7 @@ export type Database = {
           assigned_technician: string | null
           city: string | null
           client_email: string | null
+          client_id: string | null
           client_name: string
           client_phone: string | null
           client_user_id: string | null
@@ -476,6 +477,7 @@ export type Database = {
           assigned_technician?: string | null
           city?: string | null
           client_email?: string | null
+          client_id?: string | null
           client_name: string
           client_phone?: string | null
           client_user_id?: string | null
@@ -498,6 +500,7 @@ export type Database = {
           assigned_technician?: string | null
           city?: string | null
           client_email?: string | null
+          client_id?: string | null
           client_name?: string
           client_phone?: string | null
           client_user_id?: string | null
@@ -519,6 +522,13 @@ export type Database = {
             columns: ["assigned_technician"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
             referencedColumns: ["id"]
           },
           {
