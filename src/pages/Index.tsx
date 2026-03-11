@@ -164,30 +164,32 @@ export default function Index() {
 
             {/* Nav links */}
             <div className="hidden md:flex items-center gap-1 relative z-10">
-              {[
-                { label: "Funcionalidades", href: "#features" },
-                { label: "Preços", href: "#pricing" },
-                { label: "Depoimentos", href: "#testimonials" },
-                { label: "Blog", href: "/blog" },
-              ].map((link) => (
-                link.href.startsWith("/") ? (
-                  <Link
-                    key={link.label}
-                    to={link.href}
-                    className="px-4 py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors rounded-full hover:bg-primary-foreground/10"
-                  >
-                    {link.label}
-                  </Link>
-                ) : (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    className="px-4 py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors rounded-full hover:bg-primary-foreground/10"
-                  >
-                    {link.label}
-                  </a>
-                )
-              ))}
+              {/* Funcionalidades with mega menu */}
+              <div
+                className="relative"
+                onMouseEnter={handleMegaMenuEnter}
+                onMouseLeave={handleMegaMenuLeave}
+              >
+                <button className="flex items-center gap-1 px-4 py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors rounded-full hover:bg-primary-foreground/10">
+                  Funcionalidades
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${megaMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                <FeaturesMegaMenu
+                  isOpen={megaMenuOpen}
+                  onClose={() => setMegaMenuOpen(false)}
+                  onMouseEnter={handleMegaMenuEnter}
+                  onMouseLeave={handleMegaMenuLeave}
+                />
+              </div>
+              <a href="#pricing" className="px-4 py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors rounded-full hover:bg-primary-foreground/10">
+                Preços
+              </a>
+              <a href="#testimonials" className="px-4 py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors rounded-full hover:bg-primary-foreground/10">
+                Depoimentos
+              </a>
+              <Link to="/integracoes" className="px-4 py-2 text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors rounded-full hover:bg-primary-foreground/10">
+                Integrações
+              </Link>
             </div>
 
             {/* CTAs */}
