@@ -81,6 +81,9 @@ export default function CompanyProfile() {
     if (!workspaceId) return;
     setIsLoading(true);
 
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { setIsLoading(false); return; }
+
     const { error } = await supabase
       .from("workspaces")
       .update({
@@ -99,9 +102,12 @@ export default function CompanyProfile() {
       } as any)
       .eq("id", workspaceId);
 
-    // Save profile name too
-    if (profile) {
-      const { error: profileError } = await supabase.from("profiles").update({ full_name: profile.full_name }).eq("user_id", profile.user_id);
+    // Save profile name using session user_id (guaranteed)
+    if (profile?.full_name != null) {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ full_name: profile.full_name })
+        .eq("user_id", session.user.id);
       if (profileError) {
         toast.error("Erro ao salvar perfil: " + profileError.message);
         setIsLoading(false);
