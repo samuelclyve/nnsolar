@@ -498,13 +498,32 @@ export default function Installations() {
             </DialogHeader>
             <div className="space-y-4 mt-4">
               <div>
-                <Label>Nome do Cliente *</Label>
-                <Input
-                  value={newInstallation.client_name}
-                  onChange={(e) => setNewInstallation({ ...newInstallation, client_name: e.target.value })}
-                  placeholder="Nome completo"
-                />
+                <Label>Cliente *</Label>
+                <Select value={selectedClientId} onValueChange={handleClientSelect}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um cliente cadastrado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.map(client => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.full_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {clients.length === 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Nenhum cliente cadastrado. Cadastre um cliente primeiro.
+                  </p>
+                )}
               </div>
+              {selectedClientId && (
+                <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground space-y-1">
+                  <p className="font-medium text-foreground">{newInstallation.client_name}</p>
+                  {newInstallation.client_phone && <p>📱 {newInstallation.client_phone}</p>}
+                  {newInstallation.client_email && <p>✉️ {newInstallation.client_email}</p>}
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Telefone</Label>
