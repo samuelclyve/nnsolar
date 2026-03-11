@@ -230,7 +230,7 @@ export default function SiteEditor() {
               <Globe className="w-5 h-5 text-primary" />
               <div>
                 <p className="text-sm font-medium text-foreground">Link do seu site</p>
-                <p className="text-xs text-muted-foreground">{window.location.origin}/s/{workspace.slug}</p>
+                <p className="text-xs text-muted-foreground">{window.location.origin}/{workspace.slug}</p>
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/s/${workspace.slug}`).then(() => toast({ title: "Link copiado!" }))}>
