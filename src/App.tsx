@@ -24,6 +24,7 @@ import Blog from "./pages/Blog";
 import Materials from "./pages/Materials";
 import Integrations from "./pages/Integrations";
 import FeatureDetail from "./pages/FeatureDetail";
+import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
