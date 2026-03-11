@@ -155,8 +155,8 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
           {/* Trial Badge */}
           {!isCollapsed && isTrial && daysLeft > 0 && (
             <div className="px-3 mb-2">
-              <div className="bg-accent/20 rounded-lg px-2.5 py-1.5 text-center">
-                <p className="text-[10px] font-medium text-accent">{daysLeft} dias restantes no trial</p>
+            <div className="bg-accent/20 rounded-lg px-3 py-2 text-center">
+                <p className="text-xs font-medium text-accent">{daysLeft} dias restantes no trial</p>
               </div>
             </div>
           )}
