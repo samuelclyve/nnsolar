@@ -14,7 +14,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AppLayout } from "@/components/AppLayout";
+
 import { useWorkspace } from "@/hooks/useWorkspace";
 import {
   DndContext, DragEndEvent, DragOverlay, DragStartEvent,
@@ -156,7 +156,7 @@ export default function CRM() {
   const activeLead = activeId ? leads.find(l => l.id === activeId) : null;
 
   return (
-    <AppLayout title="CRM - Gestão de Leads">
+    <>
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -204,6 +204,6 @@ export default function CRM() {
           ) : null}
         </DragOverlay>
       </DndContext>
-    </AppLayout>
+    </>
   );
 }

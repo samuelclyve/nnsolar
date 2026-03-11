@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { AppLayout } from "@/components/AppLayout";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -63,7 +63,7 @@ export default function PaymentHistory() {
   };
 
   return (
-    <AppLayout title="Histórico de Pagamentos">
+    <>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card>
           <CardHeader>
@@ -121,6 +121,6 @@ export default function PaymentHistory() {
           </CardContent>
         </Card>
       </motion.div>
-    </AppLayout>
+    </>
   );
 }

@@ -14,7 +14,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { AppLayout } from "@/components/AppLayout";
+
 import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface Installation {
@@ -376,7 +376,7 @@ export default function Schedule() {
   };
 
   return (
-    <AppLayout title="Agenda">
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -658,6 +658,6 @@ export default function Schedule() {
           </div>
         </div>
       </div>
-    </AppLayout>
+    </>
   );
 }

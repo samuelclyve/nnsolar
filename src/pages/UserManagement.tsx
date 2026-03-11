@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AppLayout } from "@/components/AppLayout";
+
 
 interface Profile {
   id: string;
@@ -163,7 +163,7 @@ export default function UserManagement() {
   });
 
   return (
-    <AppLayout title="Gestão de Usuários">
+    <>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -326,6 +326,6 @@ export default function UserManagement() {
           </div>
         </div>
       </motion.div>
-    </AppLayout>
+    </>
   );
 }

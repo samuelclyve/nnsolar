@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AppLayout } from "@/components/AppLayout";
+
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -260,16 +260,16 @@ export default function Reports() {
 
   if (isLoading) {
     return (
-      <AppLayout title="Relatórios">
+      <>
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
         </div>
-      </AppLayout>
+      </>
     );
   }
 
   return (
-    <AppLayout title="Relatórios">
+    <>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
         <h1 className="text-3xl font-bold text-foreground mb-2">Relatórios</h1>
         <p className="text-muted-foreground">Análises detalhadas do seu negócio com exportação em PDF e Excel.</p>
@@ -526,6 +526,6 @@ export default function Reports() {
           </div>
         </TabsContent>
       </Tabs>
-    </AppLayout>
+    </>
   );
 }

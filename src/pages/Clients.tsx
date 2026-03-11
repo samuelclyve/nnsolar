@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AppLayout } from "@/components/AppLayout";
+
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useNavigate } from "react-router-dom";
 
@@ -218,7 +218,7 @@ export default function Clients() {
   };
 
   return (
-    <AppLayout title="Clientes">
+    <>
       {/* Header */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-1">
@@ -442,6 +442,6 @@ export default function Clients() {
           </div>
         )}
       </div>
-    </AppLayout>
+    </>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { AppLayout } from "@/components/AppLayout";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -150,7 +150,7 @@ export default function CompanyProfile() {
   const siteUrl = workspace?.slug ? `${window.location.origin}/s/${workspace.slug}` : null;
 
   return (
-    <AppLayout title="Perfil da Empresa">
+    <>
       <div className="max-w-4xl mx-auto space-y-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           {siteUrl && (
@@ -326,6 +326,6 @@ export default function CompanyProfile() {
           </div>
         </motion.div>
       </div>
-    </AppLayout>
+    </>
   );
 }

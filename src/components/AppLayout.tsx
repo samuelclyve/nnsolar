@@ -1,5 +1,5 @@
-import { useEffect, useState, ReactNode } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "./AppSidebar";
@@ -9,18 +9,13 @@ import { Button } from "@/components/ui/button";
 import { NotificationsPanel } from "./NotificationsPanel";
 import { SupportChat } from "./SupportChat";
 
-interface AppLayoutProps {
-  children: ReactNode;
-  title: string;
-}
-
 const pageVariants = {
   initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -8 },
 };
 
-export function AppLayout({ children, title }: AppLayoutProps) {
+export function AppLayout() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -90,7 +85,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
           <AnimatePresence mode="wait">
             <motion.div key={location.pathname} initial="initial" animate="animate" exit="exit"
               variants={pageVariants} transition={{ duration: 0.2, ease: "easeOut" }} className="p-6 lg:p-8">
-              {children}
+              <Outlet />
             </motion.div>
           </AnimatePresence>
         </main>
