@@ -82,6 +82,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
                   {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                 </Button>
                 <NotificationsPanel userId={user?.id} />
+                <SupportChat />
               </div>
             </div>
           </header>

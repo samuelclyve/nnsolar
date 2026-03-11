@@ -663,8 +663,8 @@ export default function SiteEditor() {
                     <Input value={settings.contact_instagram || ""} onChange={(e) => updateSetting("contact_instagram", e.target.value)} placeholder="@minhaempresa" className="mt-1" />
                   </div>
                   <div>
-                    <Label className="flex items-center gap-2"><Globe className="w-4 h-4 text-primary" /> Website</Label>
-                    <Input value={settings.contact_website || ""} onChange={(e) => updateSetting("contact_website", e.target.value)} placeholder="https://minhaempresa.com" className="mt-1" />
+                    <Label className="flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" /> Região de Atuação</Label>
+                    <Input value={settings.contact_region || ""} onChange={(e) => updateSetting("contact_region", e.target.value)} placeholder="Ex: Grande São Paulo, Interior de MG" className="mt-1" />
                   </div>
                   <div>
                     <Label className="flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" /> Endereço / Cidade</Label>
