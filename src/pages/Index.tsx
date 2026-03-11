@@ -233,7 +233,7 @@ export default function Index() {
               transition={{ duration: 0.6 }}
               className="text-5xl md:text-7xl font-display font-bold text-foreground mb-6 leading-[1.08] tracking-tight"
             >
-              O sistema completo para sua{" "}
+               O ecossistema completo para sua{" "}
               <span className="text-gradient-orange">empresa solar</span>
             </motion.h1>
 
