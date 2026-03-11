@@ -470,7 +470,7 @@ export default function Index() {
           >
             Módulos do ecossistema
           </motion.h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
             {useCases.map((uc, i) => (
               <motion.div
                 key={uc.title}
