@@ -468,7 +468,7 @@ export default function Index() {
             viewport={{ once: true }}
             className="text-2xl md:text-3xl font-display font-bold text-foreground mb-12"
           >
-            Módulos do sistema
+            Módulos do ecossistema
           </motion.h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {useCases.map((uc, i) => (
