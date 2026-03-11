@@ -6,6 +6,7 @@ import {
   Building2, ClipboardList, Plug, CreditCard
 } from "lucide-react";
 import logoSolarizeBranca from "@/assets/logo-solarize-branca.png";
+import iconeSolarizeBranca from "@/assets/icone-solarize-branca.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
