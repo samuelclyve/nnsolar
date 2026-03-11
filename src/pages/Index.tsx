@@ -122,6 +122,177 @@ const testimonials = [
   { name: "Ricardo Souza", company: "R&S Solar", message: "A gestão de instalações em etapas nos deu controle total sobre cada projeto.", rating: 5 },
 ];
 
+function FeatureBlock({ feature, index }: { feature: typeof platformFeatures[0]; index: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const mockupY = useTransform(scrollYProgress, [0, 1], [50, -50]);
+  const textX = useTransform(scrollYProgress, [0, 1], [index % 2 === 0 ? -20 : 20, 0]);
+
+  return (
+    <div
+      ref={ref}
+      className={`flex flex-col ${index % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'} items-center gap-12 lg:gap-20`}
+    >
+      {/* Text side with slide */}
+      <motion.div
+        className="flex-1 max-w-lg"
+        style={{ x: textX }}
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="inline-flex items-center gap-2 mb-4">
+          <motion.div
+            initial={{ scale: 0 }}
+            whileInView={{ scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ type: "spring", stiffness: 300, delay: 0.2 }}
+            className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center"
+          >
+            <feature.icon className="w-4 h-4 text-primary" />
+          </motion.div>
+          <span className="text-primary text-sm font-semibold">{feature.tag}</span>
+        </div>
+        <h3 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4 leading-tight">
+          {feature.title}
+        </h3>
+        <p className="text-muted-foreground text-lg leading-relaxed mb-6">
+          {feature.description}
+        </p>
+        <ul className="space-y-3">
+          {feature.bullets.map((bullet, i) => (
+            <motion.li
+              key={bullet}
+              initial={{ opacity: 0, x: -15 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 + i * 0.08, duration: 0.4 }}
+              className="flex items-center gap-3 text-foreground"
+            >
+              <div className="w-5 h-5 rounded-full bg-success/15 flex items-center justify-center flex-shrink-0">
+                <Check className="w-3 h-3 text-success" />
+              </div>
+              <span className="text-sm">{bullet}</span>
+            </motion.li>
+          ))}
+        </ul>
+        <a href="#pricing" className="inline-flex items-center gap-1.5 text-primary font-medium mt-6 hover:gap-2.5 transition-all text-sm">
+          Saiba mais <ArrowRight className="w-4 h-4" />
+        </a>
+      </motion.div>
+
+      {/* Visual side - parallax glass card */}
+      <div className="flex-1 relative">
+        <motion.div
+          style={{ y: mockupY }}
+          className="relative rounded-2xl overflow-hidden border border-border/60 bg-card shadow-xl"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.7, type: "spring", bounce: 0.2 }}
+          >
+            <div className="absolute inset-0 opacity-[0.03]" style={gridBg} />
+            <div className="p-8 md:p-10 relative">
+              {index === 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-6">
+                    <h4 className="font-bold text-foreground">Pipeline de Vendas</h4>
+                    <span className="text-xs bg-success/10 text-success px-2 py-1 rounded-full font-medium">+12 leads hoje</span>
+                  </div>
+                  {["Novo Lead", "Em Negociação", "Proposta Enviada", "Fechado"].map((stage, i) => (
+                    <motion.div
+                      key={stage}
+                      initial={{ opacity: 0, x: 20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.4 + i * 0.1 }}
+                      className="flex items-center justify-between p-3 rounded-xl bg-background border border-border/50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2.5 h-2.5 rounded-full ${i === 3 ? 'bg-success' : i === 2 ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+                        <span className="text-sm font-medium text-foreground">{stage}</span>
+                      </div>
+                      <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{[8, 5, 3, 12][i]}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+              {index === 1 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-6">
+                    <h4 className="font-bold text-foreground">Instalação #0247</h4>
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">Em andamento</span>
+                  </div>
+                  {["Projeto", "Aprovação", "Instalação", "Vistoria", "Ativação"].map((step, i) => (
+                    <motion.div
+                      key={step}
+                      initial={{ opacity: 0, x: 20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.3 + i * 0.1 }}
+                      className="flex items-center gap-3"
+                    >
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${i < 3 ? 'bg-success text-success-foreground' : 'bg-muted text-muted-foreground'}`}>
+                        {i < 3 ? <Check className="w-3.5 h-3.5" /> : i + 1}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm font-medium ${i < 3 ? 'text-foreground' : 'text-muted-foreground'}`}>{step}</span>
+                          {i < 3 && <span className="text-xs text-success">Concluído</span>}
+                        </div>
+                        <div className="w-full h-1.5 rounded-full bg-muted mt-1.5">
+                          <div className={`h-full rounded-full ${i < 3 ? 'bg-success' : i === 3 ? 'bg-primary' : 'bg-transparent'}`} style={{ width: i < 3 ? '100%' : i === 3 ? '33%' : '0%' }} />
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+              {index === 2 && (
+                <div className="space-y-4">
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 }}
+                    className="rounded-xl overflow-hidden border border-border/50"
+                  >
+                    <div className="bg-secondary h-2 flex items-center gap-1 px-2">
+                      <div className="w-1 h-1 rounded-full bg-secondary-foreground/30" />
+                      <div className="w-1 h-1 rounded-full bg-secondary-foreground/30" />
+                      <div className="w-1 h-1 rounded-full bg-secondary-foreground/30" />
+                    </div>
+                    <div className="p-4 bg-background">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="w-20 h-4 rounded bg-muted" />
+                        <div className="flex gap-2"><div className="w-12 h-3 rounded bg-muted" /><div className="w-12 h-3 rounded bg-muted" /></div>
+                      </div>
+                      <div className="bg-primary/10 rounded-lg p-4 mb-3">
+                        <div className="w-3/4 h-4 rounded bg-primary/20 mb-2" />
+                        <div className="w-1/2 h-3 rounded bg-primary/15" />
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="h-12 rounded bg-muted/60" />
+                        <div className="h-12 rounded bg-muted/60" />
+                        <div className="h-12 rounded bg-muted/60" />
+                      </div>
+                    </div>
+                  </motion.div>
+                  <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Leads captados hoje</span><span className="font-bold text-success">+7</span></div>
+                  <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Simulações realizadas</span><span className="font-bold text-primary">23</span></div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
 export default function Index() {
   return (
     <div className="min-h-screen bg-card">
