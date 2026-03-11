@@ -462,7 +462,7 @@ export default function Installations() {
   });
 
   return (
-    <AppLayout title="Instalações">
+    <>
       {/* Filters & Actions */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-1">
