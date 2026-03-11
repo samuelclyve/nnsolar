@@ -220,7 +220,7 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
                               isActive ? "bg-primary text-primary-foreground shadow-sm"
                                 : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                             }`}>
-                            <item.icon className="w-4 h-4 flex-shrink-0" />
+                            <item.icon className="w-[18px] h-[18px] flex-shrink-0" />
                             {!isCollapsed && <span>{item.label}</span>}
                           </Link>
                         );
