@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { AppLayout } from "@/components/AppLayout";
+
 import { Onboarding } from "@/components/Onboarding";
 import { TrialBanner } from "@/components/TrialBanner";
 import { useWorkspace } from "@/hooks/useWorkspace";
