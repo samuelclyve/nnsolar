@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { 
   ArrowRight, Target, Wrench, Globe, Calendar, 
-  FileText, Users, BarChart3, ChevronRight 
+  FileText, Users, BarChart3, ChevronRight, Shield, Bell, Lock
 } from "lucide-react";
 
 interface FeaturesMegaMenuProps {
