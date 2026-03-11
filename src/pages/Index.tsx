@@ -346,21 +346,21 @@ export default function Index() {
 
             {/* Suporte */}
             <div>
-              <h4 className="font-bold text-sm uppercase tracking-wider text-background/90 mb-4">Suporte</h4>
+              <h4 className="font-bold text-sm uppercase tracking-wider text-primary-foreground/90 mb-4">Suporte</h4>
               <ul className="space-y-3">
                 <li>
-                  <a href="mailto:contato@solarize.app" className="text-sm text-background/60 hover:text-primary transition-colors flex items-center gap-2">
+                  <a href="mailto:contato@solarize.app" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors flex items-center gap-2">
                     <Mail className="w-3.5 h-3.5" /> contato@solarize.app
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-background/60 hover:text-primary transition-colors">Central de Ajuda</a>
+                  <a href="#" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Central de Ajuda</a>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-background/60 hover:text-primary transition-colors">Termos de Uso</a>
+                  <a href="#" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Termos de Uso</a>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-background/60 hover:text-primary transition-colors">Política de Privacidade</a>
+                  <a href="#" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Política de Privacidade</a>
                 </li>
               </ul>
             </div>
