@@ -136,18 +136,18 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
       } ${isCollapsed ? "w-16" : "w-60"}`}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className={`px-3 py-3 flex items-center ${isCollapsed ? "justify-center" : "justify-between"} cursor-pointer`}
+          <div className={`px-3 py-4 flex items-center ${isCollapsed ? "justify-center" : "justify-between"} cursor-pointer`}
             onClick={() => isCollapsed && setIsCollapsed(false)}>
-            <div className="h-6 flex items-center">
+            <div className="h-7 flex items-center">
               {isCollapsed 
-                ? <img src={iconeSolarizeBranca} alt="Solarize" className="h-6 w-6 object-contain" />
-                : <img src={logoSolarizeBranca} alt="Solarize" className="h-5 w-auto object-contain" />
+                ? <img src={iconeSolarizeBranca} alt="Solarize" className="h-7 w-7 object-contain" />
+                : <img src={logoSolarizeBranca} alt="Solarize" className="h-6 w-auto object-contain" />
               }
             </div>
             {!isCollapsed && (
               <button onClick={(e) => { e.stopPropagation(); toggleCollapse(); }}
                 className="p-1 rounded-lg hover:bg-sidebar-accent text-sidebar-muted hover:text-sidebar-foreground transition-colors">
-                <ChevronLeft className="w-3.5 h-3.5" />
+                <ChevronLeft className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -155,8 +155,8 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
           {/* Trial Badge */}
           {!isCollapsed && isTrial && daysLeft > 0 && (
             <div className="px-3 mb-2">
-              <div className="bg-accent/20 rounded-lg px-2.5 py-1.5 text-center">
-                <p className="text-[10px] font-medium text-accent">{daysLeft} dias restantes no trial</p>
+            <div className="bg-accent/20 rounded-lg px-3 py-2 text-center">
+                <p className="text-xs font-medium text-accent">{daysLeft} dias restantes no trial</p>
               </div>
             </div>
           )}
@@ -165,29 +165,29 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
           {!isCollapsed && (
             <div className="px-3 mb-2">
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-sidebar-muted" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-sidebar-muted" />
                 <Input placeholder="Buscar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 bg-sidebar-accent border-0 text-sidebar-foreground placeholder:text-sidebar-muted rounded-lg h-7 text-xs" />
+                  className="pl-8 bg-sidebar-accent border-0 text-sidebar-foreground placeholder:text-sidebar-muted rounded-lg h-8 text-sm" />
               </div>
             </div>
           )}
 
           {/* Grouped Nav */}
-          <nav className={`flex-1 ${isCollapsed ? "px-1.5" : "px-2"} overflow-y-auto`}>
+          <nav className={`flex-1 ${isCollapsed ? "px-2" : "px-2.5"} overflow-y-auto`}>
             {menuGroups.map((group) => {
               const visibleItems = filterItems(group.items);
               if (visibleItems.length === 0) return null;
               const isGroupCollapsed = collapsedGroups[group.label] || false;
 
               return (
-                <div key={group.label} className="mb-1">
+                <div key={group.label} className="mb-1.5">
                   {!isCollapsed && (
                     <button
                       onClick={() => toggleGroup(group.label)}
-                      className="w-full flex items-center justify-between px-2 py-1 group"
+                      className="w-full flex items-center justify-between px-2.5 py-1.5 group"
                     >
-                      <span className="text-[9px] font-semibold text-sidebar-muted uppercase tracking-widest">{group.label}</span>
-                      <ChevronDown className={`w-3 h-3 text-sidebar-muted/50 transition-transform group-hover:text-sidebar-muted ${isGroupCollapsed ? "-rotate-90" : ""}`} />
+                      <span className="text-[10px] font-semibold text-sidebar-muted uppercase tracking-widest">{group.label}</span>
+                      <ChevronDown className={`w-3.5 h-3.5 text-sidebar-muted/50 transition-transform group-hover:text-sidebar-muted ${isGroupCollapsed ? "-rotate-90" : ""}`} />
                     </button>
                   )}
                   {!isGroupCollapsed && (
@@ -198,13 +198,13 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
                           return (
                             <div key={item.label}
                               title={isCollapsed ? item.label : undefined}
-                              className={`flex items-center gap-2.5 ${isCollapsed ? "justify-center px-1.5" : "px-2.5"} py-1.5 rounded-lg text-xs font-medium opacity-40 cursor-not-allowed`}>
-                              <item.icon className="w-4 h-4 flex-shrink-0 text-sidebar-muted" />
+                              className={`flex items-center gap-3 ${isCollapsed ? "justify-center px-2" : "px-3"} py-2 rounded-lg text-sm font-medium opacity-40 cursor-not-allowed`}>
+                              <item.icon className="w-[18px] h-[18px] flex-shrink-0 text-sidebar-muted" />
                               {!isCollapsed && (
                                 <>
                                   <span className="text-sidebar-muted">{item.label}</span>
                                   {item.badge && (
-                                    <Badge className="ml-auto bg-accent/80 text-accent-foreground text-[8px] px-1 py-0 h-3.5 font-medium">
+                                    <Badge className="ml-auto bg-accent/80 text-accent-foreground text-[10px] px-1.5 py-0 h-4 font-medium">
                                       {item.badge}
                                     </Badge>
                                   )}
@@ -216,11 +216,11 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
                         return (
                           <Link key={item.label} to={item.href} onClick={() => setIsMobileOpen(false)}
                             title={isCollapsed ? item.label : undefined}
-                            className={`flex items-center gap-2.5 ${isCollapsed ? "justify-center px-1.5" : "px-2.5"} py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                            className={`flex items-center gap-3 ${isCollapsed ? "justify-center px-2" : "px-3"} py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                               isActive ? "bg-primary text-primary-foreground shadow-sm"
                                 : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                             }`}>
-                            <item.icon className="w-4 h-4 flex-shrink-0" />
+                            <item.icon className="w-[18px] h-[18px] flex-shrink-0" />
                             {!isCollapsed && <span>{item.label}</span>}
                           </Link>
                         );
@@ -236,16 +236,16 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
               <div className="mb-1">
                 {!isCollapsed && (
                   <div className="px-2 py-1">
-                    <span className="text-[9px] font-semibold text-sidebar-muted uppercase tracking-widest">Sistema</span>
+                    <span className="text-[10px] font-semibold text-sidebar-muted uppercase tracking-widest">Sistema</span>
                   </div>
                 )}
                 <Link to="/super-admin" onClick={() => setIsMobileOpen(false)}
                   title={isCollapsed ? "Super Admin" : undefined}
-                  className={`flex items-center gap-2.5 ${isCollapsed ? "justify-center px-1.5" : "px-2.5"} py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                  className={`flex items-center gap-3 ${isCollapsed ? "justify-center px-2" : "px-3"} py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     location.pathname === "/super-admin" ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                   }`}>
-                  <Shield className="w-4 h-4 flex-shrink-0" />
+                  <Shield className="w-[18px] h-[18px] flex-shrink-0" />
                   {!isCollapsed && <span>Super Admin</span>}
                 </Link>
               </div>
@@ -253,17 +253,17 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
           </nav>
 
           {/* User Profile + Subscription + Logout */}
-          <div className={`p-2 border-t border-sidebar-border ${isCollapsed ? "flex flex-col items-center gap-1" : ""}`}>
+          <div className={`p-2.5 border-t border-sidebar-border ${isCollapsed ? "flex flex-col items-center gap-1.5" : ""}`}>
             {!isCollapsed ? (
               <>
                 <Link to="/company-profile" onClick={() => setIsMobileOpen(false)}
-                  className="flex items-center gap-2.5 mb-1 p-1.5 rounded-lg hover:bg-sidebar-accent transition-colors cursor-pointer">
-                  <div className="w-7 h-7 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-primary-foreground font-semibold text-[10px]">
+                  className="flex items-center gap-3 mb-1.5 p-2 rounded-lg hover:bg-sidebar-accent transition-colors cursor-pointer">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-primary-foreground font-semibold text-xs">
                     {profile?.full_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-sidebar-foreground truncate">{profile?.full_name || "Usuário"}</p>
-                    <p className="text-[9px] text-sidebar-muted truncate">
+                    <p className="text-sm font-medium text-sidebar-foreground truncate">{profile?.full_name || "Usuário"}</p>
+                    <p className="text-[10px] text-sidebar-muted truncate">
                       {isSuperAdmin ? 'Super Admin' :
                        userRoles.includes('admin') ? 'Administrador' : 
                        userRoles.includes('manager') ? 'Gerente' :
@@ -271,17 +271,17 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
                        userRoles.includes('technician') ? 'Técnico' : 'Staff'}
                     </p>
                   </div>
-                  <Building2 className="w-3.5 h-3.5 text-sidebar-muted" />
+                  <Building2 className="w-4 h-4 text-sidebar-muted" />
                 </Link>
                 <Link to="/subscription" onClick={() => setIsMobileOpen(false)}
-                  className="flex items-center gap-2.5 px-2.5 py-1 rounded-lg text-[10px] font-medium text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors">
-                  <CreditCard className="w-3.5 h-3.5" />
+                  className="flex items-center gap-3 px-3 py-1.5 rounded-lg text-xs font-medium text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors">
+                  <CreditCard className="w-4 h-4" />
                   <span>Assinatura</span>
                 </Link>
                 <Button variant="ghost" size="sm"
-                  className="w-full justify-start text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent mt-0.5 h-6 text-[10px] px-2.5"
+                  className="w-full justify-start text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent mt-0.5 h-7 text-xs px-3"
                   onClick={handleLogout}>
-                  <LogOut className="w-3.5 h-3.5 mr-2" /> Sair
+                  <LogOut className="w-4 h-4 mr-2" /> Sair
                 </Button>
               </>
             ) : (
