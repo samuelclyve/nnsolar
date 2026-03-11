@@ -173,7 +173,7 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
           )}
 
           {/* Grouped Nav */}
-          <nav className={`flex-1 ${isCollapsed ? "px-1.5" : "px-2"} overflow-y-auto`}>
+          <nav className={`flex-1 ${isCollapsed ? "px-2" : "px-2.5"} overflow-y-auto`}>
             {menuGroups.map((group) => {
               const visibleItems = filterItems(group.items);
               if (visibleItems.length === 0) return null;
