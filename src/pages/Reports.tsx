@@ -269,7 +269,7 @@ export default function Reports() {
   }
 
   return (
-    <AppLayout title="Relatórios">
+    <>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
         <h1 className="text-3xl font-bold text-foreground mb-2">Relatórios</h1>
         <p className="text-muted-foreground">Análises detalhadas do seu negócio com exportação em PDF e Excel.</p>
