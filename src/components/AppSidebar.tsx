@@ -180,14 +180,14 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
               const isGroupCollapsed = collapsedGroups[group.label] || false;
 
               return (
-                <div key={group.label} className="mb-1">
+                <div key={group.label} className="mb-1.5">
                   {!isCollapsed && (
                     <button
                       onClick={() => toggleGroup(group.label)}
-                      className="w-full flex items-center justify-between px-2 py-1 group"
+                      className="w-full flex items-center justify-between px-2.5 py-1.5 group"
                     >
-                      <span className="text-[9px] font-semibold text-sidebar-muted uppercase tracking-widest">{group.label}</span>
-                      <ChevronDown className={`w-3 h-3 text-sidebar-muted/50 transition-transform group-hover:text-sidebar-muted ${isGroupCollapsed ? "-rotate-90" : ""}`} />
+                      <span className="text-[10px] font-semibold text-sidebar-muted uppercase tracking-widest">{group.label}</span>
+                      <ChevronDown className={`w-3.5 h-3.5 text-sidebar-muted/50 transition-transform group-hover:text-sidebar-muted ${isGroupCollapsed ? "-rotate-90" : ""}`} />
                     </button>
                   )}
                   {!isGroupCollapsed && (
