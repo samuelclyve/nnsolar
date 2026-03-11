@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { FeaturesMegaMenu } from "@/components/landing/FeaturesMegaMenu";
+import { MainHeader } from "@/components/landing/MainHeader";
 import logoSolarize from "@/assets/logo-solarize.png";
 import logoSolarizeBranca from "@/assets/logo-solarize-branca.png";
 import iconeSolarize from "@/assets/icone-solarize.png";
