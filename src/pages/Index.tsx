@@ -777,7 +777,7 @@ export default function Index() {
             <div className="lg:col-span-1">
               <img src={logoSolarizeBranca} alt="Solarize" className="h-8 w-auto object-contain mb-5" />
               <p className="text-secondary-foreground/60 text-sm leading-relaxed mb-6">
-                A plataforma completa para empresas de energia solar. CRM, gestão de instalações, site e muito mais.
+                O ecossistema completo para empresas de energia solar. CRM, gestão de instalações, site e muito mais.
               </p>
               <div className="flex gap-3">
                 <a href="https://instagram.com/solarize.app" target="_blank" rel="noopener noreferrer"

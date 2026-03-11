@@ -67,8 +67,8 @@ export function FeaturesMegaMenu({ isOpen, onClose, onMouseEnter, onMouseLeave }
         {/* Header */}
         <div className="bg-primary/5 px-6 py-4 border-b border-border flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-foreground text-sm">Módulos do Solarize</h3>
-            <p className="text-xs text-muted-foreground">Solução completa para empresas de energia solar</p>
+            <h3 className="font-semibold text-foreground text-sm">Ecossistema Solarize</h3>
+            <p className="text-xs text-muted-foreground">Tudo que sua empresa solar precisa em um só lugar</p>
           </div>
           <a
             href="#features"
