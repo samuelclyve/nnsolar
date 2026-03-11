@@ -524,24 +524,6 @@ export default function Installations() {
                   {newInstallation.client_email && <p>✉️ {newInstallation.client_email}</p>}
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Telefone</Label>
-                  <Input
-                    value={newInstallation.client_phone}
-                    onChange={(e) => setNewInstallation({ ...newInstallation, client_phone: e.target.value })}
-                    placeholder="(00) 00000-0000"
-                  />
-                </div>
-                <div>
-                  <Label>Email</Label>
-                  <Input
-                    value={newInstallation.client_email}
-                    onChange={(e) => setNewInstallation({ ...newInstallation, client_email: e.target.value })}
-                    placeholder="email@exemplo.com"
-                  />
-                </div>
-              </div>
               <div>
                 <Label>Endereço</Label>
                 <Input
