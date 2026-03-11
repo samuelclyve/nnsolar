@@ -197,7 +197,7 @@ export default function SiteEditor() {
     fetchData();
   };
 
-  const siteUrl = workspace?.slug ? `/s/${workspace.slug}` : "#";
+  const siteUrl = workspace?.slug ? `/${workspace.slug}` : "#";
 
   // Helper for setting update
   const updateSetting = (key: string, value: string) => setSettings({ ...settings, [key]: value });
