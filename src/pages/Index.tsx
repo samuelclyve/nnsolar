@@ -58,8 +58,6 @@ export default function Index() {
             <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Funcionalidades</a>
             <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Preços</a>
             <a href="#testimonials" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Depoimentos</a>
-            <a href="#blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</a>
-            <a href="#materiais" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Materiais</a>
           </nav>
           <div className="flex items-center gap-3">
             <Link to="/auth">
