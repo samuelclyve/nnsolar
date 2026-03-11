@@ -17,9 +17,9 @@ const categories = [
     color: "bg-primary/10 border-primary/20",
     iconColor: "text-primary",
     items: [
-      { icon: Target, name: "CRM com Kanban", description: "Pipeline visual de vendas", href: "#features" },
-      { icon: BarChart3, name: "Dashboard & Relatórios", description: "Métricas e performance", href: "#features" },
-      { icon: Users, name: "Gestão de Clientes", description: "Base completa com histórico", href: "#features" },
+      { icon: Target, name: "CRM com Kanban", description: "Pipeline visual de vendas", href: "/funcionalidades/crm" },
+      { icon: BarChart3, name: "Dashboard & Relatórios", description: "Métricas e performance", href: "/funcionalidades/dashboard" },
+      { icon: Users, name: "Gestão de Clientes", description: "Base completa com histórico", href: "/funcionalidades/clientes" },
     ],
   },
   {
@@ -27,9 +27,9 @@ const categories = [
     color: "bg-success/10 border-success/20",
     iconColor: "text-success",
     items: [
-      { icon: Wrench, name: "Gestão de Instalações", description: "Acompanhe cada etapa", href: "#features" },
-      { icon: Calendar, name: "Agenda Inteligente", description: "Calendário drag-and-drop", href: "#features" },
-      { icon: ChevronRight, name: "Notificações Automáticas", description: "Alertas por e-mail e WhatsApp", href: "#features" },
+      { icon: Wrench, name: "Gestão de Instalações", description: "Acompanhe cada etapa", href: "/funcionalidades/instalacoes" },
+      { icon: Calendar, name: "Agenda Inteligente", description: "Calendário drag-and-drop", href: "/funcionalidades/agenda" },
+      { icon: Bell, name: "Notificações Automáticas", description: "Alertas por e-mail e WhatsApp", href: "/funcionalidades/notificacoes" },
     ],
   },
   {
@@ -37,8 +37,8 @@ const categories = [
     color: "bg-secondary/10 border-secondary/20",
     iconColor: "text-secondary",
     items: [
-      { icon: Globe, name: "Site Personalizável", description: "Landing page com simulador", href: "#features" },
-      { icon: Users, name: "Captação de Leads", description: "Formulários automáticos", href: "#features" },
+      { icon: Globe, name: "Site Personalizável", description: "Landing page com simulador", href: "/funcionalidades/site" },
+      { icon: Users, name: "Captação de Leads", description: "Formulários automáticos", href: "/funcionalidades/crm" },
     ],
   },
   {
@@ -46,9 +46,9 @@ const categories = [
     color: "bg-accent/10 border-accent/20",
     iconColor: "text-accent",
     items: [
-      { icon: FileText, name: "Documentos & Contratos", description: "Armazene e organize", href: "#features" },
-      { icon: Users, name: "Gestão de Equipe", description: "Controle de acessos", href: "#features" },
-      { icon: ChevronRight, name: "Controle Financeiro", description: "Parcelas e cobranças", href: "#features" },
+      { icon: FileText, name: "Documentos & Contratos", description: "Armazene e organize", href: "/funcionalidades/documentos" },
+      { icon: Lock, name: "Gestão de Equipe", description: "Controle de acessos", href: "/funcionalidades/equipe" },
+      { icon: Shield, name: "Controle Financeiro", description: "Parcelas e cobranças", href: "/funcionalidades/financeiro" },
     ],
   },
 ];
