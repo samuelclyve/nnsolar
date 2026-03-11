@@ -82,7 +82,7 @@ export default function Subscription() {
   };
 
   return (
-    <AppLayout title="Assinatura">
+    <>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
         <h1 className="text-3xl font-bold text-foreground mb-2">Assinatura</h1>
         <p className="text-muted-foreground">Gerencie seu plano e veja o histórico de pagamentos.</p>
