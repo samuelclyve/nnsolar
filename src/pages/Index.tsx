@@ -122,7 +122,7 @@ const testimonials = [
 
 export default function Index() {
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
-  const megaMenuTimeout = useRef<NodeJS.Timeout | null>(null);
+  const megaMenuTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
