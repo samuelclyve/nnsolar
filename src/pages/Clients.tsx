@@ -218,7 +218,7 @@ export default function Clients() {
   };
 
   return (
-    <AppLayout title="Clientes">
+    <>
       {/* Header */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-1">
