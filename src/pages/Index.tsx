@@ -77,10 +77,16 @@ const platformFeatures = [
 ];
 
 const useCases = [
-  { icon: BarChart3, title: "CRM Solar", description: "Pipeline completo de vendas com Kanban" },
-  { icon: Wrench, title: "Gestão de Obras", description: "Controle de instalações passo a passo" },
-  { icon: Globe, title: "Site da Empresa", description: "Landing page com simulador integrado" },
-  { icon: Calendar, title: "Agenda", description: "Calendário inteligente de visitas" },
+  { icon: Target, title: "CRM Solar", description: "Pipeline completo de vendas com Kanban visual" },
+  { icon: Wrench, title: "Gestão de Instalações", description: "Controle cada etapa da obra em tempo real" },
+  { icon: Globe, title: "Site Personalizável", description: "Landing page com simulador solar integrado" },
+  { icon: Calendar, title: "Agenda Inteligente", description: "Calendário drag-and-drop de visitas e obras" },
+  { icon: BarChart3, title: "Dashboard & Relatórios", description: "Métricas de vendas, instalações e performance" },
+  { icon: Users, title: "Gestão de Clientes", description: "Base completa com histórico e documentos" },
+  { icon: FileText, title: "Documentos & Contratos", description: "Armazene e organize contratos e projetos" },
+  { icon: Shield, title: "Controle Financeiro", description: "Parcelas, cobranças e fluxo de recebimentos" },
+  { icon: Bell, title: "Notificações Automáticas", description: "Alertas por e-mail e WhatsApp para clientes" },
+  { icon: Lock, title: "Gestão de Equipe", description: "Controle de acessos e permissões por função" },
 ];
 
 const industries = [
