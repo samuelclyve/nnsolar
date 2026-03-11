@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Link, useParams } from "react-router-dom";
 import {
   ArrowRight, Check, MessageCircle, Target, Wrench, Globe,
