@@ -140,8 +140,18 @@ interface NotificationLog {
   sender_name?: string;
 }
 
+interface ClientOption {
+  id: string;
+  full_name: string;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  city: string | null;
+}
+
 export default function Installations() {
   const [installations, setInstallations] = useState<Installation[]>([]);
+  const [clients, setClients] = useState<ClientOption[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
@@ -156,6 +166,7 @@ export default function Installations() {
   const [customDate, setCustomDate] = useState("");
   const [customMessage, setCustomMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [newInstallation, setNewInstallation] = useState({
     client_name: "",
     client_phone: "",
