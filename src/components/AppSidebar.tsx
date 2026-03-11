@@ -29,7 +29,6 @@ const menuItems: MenuItem[] = [
   { icon: FileText, label: "Documentos", href: "/documents", roles: ["admin", "manager", "comercial", "technician", "super_admin"] },
   { icon: ClipboardList, label: "Relatórios", href: "/reports", roles: ["admin", "manager", "super_admin"] },
   { icon: Receipt, label: "Pagamentos", href: "/payment-history", roles: ["admin", "super_admin"] },
-  { icon: Building2, label: "Perfil Empresa", href: "/company-profile", roles: ["admin", "super_admin"] },
 ];
 
 interface SidebarContextType {
@@ -168,10 +167,11 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
           </nav>
 
           {/* User */}
-          <div className={`p-4 border-t border-sidebar-border ${isCollapsed ? "flex flex-col items-center" : ""}`}>
+          <div className={`p-4 border-t border-sidebar-border ${isCollapsed ? "flex flex-col items-center gap-2" : ""}`}>
             {!isCollapsed ? (
               <>
-                <div className="flex items-center gap-3 mb-3">
+                <Link to="/company-profile" onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center gap-3 mb-3 p-2 -m-2 rounded-xl hover:bg-sidebar-accent transition-colors cursor-pointer">
                   <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-primary-foreground font-semibold text-sm">
                     {profile?.full_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
                   </div>
@@ -185,7 +185,8 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
                        userRoles.includes('technician') ? 'Técnico' : 'Staff'}
                     </p>
                   </div>
-                </div>
+                  <Building2 className="w-4 h-4 text-sidebar-muted" />
+                </Link>
                 <Button variant="ghost" size="sm"
                   className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
                   onClick={handleLogout}>
@@ -193,10 +194,16 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
                 </Button>
               </>
             ) : (
-              <button onClick={handleLogout} title="Sair"
-                className="p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
-                <LogOut className="w-5 h-5" />
-              </button>
+              <>
+                <Link to="/company-profile" title="Perfil Empresa" onClick={() => setIsMobileOpen(false)}
+                  className="p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
+                  <Building2 className="w-5 h-5" />
+                </Link>
+                <button onClick={handleLogout} title="Sair"
+                  className="p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </>
             )}
           </div>
         </div>
