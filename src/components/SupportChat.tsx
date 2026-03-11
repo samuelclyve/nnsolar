@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircleQuestion, X, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
+import { useWorkspace } from "@/hooks/useWorkspace";
 
 interface Message {
   id: string;
@@ -22,18 +24,54 @@ export function SupportChat() {
     },
   ]);
   const [input, setInput] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const { workspaceId } = useWorkspace();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setUserId(session.user.id);
+    });
+  }, []);
+
+  // Load previous messages when chat opens
+  useEffect(() => {
+    if (isOpen && userId && !loaded) {
+      loadMessages();
+    }
+  }, [isOpen, userId]);
+
+  const loadMessages = async () => {
+    const { data } = await supabase
+      .from("support_tickets")
+      .select("*")
+      .eq("user_id", userId!)
+      .order("created_at", { ascending: true });
+
+    if (data && data.length > 0) {
+      const loaded: Message[] = data.map((t: any) => ({
+        id: t.id,
+        text: t.message,
+        from: t.sender as "user" | "system",
+        timestamp: new Date(t.created_at),
+      }));
+      setMessages((prev) => [prev[0], ...loaded]);
+    }
+    setLoaded(true);
+  };
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || !userId) return;
 
+    const text = input.trim();
     const userMsg: Message = {
       id: Date.now().toString(),
-      text: input.trim(),
+      text,
       from: "user",
       timestamp: new Date(),
     };
@@ -41,15 +79,32 @@ export function SupportChat() {
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
 
+    // Persist user message
+    await supabase.from("support_tickets").insert({
+      user_id: userId,
+      workspace_id: workspaceId,
+      message: text,
+      sender: "user",
+    });
+
     // Auto-reply after short delay
-    setTimeout(() => {
+    setTimeout(async () => {
+      const replyText = "Obrigado pelo contato! Nossa equipe em breve entrará em contato. 😊";
       const autoReply: Message = {
         id: (Date.now() + 1).toString(),
-        text: "Obrigado pelo contato! Nossa equipe em breve entrará em contato. 😊",
+        text: replyText,
         from: "system",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, autoReply]);
+
+      // Persist auto-reply
+      await supabase.from("support_tickets").insert({
+        user_id: userId,
+        workspace_id: workspaceId,
+        message: replyText,
+        sender: "system",
+      });
     }, 800);
   };
 
@@ -119,7 +174,7 @@ export function SupportChat() {
                   placeholder="Digite sua mensagem..."
                   className="flex-1 rounded-xl h-9 text-sm"
                 />
-                <Button type="submit" size="icon" variant="cta" className="rounded-xl h-9 w-9 flex-shrink-0">
+                <Button type="submit" size="icon" className="rounded-xl h-9 w-9 flex-shrink-0 bg-primary text-primary-foreground">
                   <Send className="w-4 h-4" />
                 </Button>
               </form>
