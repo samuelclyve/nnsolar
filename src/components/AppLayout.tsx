@@ -85,7 +85,7 @@ export function AppLayout() {
           <AnimatePresence mode="wait">
             <motion.div key={location.pathname} initial="initial" animate="animate" exit="exit"
               variants={pageVariants} transition={{ duration: 0.2, ease: "easeOut" }} className="p-6 lg:p-8">
-              {children}
+              <Outlet />
             </motion.div>
           </AnimatePresence>
         </main>
