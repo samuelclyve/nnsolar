@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, ArrowLeft, Download, BookOpen, FileText, Video, Search } from "lucide-react";
+import { ArrowRight, ArrowLeft, Download, BookOpen, FileText, Video, Search, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -151,9 +151,16 @@ export default function Materials() {
                             </Button>
                           </a>
                         ) : (
-                          <Button size="sm" disabled className="gap-1">
-                            <Download className="w-4 h-4" /> Em breve
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button size="sm" disabled className="gap-1">
+                              <Download className="w-4 h-4" /> Em breve
+                            </Button>
+                            <a href="https://wa.me/5588998536228?text=Ol%C3%A1!%20Tenho%20interesse%20no%20material%3A%20{{material.title}}" target="_blank" rel="noopener noreferrer">
+                              <Button size="sm" variant="outline" className="gap-1 text-success border-success/30 hover:bg-success/10">
+                                <MessageCircle className="w-4 h-4" /> Tenho interesse
+                              </Button>
+                            </a>
+                          </div>
                         )}
                       </div>
                     </CardContent>
