@@ -7,6 +7,7 @@ import { SubscriptionGuard } from "./SubscriptionGuard";
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotificationsPanel } from "./NotificationsPanel";
+import { SupportChat } from "./SupportChat";
 
 interface AppLayoutProps {
   children: ReactNode;
