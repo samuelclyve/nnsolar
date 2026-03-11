@@ -180,7 +180,10 @@ export default function Installations() {
   const { workspaceId } = useWorkspace();
 
   useEffect(() => {
-    if (workspaceId) fetchInstallations();
+    if (workspaceId) {
+      fetchInstallations();
+      fetchClients();
+    }
   }, [workspaceId]);
 
   useEffect(() => {
