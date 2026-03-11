@@ -41,30 +41,49 @@ export function NotificationsPanel({ userId }: NotificationsPanelProps) {
 
   const fetchNotifications = async () => {
     try {
-      // Fetch recent installations changes
       const { data: installations } = await supabase
         .from("installations")
         .select("id, client_name, status, updated_at")
         .order("updated_at", { ascending: false })
         .limit(5);
 
-      // Fetch recent leads
       const { data: leads } = await supabase
         .from("leads")
         .select("id, name, status, updated_at")
         .order("updated_at", { ascending: false })
         .limit(5);
 
-      // Fetch notification logs
       const { data: notificationLogs } = await supabase
         .from("notification_logs")
         .select("*, installations(client_name)")
         .order("sent_at", { ascending: false })
         .limit(5);
 
+      // Fetch overdue installments
+      const today = new Date().toISOString().split("T")[0];
+      const { data: overdueInstallments } = await supabase
+        .from("client_installments")
+        .select("*, installations:installation_id(client_name)")
+        .eq("status", "pending")
+        .lt("due_date", today)
+        .order("due_date", { ascending: true })
+        .limit(5);
+
       const notifs: Notification[] = [];
 
-      // Add installation notifications
+      // Add overdue installment notifications
+      overdueInstallments?.forEach((inst: any) => {
+        notifs.push({
+          id: `overdue-${inst.id}`,
+          type: "schedule",
+          title: "Parcela Vencida!",
+          message: `${inst.installations?.client_name || "Cliente"} - R$ ${Number(inst.amount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })} vencida em ${new Date(inst.due_date).toLocaleDateString("pt-BR")}`,
+          timestamp: new Date(inst.due_date),
+          read: false,
+          link: "/payment-history",
+        });
+      });
+
       installations?.forEach((inst) => {
         notifs.push({
           id: `inst-${inst.id}`,
@@ -77,7 +96,6 @@ export function NotificationsPanel({ userId }: NotificationsPanelProps) {
         });
       });
 
-      // Add lead notifications
       leads?.forEach((lead) => {
         notifs.push({
           id: `lead-${lead.id}`,
@@ -90,7 +108,6 @@ export function NotificationsPanel({ userId }: NotificationsPanelProps) {
         });
       });
 
-      // Add message notifications
       notificationLogs?.forEach((log: any) => {
         notifs.push({
           id: `msg-${log.id}`,
@@ -103,10 +120,8 @@ export function NotificationsPanel({ userId }: NotificationsPanelProps) {
         });
       });
 
-      // Sort by timestamp
       notifs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-      setNotifications(notifs.slice(0, 10));
+      setNotifications(notifs.slice(0, 15));
     } catch (error) {
       console.error("Error fetching notifications:", error);
     } finally {
