@@ -1,4 +1,4 @@
-import { Phone, Mail, MapPin, Instagram, Globe, MessageCircle, Sun } from "lucide-react";
+import { Phone, Mail, MapPin, Instagram, MessageCircle, Sun, FileText, Globe } from "lucide-react";
 
 interface TenantFooterProps {
   workspace: any;
