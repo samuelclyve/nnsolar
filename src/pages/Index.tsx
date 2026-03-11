@@ -121,6 +121,24 @@ const testimonials = [
 ];
 
 export default function Index() {
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const megaMenuTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (megaMenuTimeout.current) clearTimeout(megaMenuTimeout.current);
+    };
+  }, []);
+
+  const handleMegaMenuEnter = useCallback(() => {
+    if (megaMenuTimeout.current) clearTimeout(megaMenuTimeout.current);
+    setMegaMenuOpen(true);
+  }, []);
+
+  const handleMegaMenuLeave = useCallback(() => {
+    megaMenuTimeout.current = setTimeout(() => setMegaMenuOpen(false), MENU_CLOSE_DELAY);
+  }, []);
+
   return (
     <div className="min-h-screen bg-card">
       {/* Header - Orange with grid and icon */}
