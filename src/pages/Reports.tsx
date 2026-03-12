@@ -36,12 +36,17 @@ export default function Reports() {
   const [isLoading, setIsLoading] = useState(true);
   const [period, setPeriod] = useState("year");
   const [year, setYear] = useState(new Date().getFullYear().toString());
-  const { workspaceId } = useWorkspace();
+  const { workspaceId, isLoading: wsLoading } = useWorkspace();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (workspaceId) fetchData();
-  }, [workspaceId, period, year]);
+    if (wsLoading) return;
+    if (workspaceId) {
+      fetchData();
+    } else {
+      setIsLoading(false);
+    }
+  }, [workspaceId, wsLoading, period, year]);
 
   const fetchData = async () => {
     setIsLoading(true);
