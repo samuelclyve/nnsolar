@@ -19,6 +19,7 @@ import SiteEditor from "./pages/SiteEditor";
 import UserManagement from "./pages/UserManagement";
 import SuperAdmin from "./pages/SuperAdmin";
 import TenantSite from "./pages/TenantSite";
+import TenantRedirect from "./pages/TenantRedirect";
 import PaymentHistory from "./pages/PaymentHistory";
 import CompanyProfile from "./pages/CompanyProfile";
 import Blog from "./pages/Blog";
