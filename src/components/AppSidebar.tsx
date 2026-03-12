@@ -139,9 +139,9 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
 
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className={`px-3 py-4 flex items-center ${isCollapsed ? "justify-center" : "justify-center"} cursor-pointer`}
+          <div className="px-3 py-4 relative flex items-center justify-center cursor-pointer"
             onClick={() => isCollapsed && setIsCollapsed(false)}>
-            <div className={`h-7 flex items-center relative ${isCollapsed ? "w-7 justify-center" : "justify-center"}`}>
+            <div className={`h-7 flex items-center relative ${isCollapsed ? "w-7" : ""} justify-center`}>
               <img src={iconeSolarizeBranca} alt="Solarize" 
                 className={`h-7 w-7 object-contain absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-300 ${isCollapsed ? "opacity-100" : "opacity-0"}`} />
               <img src={logoSolarizeBranca} alt="Solarize" 
@@ -149,7 +149,7 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
             </div>
             {!isCollapsed && (
               <button onClick={(e) => { e.stopPropagation(); toggleCollapse(); }}
-                className="p-1 rounded-lg hover:bg-sidebar-accent text-sidebar-muted hover:text-sidebar-foreground transition-colors">
+                className="absolute right-3 p-1 rounded-lg hover:bg-sidebar-accent text-sidebar-muted hover:text-sidebar-foreground transition-colors">
                 <ChevronLeft className="w-4 h-4" />
               </button>
             )}
