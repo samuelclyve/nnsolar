@@ -37,16 +37,16 @@ export default function CompanyProfile() {
     if (workspace) {
       setForm({
         name: workspace.name || "",
-        cnpj: (workspace as any).cnpj || "",
-        email: (workspace as any).email || "",
-        phone: (workspace as any).phone || "",
-        whatsapp: (workspace as any).whatsapp || "",
-        address: (workspace as any).address || "",
-        city: (workspace as any).city || "",
-        state: (workspace as any).state || "",
-        cep: (workspace as any).cep || "",
-        description: (workspace as any).description || "",
-        instagram: (workspace as any).instagram || "",
+        cnpj: workspace.cnpj || "",
+        email: workspace.email || "",
+        phone: workspace.phone || "",
+        whatsapp: workspace.whatsapp || "",
+        address: workspace.address || "",
+        city: workspace.city || "",
+        state: workspace.state || "",
+        cep: workspace.cep || "",
+        description: workspace.description || "",
+        instagram: workspace.instagram || "",
         logo_url: workspace.logo_url || "",
       });
     }
