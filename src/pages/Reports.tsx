@@ -88,8 +88,8 @@ export default function Reports() {
     return { name: m, novos: monthLeads.length, fechados: closed };
   });
 
-  const totalLeads = filterByYear(data.leads, "created_at").length;
-  const closedLeads = filterByYear(data.leads, "created_at").filter(l => l.status === "closed").length;
+  const totalLeads = filterByPeriod(data.leads, "created_at").length;
+  const closedLeads = filterByPeriod(data.leads, "created_at").filter(l => l.status === "closed").length;
   const conversionRate = totalLeads > 0 ? ((closedLeads / totalLeads) * 100).toFixed(1) : "0";
 
   // Installations report data
