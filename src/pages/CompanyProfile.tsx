@@ -107,7 +107,7 @@ export default function CompanyProfile() {
           description: form.description,
           instagram: form.instagram,
           logo_url: form.logo_url,
-        } as any)
+        })
         .eq("id", workspaceId)
         .select("id")
         .maybeSingle();
