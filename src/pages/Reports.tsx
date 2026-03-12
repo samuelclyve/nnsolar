@@ -66,9 +66,15 @@ export default function Reports() {
     setIsLoading(false);
   };
 
-  const filterByYear = (items: any[], dateField: string) => {
+  const filterByPeriod = (items: any[], dateField: string) => {
     const y = parseInt(year);
-    return items.filter(i => new Date(i[dateField]).getFullYear() === y);
+    const m = month === "all" ? null : parseInt(month);
+    return items.filter(i => {
+      const d = new Date(i[dateField]);
+      if (d.getFullYear() !== y) return false;
+      if (m !== null && d.getMonth() !== m) return false;
+      return true;
+    });
   };
 
   // Sales report data
