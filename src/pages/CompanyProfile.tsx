@@ -78,11 +78,18 @@ export default function CompanyProfile() {
   };
 
   const handleSave = async () => {
-    if (!workspaceId) return;
+    if (!workspaceId) {
+      toast.error("Workspace não encontrado. Tente recarregar a página.");
+      return;
+    }
     setIsLoading(true);
 
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { setIsLoading(false); return; }
+    if (!session) {
+      toast.error("Sessão expirada. Faça login novamente.");
+      setIsLoading(false);
+      return;
+    }
 
     const { error } = await supabase
       .from("workspaces")
