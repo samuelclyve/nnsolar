@@ -197,7 +197,13 @@ export default function SiteEditor() {
     fetchData();
   };
 
-  const siteUrl = workspace?.slug ? `/${workspace.slug}` : "#";
+  const SITE_DOMAIN = "https://solarize.clyvecompany.com.br";
+  const siteUrl = workspace?.slug ? `${SITE_DOMAIN}/${workspace.slug}` : "#";
+  const copyLink = () => {
+    if (workspace?.slug) {
+      navigator.clipboard.writeText(siteUrl).then(() => toast({ title: "Link copiado!" }));
+    }
+  };
 
   // Helper for setting update
   const updateSetting = (key: string, value: string) => setSettings({ ...settings, [key]: value });
