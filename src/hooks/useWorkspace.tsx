@@ -137,6 +137,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchWorkspace();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      fetchWorkspace();
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const isTrial = workspace?.subscription_status === "trial";
