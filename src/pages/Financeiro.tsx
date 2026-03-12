@@ -56,11 +56,16 @@ export default function Financeiro() {
   const [periodFilter, setPeriodFilter] = useState("all");
   const [selectedInstallment, setSelectedInstallment] = useState<Installment | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
-  const { workspaceId } = useWorkspace();
+  const { workspaceId, isLoading: wsLoading } = useWorkspace();
 
   useEffect(() => {
-    if (workspaceId) fetchData();
-  }, [workspaceId]);
+    if (wsLoading) return;
+    if (workspaceId) {
+      fetchData();
+    } else {
+      setIsLoading(false);
+    }
+  }, [workspaceId, wsLoading]);
 
   const fetchData = async () => {
     const [installmentsRes, installationsRes] = await Promise.all([

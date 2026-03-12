@@ -19,6 +19,7 @@ import SiteEditor from "./pages/SiteEditor";
 import UserManagement from "./pages/UserManagement";
 import SuperAdmin from "./pages/SuperAdmin";
 import TenantSite from "./pages/TenantSite";
+import TenantRedirect from "./pages/TenantRedirect";
 import PaymentHistory from "./pages/PaymentHistory";
 import CompanyProfile from "./pages/CompanyProfile";
 import Blog from "./pages/Blog";
@@ -48,7 +49,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/s/:slug" element={<TenantSite />} />
+            <Route path="/s/:slug" element={<TenantRedirect />} />
             <Route path="/:slug" element={<TenantSite />} />
             <Route path="/super-admin" element={<SuperAdmin />} />
 
