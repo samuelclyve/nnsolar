@@ -60,7 +60,7 @@ export default function SiteEditor() {
   const heroBackgroundInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { workspaceId, workspace } = useWorkspace();
+  const { workspaceId, workspace, refetch } = useWorkspace();
 
   useEffect(() => {
     if (workspaceId) fetchData();
@@ -199,9 +199,41 @@ export default function SiteEditor() {
 
   const SITE_DOMAIN = "https://solarize.clyvecompany.com.br";
   const siteUrl = workspace?.slug ? `${SITE_DOMAIN}/${workspace.slug}` : "#";
-  const copyLink = () => {
+  const [companyNameDialogOpen, setCompanyNameDialogOpen] = useState(false);
+  const [tempCompanyName, setTempCompanyName] = useState("");
+  const [savingCompanyName, setSavingCompanyName] = useState(false);
+
+  const copyLink = async () => {
+    if (!workspace?.name || workspace.name.trim() === "") {
+      setTempCompanyName("");
+      setCompanyNameDialogOpen(true);
+      return;
+    }
     if (workspace?.slug) {
-      navigator.clipboard.writeText(siteUrl).then(() => toast({ title: "Link copiado!" }));
+      await navigator.clipboard.writeText(siteUrl);
+      toast({ title: "Link copiado com sucesso!" });
+    }
+  };
+
+  const handleSaveCompanyName = async () => {
+    if (!tempCompanyName.trim() || !workspaceId) return;
+    setSavingCompanyName(true);
+    const { error } = await supabase
+      .from("workspaces")
+      .update({ name: tempCompanyName.trim() } as any)
+      .eq("id", workspaceId);
+    setSavingCompanyName(false);
+    if (error) {
+      toast({ title: "Erro ao salvar nome da empresa", variant: "destructive" });
+      return;
+    }
+    await refetch();
+    setCompanyNameDialogOpen(false);
+    toast({ title: "Nome da empresa atualizado!" });
+    // Now copy the link
+    if (workspace?.slug) {
+      await navigator.clipboard.writeText(siteUrl);
+      toast({ title: "Link copiado com sucesso!" });
     }
   };
 
@@ -776,6 +808,25 @@ export default function SiteEditor() {
             </div>
             <div className="flex items-center gap-2"><Switch checked={testimonialForm.is_active} onCheckedChange={(c) => setTestimonialForm({ ...testimonialForm, is_active: c })} /><Label>Ativo</Label></div>
             <Button variant="cta" className="w-full" onClick={saveTestimonial}>{editingTestimonial ? "Atualizar" : "Criar"} Depoimento</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Company Name Dialog */}
+      <Dialog open={companyNameDialogOpen} onOpenChange={setCompanyNameDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Nome da empresa necessário</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">Por favor, preencha o nome da empresa para gerar o link.</p>
+            <div>
+              <Label>Nome da Empresa</Label>
+              <Input value={tempCompanyName} onChange={(e) => setTempCompanyName(e.target.value)} placeholder="Ex: Solar Energy Brasil" className="mt-1" />
+            </div>
+            <Button variant="cta" className="w-full" onClick={handleSaveCompanyName} disabled={!tempCompanyName.trim() || savingCompanyName}>
+              {savingCompanyName ? "Salvando..." : "Salvar e Copiar Link"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
