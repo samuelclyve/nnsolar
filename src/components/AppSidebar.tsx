@@ -139,13 +139,13 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
 
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className={`px-3 py-4 flex items-center ${isCollapsed ? "justify-center" : "justify-between"} cursor-pointer`}
+          <div className={`px-3 py-4 flex items-center ${isCollapsed ? "justify-center" : "justify-center"} cursor-pointer`}
             onClick={() => isCollapsed && setIsCollapsed(false)}>
-            <div className={`h-7 flex items-center relative ${isCollapsed ? "w-7 justify-center" : ""}`}>
+            <div className={`h-7 flex items-center relative ${isCollapsed ? "w-7 justify-center" : "justify-center"}`}>
               <img src={iconeSolarizeBranca} alt="Solarize" 
                 className={`h-7 w-7 object-contain absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-300 ${isCollapsed ? "opacity-100" : "opacity-0"}`} />
               <img src={logoSolarizeBranca} alt="Solarize" 
-                className={`h-6 w-auto object-contain transition-opacity duration-300 ${isCollapsed ? "opacity-0" : "opacity-100"}`} />
+                className={`h-[1.45rem] w-auto object-contain transition-opacity duration-300 ${isCollapsed ? "opacity-0" : "opacity-100"}`} />
             </div>
             {!isCollapsed && (
               <button onClick={(e) => { e.stopPropagation(); toggleCollapse(); }}
