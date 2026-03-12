@@ -63,16 +63,16 @@
     --shadow-blue-glow: 0 10px 40px -10px hsl(220 70% 25% / 0.3);
     --shadow-green-glow: 0 10px 40px -10px hsl(142 76% 36% / 0.3);
 
-    /* Sidebar - Dark Blue Style (NN Brand) */
-    --sidebar-background: 220 70% 18%;
+    /* Sidebar - Deep Blue Gradient (matches hero) */
+    --sidebar-background: 220 70% 22%;
     --sidebar-foreground: 220 14% 95%;
     --sidebar-primary: 28 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 60% 25%;
+    --sidebar-accent: 220 60% 30%;
     --sidebar-accent-foreground: 220 14% 95%;
-    --sidebar-border: 220 50% 25%;
+    --sidebar-border: 220 55% 30%;
     --sidebar-ring: 28 100% 50%;
-    --sidebar-muted: 220 14% 65%;
+    --sidebar-muted: 220 14% 70%;
   }
 
   .dark {
