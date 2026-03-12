@@ -72,7 +72,7 @@ export default function Signup() {
       if (!authData.user) throw new Error("Erro ao criar conta");
 
       // Create workspace
-      const slug = generateSlug(formData.companyName);
+      const slug = await generateSlug(formData.companyName);
       const { data: wsId, error: wsError } = await supabase.rpc("create_workspace_for_user", {
         _user_id: authData.user.id,
         _workspace_name: formData.companyName,
