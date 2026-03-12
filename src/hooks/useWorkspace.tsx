@@ -105,7 +105,16 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         const fullName = (session.user.user_metadata?.full_name as string | undefined)?.trim();
         const emailPrefix = session.user.email?.split("@")[0]?.trim();
         const workspaceName = fullName || emailPrefix || "Minha Empresa";
-        const workspaceSlug = `${slugify(workspaceName)}-${Math.random().toString(36).slice(2, 8)}`;
+        const baseSlug = slugify(workspaceName);
+
+        // Check if slug already exists, append short suffix only if needed
+        const { data: existingSlug } = await supabase
+          .from("workspaces")
+          .select("id")
+          .eq("slug", baseSlug)
+          .maybeSingle();
+
+        const workspaceSlug = existingSlug ? `${baseSlug}-${Math.random().toString(36).slice(2, 6)}` : baseSlug;
 
         const { data: createdWorkspaceId, error: createError } = await supabase.rpc("create_workspace_for_user", {
           _user_id: userId,
