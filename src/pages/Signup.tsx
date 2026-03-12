@@ -36,15 +36,22 @@ export default function Signup() {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
-  const generateSlug = (name: string) => {
-    return name
+  const generateSlug = async (name: string) => {
+    const base = name
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "")
-      .substring(0, 50)
-      + "-" + Date.now().toString(36);
+      .substring(0, 50);
+
+    const { data: existing } = await supabase
+      .from("workspaces")
+      .select("id")
+      .eq("slug", base)
+      .maybeSingle();
+
+    return existing ? `${base}-${Math.random().toString(36).slice(2, 6)}` : base;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
