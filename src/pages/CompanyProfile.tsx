@@ -82,53 +82,71 @@ export default function CompanyProfile() {
       toast.error("Workspace não encontrado. Tente recarregar a página.");
       return;
     }
+
     setIsLoading(true);
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      toast.error("Sessão expirada. Faça login novamente.");
-      setIsLoading(false);
-      return;
-    }
-
-    const { error } = await supabase
-      .from("workspaces")
-      .update({
-        name: form.name,
-        cnpj: form.cnpj,
-        email: form.email,
-        phone: form.phone,
-        whatsapp: form.whatsapp,
-        address: form.address,
-        city: form.city,
-        state: form.state,
-        cep: form.cep,
-        description: form.description,
-        instagram: form.instagram,
-        logo_url: form.logo_url,
-      } as any)
-      .eq("id", workspaceId);
-
-    // Save profile name using session user_id (guaranteed)
-    if (profile?.full_name != null) {
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({ full_name: profile.full_name })
-        .eq("user_id", session.user.id);
-      if (profileError) {
-        toast.error("Erro ao salvar perfil: " + profileError.message);
-        setIsLoading(false);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Sessão expirada. Faça login novamente.");
         return;
       }
-    }
 
-    if (error) {
-      toast.error("Erro ao salvar: " + error.message);
-    } else {
-      toast.success("Perfil atualizado!");
+      const { data: updatedWorkspace, error: workspaceError } = await supabase
+        .from("workspaces")
+        .update({
+          name: form.name,
+          cnpj: form.cnpj,
+          email: form.email,
+          phone: form.phone,
+          whatsapp: form.whatsapp,
+          address: form.address,
+          city: form.city,
+          state: form.state,
+          cep: form.cep,
+          description: form.description,
+          instagram: form.instagram,
+          logo_url: form.logo_url,
+        } as any)
+        .eq("id", workspaceId)
+        .select("id")
+        .maybeSingle();
+
+      if (workspaceError) {
+        toast.error("Erro ao salvar empresa: " + workspaceError.message);
+        return;
+      }
+
+      if (!updatedWorkspace) {
+        toast.error("Sem permissão para salvar esta empresa.");
+        return;
+      }
+
+      if (profile?.full_name != null) {
+        const { data: updatedProfile, error: profileError } = await supabase
+          .from("profiles")
+          .update({ full_name: profile.full_name })
+          .eq("user_id", session.user.id)
+          .select("id")
+          .maybeSingle();
+
+        if (profileError) {
+          toast.error("Erro ao salvar perfil: " + profileError.message);
+          return;
+        }
+
+        if (!updatedProfile) {
+          toast.error("Perfil não encontrado para atualização.");
+          return;
+        }
+      }
+
+      toast.success("Alterações salvas com sucesso!");
       await refetch();
+      await fetchProfile();
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
