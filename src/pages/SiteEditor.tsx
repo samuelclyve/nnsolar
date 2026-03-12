@@ -811,6 +811,25 @@ export default function SiteEditor() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Company Name Dialog */}
+      <Dialog open={companyNameDialogOpen} onOpenChange={setCompanyNameDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Nome da empresa necessário</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">Por favor, preencha o nome da empresa para gerar o link.</p>
+            <div>
+              <Label>Nome da Empresa</Label>
+              <Input value={tempCompanyName} onChange={(e) => setTempCompanyName(e.target.value)} placeholder="Ex: Solar Energy Brasil" className="mt-1" />
+            </div>
+            <Button variant="cta" className="w-full" onClick={handleSaveCompanyName} disabled={!tempCompanyName.trim() || savingCompanyName}>
+              {savingCompanyName ? "Salvando..." : "Salvar e Copiar Link"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
