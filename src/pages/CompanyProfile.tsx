@@ -122,10 +122,11 @@ export default function CompanyProfile() {
         return;
       }
 
-      if (profile?.full_name != null) {
+      const profileName = profile?.full_name?.trim();
+      if (profileName) {
         const { data: updatedProfile, error: profileError } = await supabase
           .from("profiles")
-          .update({ full_name: profile.full_name })
+          .update({ full_name: profileName })
           .eq("user_id", session.user.id)
           .select("id")
           .maybeSingle();
@@ -136,8 +137,14 @@ export default function CompanyProfile() {
         }
 
         if (!updatedProfile) {
-          toast.error("Perfil não encontrado para atualização.");
-          return;
+          const { error: insertProfileError } = await supabase
+            .from("profiles")
+            .insert({ user_id: session.user.id, full_name: profileName });
+
+          if (insertProfileError) {
+            toast.error("Erro ao criar perfil: " + insertProfileError.message);
+            return;
+          }
         }
       }
 
