@@ -289,6 +289,18 @@ export default function Reports() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-6">
+        <Select value={month} onValueChange={setMonth}>
+          <SelectTrigger className="w-40">
+            <Calendar className="w-4 h-4 mr-2" />
+            <SelectValue placeholder="Mês" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os meses</SelectItem>
+            {months.map((m, idx) => (
+              <SelectItem key={idx} value={idx.toString()}>{m}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Select value={year} onValueChange={setYear}>
           <SelectTrigger className="w-32">
             <Calendar className="w-4 h-4 mr-2" />
