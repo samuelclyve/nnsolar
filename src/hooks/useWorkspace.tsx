@@ -11,6 +11,18 @@ interface Workspace {
   subscription_status: string;
   owner_id: string;
   created_at: string | null;
+  updated_at: string | null;
+  cnpj: string | null;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  cep: string | null;
+  description: string | null;
+  instagram: string | null;
+  whatsapp: string | null;
+  website: string | null;
 }
 
 interface WorkspaceContextType {
