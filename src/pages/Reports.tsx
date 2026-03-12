@@ -35,6 +35,7 @@ export default function Reports() {
   const [data, setData] = useState<ReportData>({ leads: [], installations: [], installments: [], profiles: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [period, setPeriod] = useState("year");
+  const [month, setMonth] = useState("all");
   const [year, setYear] = useState(new Date().getFullYear().toString());
   const { workspaceId, isLoading: wsLoading } = useWorkspace();
   const { toast } = useToast();
