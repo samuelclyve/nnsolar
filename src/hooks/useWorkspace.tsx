@@ -37,32 +37,90 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const slugify = (value: string) => {
+    const normalized = value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    return normalized || "empresa";
+  };
+
   const fetchWorkspace = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      setIsLoading(false);
-      return;
-    }
+    setIsLoading(true);
 
-    // Get workspace membership
-    const { data: members } = await supabase
-      .from("workspace_members")
-      .select("workspace_id")
-      .eq("user_id", session.user.id)
-      .limit(1);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setWorkspace(null);
+        return;
+      }
 
-    if (members && members.length > 0) {
+      const userId = session.user.id;
+
+      // 1) Try membership first
+      const { data: member } = await supabase
+        .from("workspace_members")
+        .select("workspace_id")
+        .eq("user_id", userId)
+        .limit(1)
+        .maybeSingle();
+
+      let resolvedWorkspaceId: string | null = member?.workspace_id ?? null;
+
+      // 2) Fallback: user might be owner but missing membership row
+      if (!resolvedWorkspaceId) {
+        const { data: ownedWorkspace } = await supabase
+          .from("workspaces")
+          .select("id")
+          .eq("owner_id", userId)
+          .limit(1)
+          .maybeSingle();
+
+        if (ownedWorkspace?.id) {
+          resolvedWorkspaceId = ownedWorkspace.id;
+          await supabase.from("workspace_members").insert({
+            workspace_id: ownedWorkspace.id,
+            user_id: userId,
+            role: "admin",
+          } as any);
+        }
+      }
+
+      // 3) Auto-heal: if no workspace exists, create one
+      if (!resolvedWorkspaceId) {
+        const fullName = (session.user.user_metadata?.full_name as string | undefined)?.trim();
+        const emailPrefix = session.user.email?.split("@")[0]?.trim();
+        const workspaceName = fullName || emailPrefix || "Minha Empresa";
+        const workspaceSlug = `${slugify(workspaceName)}-${Math.random().toString(36).slice(2, 8)}`;
+
+        const { data: createdWorkspaceId, error: createError } = await supabase.rpc("create_workspace_for_user", {
+          _user_id: userId,
+          _workspace_name: workspaceName,
+          _workspace_slug: workspaceSlug,
+        });
+
+        if (!createError && createdWorkspaceId) {
+          resolvedWorkspaceId = createdWorkspaceId as string;
+        }
+      }
+
+      if (!resolvedWorkspaceId) {
+        setWorkspace(null);
+        return;
+      }
+
       const { data: ws } = await supabase
         .from("workspaces")
         .select("*")
-        .eq("id", members[0].workspace_id)
-        .single();
+        .eq("id", resolvedWorkspaceId)
+        .maybeSingle();
 
-      if (ws) {
-        setWorkspace(ws as Workspace);
-      }
+      setWorkspace((ws as Workspace) ?? null);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   useEffect(() => {
