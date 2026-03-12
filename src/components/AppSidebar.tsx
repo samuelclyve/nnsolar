@@ -132,9 +132,11 @@ export function AppSidebar({ user, profile, isCollapsed, setIsCollapsed }: AppSi
         {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
-      <aside className={`fixed inset-y-0 left-0 z-40 bg-sidebar transform transition-all duration-300 lg:translate-x-0 ${
+      <aside className={`fixed inset-y-0 left-0 z-40 transform transition-all duration-300 lg:translate-x-0 ${
         isMobileOpen ? "translate-x-0" : "-translate-x-full"
-      } ${isCollapsed ? "w-16" : "w-60"}`}>
+      } ${isCollapsed ? "w-16" : "w-60"}`}
+        style={{ background: "linear-gradient(180deg, hsl(220 70% 25%) 0%, hsl(220 60% 18%) 100%)" }}>
+
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className={`px-3 py-4 flex items-center ${isCollapsed ? "justify-center" : "justify-between"} cursor-pointer`}
