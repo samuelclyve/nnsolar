@@ -199,9 +199,41 @@ export default function SiteEditor() {
 
   const SITE_DOMAIN = "https://solarize.clyvecompany.com.br";
   const siteUrl = workspace?.slug ? `${SITE_DOMAIN}/${workspace.slug}` : "#";
-  const copyLink = () => {
+  const [companyNameDialogOpen, setCompanyNameDialogOpen] = useState(false);
+  const [tempCompanyName, setTempCompanyName] = useState("");
+  const [savingCompanyName, setSavingCompanyName] = useState(false);
+
+  const copyLink = async () => {
+    if (!workspace?.name || workspace.name.trim() === "") {
+      setTempCompanyName("");
+      setCompanyNameDialogOpen(true);
+      return;
+    }
     if (workspace?.slug) {
-      navigator.clipboard.writeText(siteUrl).then(() => toast({ title: "Link copiado!" }));
+      await navigator.clipboard.writeText(siteUrl);
+      toast({ title: "Link copiado com sucesso!" });
+    }
+  };
+
+  const handleSaveCompanyName = async () => {
+    if (!tempCompanyName.trim() || !workspaceId) return;
+    setSavingCompanyName(true);
+    const { error } = await supabase
+      .from("workspaces")
+      .update({ name: tempCompanyName.trim() } as any)
+      .eq("id", workspaceId);
+    setSavingCompanyName(false);
+    if (error) {
+      toast({ title: "Erro ao salvar nome da empresa", variant: "destructive" });
+      return;
+    }
+    await refetch();
+    setCompanyNameDialogOpen(false);
+    toast({ title: "Nome da empresa atualizado!" });
+    // Now copy the link
+    if (workspace?.slug) {
+      await navigator.clipboard.writeText(siteUrl);
+      toast({ title: "Link copiado com sucesso!" });
     }
   };
 
