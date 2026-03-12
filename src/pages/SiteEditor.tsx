@@ -197,7 +197,13 @@ export default function SiteEditor() {
     fetchData();
   };
 
-  const siteUrl = workspace?.slug ? `/${workspace.slug}` : "#";
+  const SITE_DOMAIN = "https://solarize.clyvecompany.com.br";
+  const siteUrl = workspace?.slug ? `${SITE_DOMAIN}/${workspace.slug}` : "#";
+  const copyLink = () => {
+    if (workspace?.slug) {
+      navigator.clipboard.writeText(siteUrl).then(() => toast({ title: "Link copiado!" }));
+    }
+  };
 
   // Helper for setting update
   const updateSetting = (key: string, value: string) => setSettings({ ...settings, [key]: value });
@@ -216,6 +222,9 @@ export default function SiteEditor() {
             <p className="text-muted-foreground text-sm">Personalize completamente o site da sua empresa</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={copyLink}>
+              <Globe className="w-4 h-4" /> Copiar Link
+            </Button>
             <Button variant="outline" asChild>
               <a href={siteUrl} target="_blank"><Eye className="w-4 h-4" /> Ver Site</a>
             </Button>
@@ -230,10 +239,10 @@ export default function SiteEditor() {
               <Globe className="w-5 h-5 text-primary" />
               <div>
                 <p className="text-sm font-medium text-foreground">Link do seu site</p>
-                <p className="text-xs text-muted-foreground">{window.location.origin}/{workspace.slug}</p>
+                <p className="text-xs text-muted-foreground">{SITE_DOMAIN}/{workspace.slug}</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/${workspace.slug}`).then(() => toast({ title: "Link copiado!" }))}>
+            <Button variant="outline" size="sm" onClick={copyLink}>
               Copiar link
             </Button>
           </div>
