@@ -60,7 +60,7 @@ export default function SiteEditor() {
   const heroBackgroundInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { workspaceId, workspace } = useWorkspace();
+  const { workspaceId, workspace, refetch } = useWorkspace();
 
   useEffect(() => {
     if (workspaceId) fetchData();
