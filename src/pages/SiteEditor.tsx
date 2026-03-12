@@ -222,6 +222,9 @@ export default function SiteEditor() {
             <p className="text-muted-foreground text-sm">Personalize completamente o site da sua empresa</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={copyLink}>
+              <Globe className="w-4 h-4" /> Copiar Link
+            </Button>
             <Button variant="outline" asChild>
               <a href={siteUrl} target="_blank"><Eye className="w-4 h-4" /> Ver Site</a>
             </Button>
