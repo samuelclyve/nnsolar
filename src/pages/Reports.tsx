@@ -35,6 +35,7 @@ export default function Reports() {
   const [data, setData] = useState<ReportData>({ leads: [], installations: [], installments: [], profiles: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [period, setPeriod] = useState("year");
+  const [month, setMonth] = useState("all");
   const [year, setYear] = useState(new Date().getFullYear().toString());
   const { workspaceId, isLoading: wsLoading } = useWorkspace();
   const { toast } = useToast();
@@ -65,9 +66,15 @@ export default function Reports() {
     setIsLoading(false);
   };
 
-  const filterByYear = (items: any[], dateField: string) => {
+  const filterByPeriod = (items: any[], dateField: string) => {
     const y = parseInt(year);
-    return items.filter(i => new Date(i[dateField]).getFullYear() === y);
+    const m = month === "all" ? null : parseInt(month);
+    return items.filter(i => {
+      const d = new Date(i[dateField]);
+      if (d.getFullYear() !== y) return false;
+      if (m !== null && d.getMonth() !== m) return false;
+      return true;
+    });
   };
 
   // Sales report data
@@ -81,8 +88,8 @@ export default function Reports() {
     return { name: m, novos: monthLeads.length, fechados: closed };
   });
 
-  const totalLeads = filterByYear(data.leads, "created_at").length;
-  const closedLeads = filterByYear(data.leads, "created_at").filter(l => l.status === "closed").length;
+  const totalLeads = filterByPeriod(data.leads, "created_at").length;
+  const closedLeads = filterByPeriod(data.leads, "created_at").filter(l => l.status === "closed").length;
   const conversionRate = totalLeads > 0 ? ((closedLeads / totalLeads) * 100).toFixed(1) : "0";
 
   // Installations report data
@@ -282,6 +289,18 @@ export default function Reports() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-6">
+        <Select value={month} onValueChange={setMonth}>
+          <SelectTrigger className="w-40">
+            <Calendar className="w-4 h-4 mr-2" />
+            <SelectValue placeholder="Mês" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os meses</SelectItem>
+            {months.map((m, idx) => (
+              <SelectItem key={idx} value={idx.toString()}>{m}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Select value={year} onValueChange={setYear}>
           <SelectTrigger className="w-32">
             <Calendar className="w-4 h-4 mr-2" />
