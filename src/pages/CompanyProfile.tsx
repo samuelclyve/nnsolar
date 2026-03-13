@@ -189,6 +189,7 @@ export default function CompanyProfile() {
     setProfile({ ...profile, avatar_url: urlData.publicUrl });
     setAvatarUploading(false);
     toast.success("Foto atualizada!");
+    window.dispatchEvent(new Event("profile-updated"));
   };
 
   const siteUrl = workspace?.slug ? `${window.location.origin}/s/${workspace.slug}` : null;
