@@ -24,12 +24,12 @@ export function TenantHeader({ workspace, settings = {} }: TenantHeaderProps) {
     : null;
 
   const logoVariant = settings.header_logo_variant || "original";
-  const logoFilterClass =
+  const logoFilterStyle: React.CSSProperties =
     logoVariant === "white"
-      ? "brightness-0 invert"
+      ? { filter: "brightness(0) invert(1)" }
       : logoVariant === "black"
-        ? "brightness-0"
-        : "";
+        ? { filter: "brightness(0)" }
+        : {};
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
