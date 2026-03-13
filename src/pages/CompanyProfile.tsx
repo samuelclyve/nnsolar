@@ -151,6 +151,7 @@ export default function CompanyProfile() {
       toast.success("Alterações salvas com sucesso!");
       await refetch();
       await fetchProfile();
+      window.dispatchEvent(new Event("profile-updated"));
     } finally {
       setIsLoading(false);
     }
