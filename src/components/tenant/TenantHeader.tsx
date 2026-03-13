@@ -40,7 +40,8 @@ export function TenantHeader({ workspace, settings = {} }: TenantHeaderProps) {
               <img
                 src={workspace.logo_url}
                 alt={workspace.name}
-                className={`h-7 md:h-8 w-auto object-contain ${logoFilterClass}`}
+                className="h-7 md:h-8 w-auto object-contain"
+                style={logoFilterStyle}
               />
             ) : (
               <div className="flex items-center gap-2">
