@@ -2,6 +2,18 @@ import { motion } from "framer-motion";
 import { Instagram, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+import placeholderInsta1 from "@/assets/placeholder-insta-1.jpg";
+import placeholderInsta2 from "@/assets/placeholder-insta-2.jpg";
+import placeholderInsta3 from "@/assets/placeholder-insta-3.jpg";
+import placeholderInsta4 from "@/assets/placeholder-insta-4.jpg";
+
+const PLACEHOLDER_INSTA: InstagramImage[] = [
+  { id: "i1", image_url: placeholderInsta1, title: "Instalação em andamento" },
+  { id: "i2", image_url: placeholderInsta2, title: "Cliente satisfeito" },
+  { id: "i3", image_url: placeholderInsta3, title: "Energia solar comercial" },
+  { id: "i4", image_url: placeholderInsta4, title: "Tecnologia de ponta" },
+];
+
 interface InstagramImage {
   id: string;
   image_url: string;
@@ -14,7 +26,7 @@ interface TenantInstagramProps {
 }
 
 export function TenantInstagram({ images, instagramHandle }: TenantInstagramProps) {
-  if (!instagramHandle && images.length === 0) return null;
+  const displayImages = images.length > 0 ? images : PLACEHOLDER_INSTA;
 
   const cleanHandle = instagramHandle?.replace(/^@/, "").replace(/\s/g, "") || "";
   const profileUrl = cleanHandle ? `https://instagram.com/${cleanHandle}` : null;
