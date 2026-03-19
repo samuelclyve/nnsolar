@@ -256,6 +256,43 @@ export default function SiteEditor() {
   // Helper for setting update
   const updateSetting = (key: string, value: string) => setSettings({ ...settings, [key]: value });
 
+  // Portfolio image management
+  const portfolioImageInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingPortfolio, setUploadingPortfolio] = useState(false);
+  const [portfolioCategory, setPortfolioCategory] = useState<"case" | "instagram">("case");
+
+  const handlePortfolioImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, category: "case" | "instagram") => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPortfolio(true);
+    const url = await uploadImage(file);
+    if (url) {
+      const list = category === "case" ? portfolioCases : portfolioInsta;
+      await supabase.from("portfolio_images").insert({
+        workspace_id: workspaceId,
+        image_url: url,
+        category,
+        sort_order: list.length,
+        is_active: true,
+      });
+      toast({ title: "Imagem adicionada!" });
+      fetchData();
+    }
+    setUploadingPortfolio(false);
+    if (e.target) e.target.value = "";
+  };
+
+  const deletePortfolioImage = async (id: string) => {
+    await supabase.from("portfolio_images").delete().eq("id", id);
+    toast({ title: "Imagem removida!" });
+    fetchData();
+  };
+
+  const updatePortfolioImage = async (id: string, updates: Partial<PortfolioImage>) => {
+    await supabase.from("portfolio_images").update(updates).eq("id", id);
+    fetchData();
+  };
+
   // Color preview helper
   const color1 = settings.brand_color_primary || "#FF8C00";
   const color2 = settings.brand_color_secondary || "#1B3A5C";
