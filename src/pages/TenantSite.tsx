@@ -6,6 +6,8 @@ import { TenantHeader } from "@/components/tenant/TenantHeader";
 import { TenantHero } from "@/components/tenant/TenantHero";
 import { TenantCarousel } from "@/components/tenant/TenantCarousel";
 import { TenantSimulator } from "@/components/tenant/TenantSimulator";
+import { TenantPortfolio } from "@/components/tenant/TenantPortfolio";
+import { TenantInstagram } from "@/components/tenant/TenantInstagram";
 import { TenantHowItWorks } from "@/components/tenant/TenantHowItWorks";
 import { TenantTestimonials } from "@/components/tenant/TenantTestimonials";
 import { TenantLeadForm } from "@/components/tenant/TenantLeadForm";
@@ -16,6 +18,8 @@ interface SiteData {
   settings: Record<string, string>;
   slides: any[];
   testimonials: any[];
+  portfolioCases: any[];
+  portfolioInstagram: any[];
 }
 
 // Convert hex to HSL values string like "28 100% 50%"
@@ -89,16 +93,25 @@ export default function TenantSite() {
       return;
     }
 
-    const [settingsRes, slidesRes, testimonialsRes] = await Promise.all([
+    const [settingsRes, slidesRes, testimonialsRes, casesRes, instaRes] = await Promise.all([
       supabase.from("site_settings").select("setting_key, setting_value").eq("workspace_id", ws.id),
       supabase.from("hero_slides").select("*").eq("workspace_id", ws.id).eq("is_active", true).order("sort_order"),
       supabase.from("testimonials").select("*").eq("workspace_id", ws.id).eq("is_active", true).order("sort_order"),
+      supabase.from("portfolio_images").select("*").eq("workspace_id", ws.id).eq("is_active", true).eq("category", "case").order("sort_order"),
+      supabase.from("portfolio_images").select("*").eq("workspace_id", ws.id).eq("is_active", true).eq("category", "instagram").order("sort_order").limit(4),
     ]);
 
     const settingsMap: Record<string, string> = {};
     settingsRes.data?.forEach(s => { settingsMap[s.setting_key] = s.setting_value || ""; });
 
-    setData({ workspace: ws, settings: settingsMap, slides: slidesRes.data || [], testimonials: testimonialsRes.data || [] });
+    setData({
+      workspace: ws,
+      settings: settingsMap,
+      slides: slidesRes.data || [],
+      testimonials: testimonialsRes.data || [],
+      portfolioCases: casesRes.data || [],
+      portfolioInstagram: instaRes.data || [],
+    });
     setIsLoading(false);
   };
 
@@ -122,7 +135,7 @@ export default function TenantSite() {
     );
   }
 
-  const { workspace, settings, slides, testimonials } = data;
+  const { workspace, settings, slides, testimonials, portfolioCases, portfolioInstagram } = data;
 
   // Merge contact info: site_settings override workspace fields
   const mergedWorkspace = {
@@ -160,7 +173,9 @@ export default function TenantSite() {
       <TenantHero settings={settings} workspace={mergedWorkspace} />
       <TenantCarousel slides={slides} />
       <TenantSimulator />
+      <TenantPortfolio images={portfolioCases} />
       <TenantHowItWorks />
+      <TenantInstagram images={portfolioInstagram} instagramHandle={mergedWorkspace.instagram} />
       <TenantTestimonials testimonials={testimonials} />
       <TenantLeadForm workspace={mergedWorkspace} />
       <TenantFooter workspace={mergedWorkspace} />
