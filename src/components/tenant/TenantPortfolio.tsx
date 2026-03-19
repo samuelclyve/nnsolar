@@ -60,7 +60,7 @@ export function TenantPortfolio({ images }: TenantPortfolioProps) {
         </motion.div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-          {images.map((img, index) => (
+          {displayImages.map((img, index) => (
             <motion.div
               key={img.id}
               initial={{ opacity: 0, scale: 0.9 }}
