@@ -62,7 +62,7 @@ const menuGroups: MenuGroup[] = [
     label: "Social",
     items: [
       { icon: Globe, label: "Edição Site", href: "/site-editor", roles: ["admin", "manager", "super_admin"] },
-      { icon: Plug, label: "Integrações", href: "/integrations", roles: ["admin", "manager", "super_admin"], disabled: true, badge: "Em breve" },
+      { icon: Plug, label: "Integrações", href: "/integrations", roles: ["admin", "manager", "super_admin"] },
     ],
   },
 ];
