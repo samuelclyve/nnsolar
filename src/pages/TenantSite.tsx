@@ -173,7 +173,9 @@ export default function TenantSite() {
       <TenantHero settings={settings} workspace={mergedWorkspace} />
       <TenantCarousel slides={slides} />
       <TenantSimulator />
+      <TenantPortfolio images={portfolioCases} />
       <TenantHowItWorks />
+      <TenantInstagram images={portfolioInstagram} instagramHandle={mergedWorkspace.instagram} />
       <TenantTestimonials testimonials={testimonials} />
       <TenantLeadForm workspace={mergedWorkspace} />
       <TenantFooter workspace={mergedWorkspace} />
