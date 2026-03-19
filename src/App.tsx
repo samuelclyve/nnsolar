@@ -25,6 +25,8 @@ import CompanyProfile from "./pages/CompanyProfile";
 import Blog from "./pages/Blog";
 import Materials from "./pages/Materials";
 import Integrations from "./pages/Integrations";
+import InternalIntegrations from "./pages/InternalIntegrations";
+import Monitoring from "./pages/Monitoring";
 import FeatureDetail from "./pages/FeatureDetail";
 import Reports from "./pages/Reports";
 import Financeiro from "./pages/Financeiro";
