@@ -75,10 +75,10 @@ export default function InternalIntegrations() {
     setSolisInverterCount(solisInvRes.count || 0);
     if (growattRes.data) setGrowattCreds({ id: growattRes.data.id, api_token: growattRes.data.api_token, api_url: growattRes.data.api_url, is_active: growattRes.data.is_active });
     setGrowattDeviceCount(growattDevRes.count || 0);
-    if (huaweiRes.data) setHuaweiCreds({ id: huaweiRes.data.id, username: huaweiRes.data.username, password: huaweiRes.data.password, api_url: huaweiRes.data.api_url, is_active: huaweiRes.data.is_active });
-    setHuaweiDeviceCount(huaweiDevRes.count || 0);
-    if (froniusRes.data) setFroniusCreds({ id: froniusRes.data.id, api_key: froniusRes.data.api_key, access_key_id: froniusRes.data.access_key_id || "", access_key_value: froniusRes.data.access_key_value || "", api_url: froniusRes.data.api_url, is_active: froniusRes.data.is_active });
-    setFroniusDeviceCount(froniusDevRes.count || 0);
+    if (huaweiRes.data) { const d = huaweiRes.data as any; setHuaweiCreds({ id: d.id, username: d.username, password: d.password, api_url: d.api_url, is_active: d.is_active }); }
+    setHuaweiDeviceCount((huaweiDevRes as any).count || 0);
+    if (froniusRes.data) { const d = froniusRes.data as any; setFroniusCreds({ id: d.id, api_key: d.api_key, access_key_id: d.access_key_id || "", access_key_value: d.access_key_value || "", api_url: d.api_url, is_active: d.is_active }); }
+    setFroniusDeviceCount((froniusDevRes as any).count || 0);
     setLoading(false);
   };
 
@@ -86,8 +86,8 @@ export default function InternalIntegrations() {
   const saveCredentials = async (table: string, payload: any, id: string | undefined, setLoading: (v: boolean) => void, label: string) => {
     setLoading(true);
     const { error } = id
-      ? await supabase.from(table).update(payload).eq("id", id)
-      : await supabase.from(table).insert(payload);
+      ? await (supabase.from(table as any) as any).update(payload).eq("id", id)
+      : await (supabase.from(table as any) as any).insert(payload);
     setLoading(false);
     if (error) toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
     else { toast({ title: `Credenciais ${label} salvas!` }); fetchAllCredentials(); }
