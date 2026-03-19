@@ -240,11 +240,65 @@ export default function InternalIntegrations() {
     </motion.div>
   );
 
+  // Integration metadata for filtering
+  const integrations = [
+    { key: "solis", title: "SolisCloud", isConfigured: !!solisCreds.id, isActive: solisCreds.is_active },
+    { key: "growatt", title: "Growatt", isConfigured: !!growattCreds.id, isActive: growattCreds.is_active },
+    { key: "huawei", title: "Huawei FusionSolar", isConfigured: !!huaweiCreds.id, isActive: huaweiCreds.is_active },
+    { key: "fronius", title: "Fronius Solar.web", isConfigured: !!froniusCreds.id, isActive: froniusCreds.is_active },
+    { key: "whatsapp", title: "WhatsApp Business", isConfigured: false, isActive: false },
+  ];
+
+  const isVisible = (key: string) => {
+    const item = integrations.find((i) => i.key === key);
+    if (!item) return false;
+    if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (statusFilter === "active" && (!item.isConfigured || !item.isActive)) return false;
+    if (statusFilter === "inactive" && item.isConfigured && item.isActive) return false;
+    return true;
+  };
+
+  const handleSuggestIntegration = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { toast({ title: "Faça login para enviar sugestões", variant: "destructive" }); return; }
+    await supabase.from("support_tickets").insert({
+      user_id: user.id,
+      workspace_id: workspaceId || null,
+      message: "[Sugestão de Integração] Gostaria de sugerir uma nova integração para o Solarize.",
+      sender: "user",
+    });
+    toast({ title: "Sugestão enviada!", description: "Sua ideia foi enviada para o suporte. Você pode continuar a conversa no chat." });
+  };
+
+  const visibleCount = integrations.filter((i) => isVisible(i.key)).length;
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Integrações</h1>
-        <p className="text-muted-foreground">Conecte sistemas externos ao seu painel Solarize</p>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Integrações</h1>
+          <p className="text-muted-foreground">Conecte sistemas externos ao seu painel Solarize</p>
+        </div>
+      </div>
+
+      {/* Search & Filters */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar integração..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)} className="w-auto">
+          <TabsList>
+            <TabsTrigger value="all">Todas</TabsTrigger>
+            <TabsTrigger value="active">Ativas</TabsTrigger>
+            <TabsTrigger value="inactive">Não configuradas</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       {/* SolisCloud */}
