@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, BarChart3, Wrench, Users, Calendar, FileText, 
   LogOut, Menu, X, Globe, Search, ChevronLeft, UserCircle, Shield, 
-  Building2, ClipboardList, Plug, CreditCard, ChevronDown, ChevronRight
+  Building2, ClipboardList, Plug, CreditCard, ChevronDown, ChevronRight, Sun
 } from "lucide-react";
 import logoSolarizeBranca from "@/assets/logo-solarize-branca.png";
 import iconeSolarizeBranca from "@/assets/icone-solarize-branca.png";
