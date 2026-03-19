@@ -301,6 +301,14 @@ export default function InternalIntegrations() {
         </Tabs>
       </div>
 
+      {visibleCount === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Search className="w-10 h-10 text-muted-foreground mb-3" />
+          <p className="font-medium text-foreground">Nenhuma integração encontrada</p>
+          <p className="text-sm text-muted-foreground">Tente outro termo ou altere o filtro</p>
+        </div>
+      )}
+
       {/* SolisCloud */}
       <IntegrationCard icon={Zap} iconColor="bg-primary/10 text-primary" title="SolisCloud" description="Monitoramento de inversores Solis"
         helpText="Conecte sua conta SolisCloud. Obtenha credenciais em" helpLink="https://www.soliscloud.com"
