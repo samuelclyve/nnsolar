@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plug, Zap, CheckCircle2, AlertCircle, Loader2, Eye, EyeOff, RefreshCw, Leaf, Sun, Snowflake } from "lucide-react";
+import { Plug, Zap, CheckCircle2, AlertCircle, Loader2, Eye, EyeOff, RefreshCw, Leaf, Sun, Snowflake, Search, MessageCircle, Lightbulb } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
