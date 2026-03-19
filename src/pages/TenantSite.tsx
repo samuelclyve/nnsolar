@@ -135,7 +135,7 @@ export default function TenantSite() {
     );
   }
 
-  const { workspace, settings, slides, testimonials } = data;
+  const { workspace, settings, slides, testimonials, portfolioCases, portfolioInstagram } = data;
 
   // Merge contact info: site_settings override workspace fields
   const mergedWorkspace = {
