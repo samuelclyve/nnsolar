@@ -65,10 +65,10 @@ export default function InternalIntegrations() {
       supabase.from("solis_inverters").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId!),
       supabase.from("growatt_credentials").select("*").eq("workspace_id", workspaceId!).maybeSingle(),
       supabase.from("growatt_inverters").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId!),
-      supabase.from("huawei_credentials").select("*").eq("workspace_id", workspaceId!).maybeSingle(),
-      supabase.from("huawei_inverters").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId!),
-      supabase.from("fronius_credentials").select("*").eq("workspace_id", workspaceId!).maybeSingle(),
-      supabase.from("fronius_inverters").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId!),
+      supabase.from("huawei_credentials" as any).select("*").eq("workspace_id", workspaceId!).maybeSingle(),
+      supabase.from("huawei_inverters" as any).select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId!),
+      supabase.from("fronius_credentials" as any).select("*").eq("workspace_id", workspaceId!).maybeSingle(),
+      supabase.from("fronius_inverters" as any).select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId!),
     ]);
 
     if (solisRes.data) setSolisCreds({ id: solisRes.data.id, api_id: solisRes.data.api_id, api_secret: solisRes.data.api_secret, api_url: solisRes.data.api_url, station_index: solisRes.data.station_index, is_active: solisRes.data.is_active });
