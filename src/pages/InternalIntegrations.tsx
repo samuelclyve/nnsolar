@@ -20,7 +20,10 @@ interface FroniusCredentials { id?: string; api_key: string; access_key_id: stri
 export default function InternalIntegrations() {
   const { workspaceId } = useWorkspace();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
 
   // Solis
   const [solisSaving, setSolisSaving] = useState(false);
