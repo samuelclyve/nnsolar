@@ -25,6 +25,8 @@ import CompanyProfile from "./pages/CompanyProfile";
 import Blog from "./pages/Blog";
 import Materials from "./pages/Materials";
 import Integrations from "./pages/Integrations";
+import InternalIntegrations from "./pages/InternalIntegrations";
+import Monitoring from "./pages/Monitoring";
 import FeatureDetail from "./pages/FeatureDetail";
 import Reports from "./pages/Reports";
 import Financeiro from "./pages/Financeiro";
@@ -62,6 +64,8 @@ const App = () => (
               <Route path="/schedule" element={<Schedule />} />
               <Route path="/documents" element={<Documents />} />
               <Route path="/site-editor" element={<SiteEditor />} />
+              <Route path="/integrations" element={<InternalIntegrations />} />
+              <Route path="/monitoring" element={<Monitoring />} />
               <Route path="/users" element={<UserManagement />} />
               <Route path="/payment-history" element={<PaymentHistory />} />
               <Route path="/company-profile" element={<CompanyProfile />} />

@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, BarChart3, Wrench, Users, Calendar, FileText, 
   LogOut, Menu, X, Globe, Search, ChevronLeft, UserCircle, Shield, 
-  Building2, ClipboardList, Plug, CreditCard, ChevronDown, ChevronRight
+  Building2, ClipboardList, Plug, CreditCard, ChevronDown, ChevronRight, Sun
 } from "lucide-react";
 import logoSolarizeBranca from "@/assets/logo-solarize-branca.png";
 import iconeSolarizeBranca from "@/assets/icone-solarize-branca.png";
@@ -46,6 +46,7 @@ const menuGroups: MenuGroup[] = [
     label: "Operações",
     items: [
       { icon: Wrench, label: "Instalações", href: "/installations", roles: ["admin", "manager", "technician", "comercial", "super_admin"] },
+      { icon: Sun, label: "Monitoramento", href: "/monitoring", roles: ["admin", "manager", "technician", "super_admin"] },
       { icon: FileText, label: "Documentos", href: "/documents", roles: ["admin", "manager", "comercial", "technician", "super_admin"] },
     ],
   },
@@ -61,7 +62,7 @@ const menuGroups: MenuGroup[] = [
     label: "Social",
     items: [
       { icon: Globe, label: "Edição Site", href: "/site-editor", roles: ["admin", "manager", "super_admin"] },
-      { icon: Plug, label: "Integrações", href: "/integrations", roles: ["admin", "manager", "super_admin"], disabled: true, badge: "Em breve" },
+      { icon: Plug, label: "Integrações", href: "/integrations", roles: ["admin", "manager", "super_admin"] },
     ],
   },
 ];

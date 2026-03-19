@@ -2,3 +2,6 @@ project_id = "ypasbgrwkfihwwimoihf"
 
 [functions.cakto-webhook]
 verify_jwt = false
+
+[functions.solis-proxy]
+verify_jwt = false

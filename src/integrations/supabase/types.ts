@@ -824,6 +824,103 @@ export type Database = {
           },
         ]
       }
+      solis_credentials: {
+        Row: {
+          api_id: string
+          api_secret: string
+          api_url: string
+          created_at: string
+          id: string
+          is_active: boolean
+          station_index: number
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          api_id: string
+          api_secret: string
+          api_url?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          station_index?: number
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          api_id?: string
+          api_secret?: string
+          api_url?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          station_index?: number
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solis_credentials_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solis_inverters: {
+        Row: {
+          created_at: string
+          id: string
+          inverter_id: string
+          inverter_model: string | null
+          inverter_sn: string
+          is_active: boolean
+          last_data: Json | null
+          last_synced_at: string | null
+          station_id: string | null
+          station_name: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inverter_id: string
+          inverter_model?: string | null
+          inverter_sn: string
+          is_active?: boolean
+          last_data?: Json | null
+          last_synced_at?: string | null
+          station_id?: string | null
+          station_name?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inverter_id?: string
+          inverter_model?: string | null
+          inverter_sn?: string
+          is_active?: boolean
+          last_data?: Json | null
+          last_synced_at?: string | null
+          station_id?: string | null
+          station_name?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solis_inverters_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           amount: number
