@@ -35,8 +35,8 @@ export function TenantPortfolio({ images }: TenantPortfolioProps) {
 
   const openLightbox = (index: number) => setSelectedIndex(index);
   const closeLightbox = () => setSelectedIndex(null);
-  const goNext = () => setSelectedIndex((prev) => prev !== null ? (prev + 1) % images.length : null);
-  const goPrev = () => setSelectedIndex((prev) => prev !== null ? (prev - 1 + images.length) % images.length : null);
+  const goNext = () => setSelectedIndex((prev) => prev !== null ? (prev + 1) % displayImages.length : null);
+  const goPrev = () => setSelectedIndex((prev) => prev !== null ? (prev - 1 + displayImages.length) % displayImages.length : null);
 
   return (
     <section className="py-16 md:py-24 bg-muted/30" id="portfolio">
