@@ -264,8 +264,9 @@ export default function InternalIntegrations() {
     await supabase.from("support_tickets").insert({
       user_id: user.id,
       workspace_id: workspaceId || null,
-      message: "[Sugestão de Integração] Gostaria de sugerir uma nova integração para o Solarize.",
+      message: "Gostaria de sugerir uma nova integração para o Solarize.",
       sender: "user",
+      category: "suggestion",
     });
     toast({ title: "Sugestão enviada!", description: "Sua ideia foi enviada para o suporte. Você pode continuar a conversa no chat." });
   };
