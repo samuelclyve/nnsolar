@@ -40,6 +40,16 @@ interface Testimonial {
   sort_order: number;
 }
 
+interface PortfolioImage {
+  id: string;
+  image_url: string;
+  title: string | null;
+  description: string | null;
+  category: string;
+  is_active: boolean;
+  sort_order: number;
+}
+
 export default function SiteEditor() {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
