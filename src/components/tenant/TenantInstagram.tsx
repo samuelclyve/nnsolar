@@ -64,7 +64,7 @@ export function TenantInstagram({ images, instagramHandle }: TenantInstagramProp
 
         {displayImages.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
-            {images.slice(0, 4).map((img, index) => (
+            {displayImages.slice(0, 4).map((img, index) => (
               <motion.a
                 key={img.id}
                 href={profileUrl || "#"}
