@@ -290,6 +290,106 @@ export type Database = {
         }
         Relationships: []
       }
+      fronius_credentials: {
+        Row: {
+          access_key_id: string | null
+          access_key_value: string | null
+          api_key: string
+          api_url: string
+          created_at: string
+          id: string
+          is_active: boolean
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          access_key_id?: string | null
+          access_key_value?: string | null
+          api_key: string
+          api_url?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          access_key_id?: string | null
+          access_key_value?: string | null
+          api_key?: string
+          api_url?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fronius_credentials_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fronius_inverters: {
+        Row: {
+          created_at: string
+          device_id: string
+          device_model: string | null
+          device_sn: string
+          device_type: string | null
+          id: string
+          is_active: boolean
+          last_data: Json | null
+          last_synced_at: string | null
+          system_id: string | null
+          system_name: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_id: string
+          device_model?: string | null
+          device_sn: string
+          device_type?: string | null
+          id?: string
+          is_active?: boolean
+          last_data?: Json | null
+          last_synced_at?: string | null
+          system_id?: string | null
+          system_name?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          device_model?: string | null
+          device_sn?: string
+          device_type?: string | null
+          id?: string
+          is_active?: boolean
+          last_data?: Json | null
+          last_synced_at?: string | null
+          system_id?: string | null
+          system_name?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fronius_inverters_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       growatt_credentials: {
         Row: {
           api_token: string
@@ -421,6 +521,103 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "hero_slides_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      huawei_credentials: {
+        Row: {
+          api_url: string
+          created_at: string
+          id: string
+          is_active: boolean
+          password: string
+          updated_at: string
+          username: string
+          workspace_id: string
+        }
+        Insert: {
+          api_url?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          password: string
+          updated_at?: string
+          username: string
+          workspace_id: string
+        }
+        Update: {
+          api_url?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          password?: string
+          updated_at?: string
+          username?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "huawei_credentials_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      huawei_inverters: {
+        Row: {
+          created_at: string
+          device_id: string
+          device_model: string | null
+          device_sn: string
+          device_type: string | null
+          id: string
+          is_active: boolean
+          last_data: Json | null
+          last_synced_at: string | null
+          station_code: string | null
+          station_name: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_id: string
+          device_model?: string | null
+          device_sn: string
+          device_type?: string | null
+          id?: string
+          is_active?: boolean
+          last_data?: Json | null
+          last_synced_at?: string | null
+          station_code?: string | null
+          station_name?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          device_model?: string | null
+          device_sn?: string
+          device_type?: string | null
+          id?: string
+          is_active?: boolean
+          last_data?: Json | null
+          last_synced_at?: string | null
+          station_code?: string | null
+          station_name?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "huawei_inverters_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -631,6 +828,56 @@ export type Database = {
           },
           {
             foreignKeyName: "installations_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inverter_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          device_sn: string
+          id: string
+          is_resolved: boolean
+          message: string | null
+          resolved_at: string | null
+          severity: string
+          system_type: string
+          title: string
+          workspace_id: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          device_sn: string
+          id?: string
+          is_resolved?: boolean
+          message?: string | null
+          resolved_at?: string | null
+          severity?: string
+          system_type: string
+          title: string
+          workspace_id: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          device_sn?: string
+          id?: string
+          is_resolved?: boolean
+          message?: string | null
+          resolved_at?: string | null
+          severity?: string
+          system_type?: string
+          title?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inverter_alerts_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
