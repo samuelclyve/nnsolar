@@ -334,10 +334,11 @@ export default function SiteEditor() {
         )}
 
         <Tabs defaultValue="brand" className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-6">
+          <TabsList className="grid w-full grid-cols-7 mb-6">
             <TabsTrigger value="brand" className="gap-1 text-xs"><Palette className="w-4 h-4" /> Identidade</TabsTrigger>
             <TabsTrigger value="hero" className="gap-1 text-xs"><Image className="w-4 h-4" /> Hero</TabsTrigger>
             <TabsTrigger value="slides" className="gap-1 text-xs"><Image className="w-4 h-4" /> Banners</TabsTrigger>
+            <TabsTrigger value="portfolio" className="gap-1 text-xs"><Camera className="w-4 h-4" /> Portfólio</TabsTrigger>
             <TabsTrigger value="testimonials" className="gap-1 text-xs"><MessageSquare className="w-4 h-4" /> Depoimentos</TabsTrigger>
             <TabsTrigger value="content" className="gap-1 text-xs"><Type className="w-4 h-4" /> Conteúdo</TabsTrigger>
             <TabsTrigger value="contact" className="gap-1 text-xs"><Phone className="w-4 h-4" /> Contato</TabsTrigger>
