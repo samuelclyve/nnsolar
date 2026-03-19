@@ -21,8 +21,14 @@ const gridBg = {
   backgroundSize: '48px 48px',
 };
 
+const availableIntegrations = [
+  { icon: Zap, name: "SolisCloud", description: "Monitoramento em tempo real de inversores Solis. Acompanhe geração, potência e status dos dispositivos dos seus clientes direto pelo painel.", status: "Disponível" },
+  { icon: Zap, name: "Growatt (ShineServer)", description: "Integração com a API ShineServer da Growatt. Monitore plantas, inversores e geração de energia em tempo real.", status: "Disponível" },
+  { icon: Zap, name: "Huawei FusionSolar", description: "Conecte-se à plataforma iMaster NetEco da Huawei. Acompanhe estações, dispositivos e KPIs de geração solar.", status: "Disponível" },
+  { icon: Zap, name: "Fronius Solar.web", description: "Integração com a API Solar.web da Fronius. Monitore sistemas PV, fluxo de energia e dados agregados de geração.", status: "Disponível" },
+];
+
 const plannedIntegrations = [
-  { icon: Zap, name: "Inversores Solares", description: "Monitoramento em tempo real de inversores Fronius, Growatt, Huawei e mais. Acompanhe a geração de energia dos seus clientes direto pelo painel.", status: "Em desenvolvimento" },
   { icon: MessageCircle, name: "WhatsApp Business API", description: "Automação de mensagens e notificações via API oficial do WhatsApp. Envie atualizações de instalação, cobranças e follow-ups automaticamente.", status: "Em desenvolvimento" },
   { icon: Plug, name: "Geradores de Propostas", description: "Integração com ferramentas de dimensionamento e geração de propostas comerciais. Crie propostas profissionais em minutos.", status: "Planejado" },
   { icon: Smartphone, name: "Aplicativo Mobile para Clientes", description: "App nativo para seus clientes acompanharem o andamento da instalação, documentos e geração de energia em tempo real.", status: "Planejado" },
@@ -30,6 +36,7 @@ const plannedIntegrations = [
 ];
 
 const statusColors: Record<string, string> = {
+  "Disponível": "bg-green-500/10 text-green-600",
   "Em desenvolvimento": "bg-primary/10 text-primary",
   "Planejado": "bg-secondary/10 text-secondary",
 };
