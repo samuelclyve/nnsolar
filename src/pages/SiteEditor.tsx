@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   Image, Plus, Trash2, Save, Eye, GripVertical, Settings,
   MessageSquare, Type, Upload, X, Palette, Globe, Phone,
-  Mail, MapPin, Instagram, MessageCircle
+  Mail, MapPin, Instagram, MessageCircle, Camera, Edit
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
