@@ -1302,6 +1302,7 @@ export type Database = {
       }
       support_tickets: {
         Row: {
+          category: string
           created_at: string
           id: string
           message: string
@@ -1310,6 +1311,7 @@ export type Database = {
           workspace_id: string | null
         }
         Insert: {
+          category?: string
           created_at?: string
           id?: string
           message: string
@@ -1318,6 +1320,7 @@ export type Database = {
           workspace_id?: string | null
         }
         Update: {
+          category?: string
           created_at?: string
           id?: string
           message?: string
