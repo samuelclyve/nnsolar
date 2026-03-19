@@ -53,6 +53,8 @@ interface PortfolioImage {
 export default function SiteEditor() {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [portfolioCases, setPortfolioCases] = useState<PortfolioImage[]>([]);
+  const [portfolioInsta, setPortfolioInsta] = useState<PortfolioImage[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSlideDialogOpen, setIsSlideDialogOpen] = useState(false);
