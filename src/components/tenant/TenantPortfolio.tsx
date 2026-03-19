@@ -2,6 +2,22 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, X, ChevronLeft, ChevronRight } from "lucide-react";
 
+import placeholderPortfolio1 from "@/assets/placeholder-portfolio-1.jpg";
+import placeholderPortfolio2 from "@/assets/placeholder-portfolio-2.jpg";
+import placeholderPortfolio3 from "@/assets/placeholder-portfolio-3.jpg";
+import placeholderPortfolio4 from "@/assets/placeholder-portfolio-4.jpg";
+import placeholderPortfolio5 from "@/assets/placeholder-portfolio-5.jpg";
+import placeholderPortfolio6 from "@/assets/placeholder-portfolio-6.jpg";
+
+const PLACEHOLDER_PORTFOLIO: PortfolioImage[] = [
+  { id: "p1", image_url: placeholderPortfolio1, title: "Residência Solar — 8.5 kWp", description: null },
+  { id: "p2", image_url: placeholderPortfolio2, title: "Instalação Comercial — 15 kWp", description: null },
+  { id: "p3", image_url: placeholderPortfolio3, title: "Usina Rural — 75 kWp", description: null },
+  { id: "p4", image_url: placeholderPortfolio4, title: "Detalhe dos Painéis", description: null },
+  { id: "p5", image_url: placeholderPortfolio5, title: "Equipe em Ação", description: null },
+  { id: "p6", image_url: placeholderPortfolio6, title: "Casa Sustentável", description: null },
+];
+
 interface PortfolioImage {
   id: string;
   image_url: string;
@@ -15,8 +31,7 @@ interface TenantPortfolioProps {
 
 export function TenantPortfolio({ images }: TenantPortfolioProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-
-  if (images.length === 0) return null;
+  const displayImages = images.length > 0 ? images : PLACEHOLDER_PORTFOLIO;
 
   const openLightbox = (index: number) => setSelectedIndex(index);
   const closeLightbox = () => setSelectedIndex(null);
