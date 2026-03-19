@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.growatt-proxy]
 verify_jwt = false
+
+[functions.huawei-proxy]
+verify_jwt = false
+
+[functions.fronius-proxy]
+verify_jwt = false
