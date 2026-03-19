@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plug, Zap, CheckCircle2, AlertCircle, Loader2, Eye, EyeOff, RefreshCw, Leaf, Sun, Snowflake } from "lucide-react";
+import { Plug, Zap, CheckCircle2, AlertCircle, Loader2, Eye, EyeOff, RefreshCw, Leaf, Sun, Snowflake, Search, MessageCircle, Lightbulb } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface SolisCredentials { id?: string; api_id: string; api_secret: string; api_url: string; station_index: number; is_active: boolean; }
 interface GrowattCredentials { id?: string; api_token: string; api_url: string; is_active: boolean; }
@@ -18,7 +20,10 @@ interface FroniusCredentials { id?: string; api_key: string; access_key_id: stri
 export default function InternalIntegrations() {
   const { workspaceId } = useWorkspace();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
 
   // Solis
   const [solisSaving, setSolisSaving] = useState(false);
@@ -235,102 +240,190 @@ export default function InternalIntegrations() {
     </motion.div>
   );
 
+  // Integration metadata for filtering
+  const integrations = [
+    { key: "solis", title: "SolisCloud", isConfigured: !!solisCreds.id, isActive: solisCreds.is_active },
+    { key: "growatt", title: "Growatt", isConfigured: !!growattCreds.id, isActive: growattCreds.is_active },
+    { key: "huawei", title: "Huawei FusionSolar", isConfigured: !!huaweiCreds.id, isActive: huaweiCreds.is_active },
+    { key: "fronius", title: "Fronius Solar.web", isConfigured: !!froniusCreds.id, isActive: froniusCreds.is_active },
+    { key: "whatsapp", title: "WhatsApp Business", isConfigured: false, isActive: false },
+  ];
+
+  const isVisible = (key: string) => {
+    const item = integrations.find((i) => i.key === key);
+    if (!item) return false;
+    if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (statusFilter === "active" && (!item.isConfigured || !item.isActive)) return false;
+    if (statusFilter === "inactive" && item.isConfigured && item.isActive) return false;
+    return true;
+  };
+
+  const handleSuggestIntegration = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { toast({ title: "Faça login para enviar sugestões", variant: "destructive" }); return; }
+    await supabase.from("support_tickets").insert({
+      user_id: user.id,
+      workspace_id: workspaceId || null,
+      message: "[Sugestão de Integração] Gostaria de sugerir uma nova integração para o Solarize.",
+      sender: "user",
+    });
+    toast({ title: "Sugestão enviada!", description: "Sua ideia foi enviada para o suporte. Você pode continuar a conversa no chat." });
+  };
+
+  const visibleCount = integrations.filter((i) => isVisible(i.key)).length;
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Integrações</h1>
-        <p className="text-muted-foreground">Conecte sistemas externos ao seu painel Solarize</p>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Integrações</h1>
+          <p className="text-muted-foreground">Conecte sistemas externos ao seu painel Solarize</p>
+        </div>
       </div>
+
+      {/* Search & Filters */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar integração..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)} className="w-auto">
+          <TabsList>
+            <TabsTrigger value="all">Todas</TabsTrigger>
+            <TabsTrigger value="active">Ativas</TabsTrigger>
+            <TabsTrigger value="inactive">Não configuradas</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      {visibleCount === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Search className="w-10 h-10 text-muted-foreground mb-3" />
+          <p className="font-medium text-foreground">Nenhuma integração encontrada</p>
+          <p className="text-sm text-muted-foreground">Tente outro termo ou altere o filtro</p>
+        </div>
+      )}
 
       {/* SolisCloud */}
-      <IntegrationCard icon={Zap} iconColor="bg-primary/10 text-primary" title="SolisCloud" description="Monitoramento de inversores Solis"
-        helpText="Conecte sua conta SolisCloud. Obtenha credenciais em" helpLink="https://www.soliscloud.com"
-        credId={solisCreds.id} isActive={solisCreds.is_active} deviceCount={solisInverterCount} deviceLabel="inversor(es)"
-        saving={solisSaving} testing={solisTesting} syncing={solisSyncing} testResult={solisTestResult}
-        onSave={handleSolisSave} onTest={handleSolisTest} onSync={handleSolisSync}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2"><Label>API ID</Label><Input placeholder="Ex: 1300386381676644416" value={solisCreds.api_id} onChange={(e) => setSolisCreds({ ...solisCreds, api_id: e.target.value })} /></div>
-          <div className="space-y-2"><Label>API Secret</Label>
-            <div className="relative">
-              <Input type={showSolisSecret ? "text" : "password"} placeholder="Sua chave secreta" value={solisCreds.api_secret} onChange={(e) => setSolisCreds({ ...solisCreds, api_secret: e.target.value })} className="pr-10" />
-              <button type="button" onClick={() => setShowSolisSecret(!showSolisSecret)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                {showSolisSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+      {isVisible("solis") && (
+        <IntegrationCard icon={Zap} iconColor="bg-primary/10 text-primary" title="SolisCloud" description="Monitoramento de inversores Solis"
+          helpText="Conecte sua conta SolisCloud. Obtenha credenciais em" helpLink="https://www.soliscloud.com"
+          credId={solisCreds.id} isActive={solisCreds.is_active} deviceCount={solisInverterCount} deviceLabel="inversor(es)"
+          saving={solisSaving} testing={solisTesting} syncing={solisSyncing} testResult={solisTestResult}
+          onSave={handleSolisSave} onTest={handleSolisTest} onSync={handleSolisSync}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2"><Label>API ID</Label><Input placeholder="Ex: 1300386381676644416" value={solisCreds.api_id} onChange={(e) => setSolisCreds({ ...solisCreds, api_id: e.target.value })} /></div>
+            <div className="space-y-2"><Label>API Secret</Label>
+              <div className="relative">
+                <Input type={showSolisSecret ? "text" : "password"} placeholder="Sua chave secreta" value={solisCreds.api_secret} onChange={(e) => setSolisCreds({ ...solisCreds, api_secret: e.target.value })} className="pr-10" />
+                <button type="button" onClick={() => setShowSolisSecret(!showSolisSecret)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showSolisSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </IntegrationCard>
+        </IntegrationCard>
+      )}
 
       {/* Growatt */}
-      <IntegrationCard icon={Leaf} iconColor="bg-green-500/10 text-green-600" title="Growatt" description="Monitoramento de inversores Growatt"
-        helpText="Conecte sua conta Growatt via API V1. Solicite seu token em" helpLink="https://www.growatt.com"
-        credId={growattCreds.id} isActive={growattCreds.is_active} deviceCount={growattDeviceCount} deviceLabel="dispositivo(s)"
-        saving={growattSaving} testing={growattTesting} syncing={growattSyncing} testResult={growattTestResult}
-        onSave={handleGrowattSave} onTest={handleGrowattTest} onSync={handleGrowattSync}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2"><Label>Token da API</Label>
-            <div className="relative">
-              <Input type={showGrowattToken ? "text" : "password"} placeholder="Seu token" value={growattCreds.api_token} onChange={(e) => setGrowattCreds({ ...growattCreds, api_token: e.target.value })} className="pr-10" />
-              <button type="button" onClick={() => setShowGrowattToken(!showGrowattToken)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                {showGrowattToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+      {isVisible("growatt") && (
+        <IntegrationCard icon={Leaf} iconColor="bg-green-500/10 text-green-600" title="Growatt" description="Monitoramento de inversores Growatt"
+          helpText="Conecte sua conta Growatt via API V1. Solicite seu token em" helpLink="https://www.growatt.com"
+          credId={growattCreds.id} isActive={growattCreds.is_active} deviceCount={growattDeviceCount} deviceLabel="dispositivo(s)"
+          saving={growattSaving} testing={growattTesting} syncing={growattSyncing} testResult={growattTestResult}
+          onSave={handleGrowattSave} onTest={handleGrowattTest} onSync={handleGrowattSync}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2"><Label>Token da API</Label>
+              <div className="relative">
+                <Input type={showGrowattToken ? "text" : "password"} placeholder="Seu token" value={growattCreds.api_token} onChange={(e) => setGrowattCreds({ ...growattCreds, api_token: e.target.value })} className="pr-10" />
+                <button type="button" onClick={() => setShowGrowattToken(!showGrowattToken)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showGrowattToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
+            <div className="space-y-2"><Label>URL da API</Label><Input value={growattCreds.api_url} onChange={(e) => setGrowattCreds({ ...growattCreds, api_url: e.target.value })} /></div>
           </div>
-          <div className="space-y-2"><Label>URL da API</Label><Input value={growattCreds.api_url} onChange={(e) => setGrowattCreds({ ...growattCreds, api_url: e.target.value })} /></div>
-        </div>
-      </IntegrationCard>
+        </IntegrationCard>
+      )}
 
       {/* Huawei FusionSolar */}
-      <IntegrationCard icon={Sun} iconColor="bg-red-500/10 text-red-600" title="Huawei FusionSolar" description="Monitoramento de inversores Huawei"
-        helpText="Conecte via iMaster NetEco Northbound API. Solicite acesso no portal de parceiros Huawei." helpLink="https://intl.fusionsolar.huawei.com"
-        credId={huaweiCreds.id} isActive={huaweiCreds.is_active} deviceCount={huaweiDeviceCount} deviceLabel="dispositivo(s)"
-        saving={huaweiSaving} testing={huaweiTesting} syncing={huaweiSyncing} testResult={huaweiTestResult}
-        onSave={handleHuaweiSave} onTest={handleHuaweiTest} onSync={handleHuaweiSync}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2"><Label>Usuário (System Code)</Label><Input placeholder="Seu usuário FusionSolar" value={huaweiCreds.username} onChange={(e) => setHuaweiCreds({ ...huaweiCreds, username: e.target.value })} /></div>
-          <div className="space-y-2"><Label>Senha (System Code)</Label>
-            <div className="relative">
-              <Input type={showHuaweiPassword ? "text" : "password"} placeholder="Sua senha" value={huaweiCreds.password} onChange={(e) => setHuaweiCreds({ ...huaweiCreds, password: e.target.value })} className="pr-10" />
-              <button type="button" onClick={() => setShowHuaweiPassword(!showHuaweiPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                {showHuaweiPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+      {isVisible("huawei") && (
+        <IntegrationCard icon={Sun} iconColor="bg-red-500/10 text-red-600" title="Huawei FusionSolar" description="Monitoramento de inversores Huawei"
+          helpText="Conecte via iMaster NetEco Northbound API. Solicite acesso no portal de parceiros Huawei." helpLink="https://intl.fusionsolar.huawei.com"
+          credId={huaweiCreds.id} isActive={huaweiCreds.is_active} deviceCount={huaweiDeviceCount} deviceLabel="dispositivo(s)"
+          saving={huaweiSaving} testing={huaweiTesting} syncing={huaweiSyncing} testResult={huaweiTestResult}
+          onSave={handleHuaweiSave} onTest={handleHuaweiTest} onSync={handleHuaweiSync}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2"><Label>Usuário (System Code)</Label><Input placeholder="Seu usuário FusionSolar" value={huaweiCreds.username} onChange={(e) => setHuaweiCreds({ ...huaweiCreds, username: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Senha (System Code)</Label>
+              <div className="relative">
+                <Input type={showHuaweiPassword ? "text" : "password"} placeholder="Sua senha" value={huaweiCreds.password} onChange={(e) => setHuaweiCreds({ ...huaweiCreds, password: e.target.value })} className="pr-10" />
+                <button type="button" onClick={() => setShowHuaweiPassword(!showHuaweiPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showHuaweiPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
+            <div className="space-y-2 md:col-span-2"><Label>URL da API</Label><Input value={huaweiCreds.api_url} onChange={(e) => setHuaweiCreds({ ...huaweiCreds, api_url: e.target.value })} /></div>
           </div>
-          <div className="space-y-2 md:col-span-2"><Label>URL da API</Label><Input value={huaweiCreds.api_url} onChange={(e) => setHuaweiCreds({ ...huaweiCreds, api_url: e.target.value })} /></div>
-        </div>
-      </IntegrationCard>
+        </IntegrationCard>
+      )}
 
       {/* Fronius */}
-      <IntegrationCard icon={Snowflake} iconColor="bg-blue-500/10 text-blue-600" title="Fronius Solar.web" description="Monitoramento de inversores Fronius"
-        helpText="Conecte via Solar.web API. Solicite acesso como integrador no portal" helpLink="https://www.solarweb.com"
-        credId={froniusCreds.id} isActive={froniusCreds.is_active} deviceCount={froniusDeviceCount} deviceLabel="dispositivo(s)"
-        saving={froniusSaving} testing={froniusTesting} syncing={froniusSyncing} testResult={froniusTestResult}
-        onSave={handleFroniusSave} onTest={handleFroniusTest} onSync={handleFroniusSync}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2"><Label>API Key</Label>
-            <div className="relative">
-              <Input type={showFroniusKey ? "text" : "password"} placeholder="Sua API Key" value={froniusCreds.api_key} onChange={(e) => setFroniusCreds({ ...froniusCreds, api_key: e.target.value })} className="pr-10" />
-              <button type="button" onClick={() => setShowFroniusKey(!showFroniusKey)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                {showFroniusKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+      {isVisible("fronius") && (
+        <IntegrationCard icon={Snowflake} iconColor="bg-blue-500/10 text-blue-600" title="Fronius Solar.web" description="Monitoramento de inversores Fronius"
+          helpText="Conecte via Solar.web API. Solicite acesso como integrador no portal" helpLink="https://www.solarweb.com"
+          credId={froniusCreds.id} isActive={froniusCreds.is_active} deviceCount={froniusDeviceCount} deviceLabel="dispositivo(s)"
+          saving={froniusSaving} testing={froniusTesting} syncing={froniusSyncing} testResult={froniusTestResult}
+          onSave={handleFroniusSave} onTest={handleFroniusTest} onSync={handleFroniusSync}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2"><Label>API Key</Label>
+              <div className="relative">
+                <Input type={showFroniusKey ? "text" : "password"} placeholder="Sua API Key" value={froniusCreds.api_key} onChange={(e) => setFroniusCreds({ ...froniusCreds, api_key: e.target.value })} className="pr-10" />
+                <button type="button" onClick={() => setShowFroniusKey(!showFroniusKey)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showFroniusKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
+            <div className="space-y-2"><Label>Access Key ID (opcional)</Label><Input placeholder="Access Key ID" value={froniusCreds.access_key_id} onChange={(e) => setFroniusCreds({ ...froniusCreds, access_key_id: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Access Key Value (opcional)</Label><Input placeholder="Access Key Value" value={froniusCreds.access_key_value} onChange={(e) => setFroniusCreds({ ...froniusCreds, access_key_value: e.target.value })} /></div>
+            <div className="space-y-2"><Label>URL da API</Label><Input value={froniusCreds.api_url} onChange={(e) => setFroniusCreds({ ...froniusCreds, api_url: e.target.value })} /></div>
           </div>
-          <div className="space-y-2"><Label>Access Key ID (opcional)</Label><Input placeholder="Access Key ID" value={froniusCreds.access_key_id} onChange={(e) => setFroniusCreds({ ...froniusCreds, access_key_id: e.target.value })} /></div>
-          <div className="space-y-2"><Label>Access Key Value (opcional)</Label><Input placeholder="Access Key Value" value={froniusCreds.access_key_value} onChange={(e) => setFroniusCreds({ ...froniusCreds, access_key_value: e.target.value })} /></div>
-          <div className="space-y-2"><Label>URL da API</Label><Input value={froniusCreds.api_url} onChange={(e) => setFroniusCreds({ ...froniusCreds, api_url: e.target.value })} /></div>
-        </div>
-      </IntegrationCard>
+        </IntegrationCard>
+      )}
 
-      {/* Future */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="border-border/40 opacity-60">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center"><Zap className="w-4 h-4 text-muted-foreground" /></div>
-            <div className="flex-1"><p className="font-medium text-foreground">WhatsApp Business</p><p className="text-xs text-muted-foreground">Automação de mensagens</p></div>
-            <Badge variant="secondary" className="text-[10px]">Planejado</Badge>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Future - WhatsApp */}
+      {isVisible("whatsapp") && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="border-border/40 opacity-60">
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center"><MessageCircle className="w-4 h-4 text-muted-foreground" /></div>
+              <div className="flex-1"><p className="font-medium text-foreground">WhatsApp Business</p><p className="text-xs text-muted-foreground">Automação de mensagens</p></div>
+              <Badge variant="secondary" className="text-[10px]">Planejado</Badge>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Suggestion CTA */}
+      <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+        <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Lightbulb className="w-6 h-6 text-primary" />
+          </div>
+          <div className="flex-1">
+            <p className="font-bold text-foreground">Quer sugerir uma nova integração?</p>
+            <p className="text-sm text-muted-foreground">Envie sua ideia direto para nosso time. Sua sugestão nos ajuda a priorizar o que desenvolver.</p>
+          </div>
+          <Button onClick={handleSuggestIntegration} className="gap-2 shrink-0">
+            <MessageCircle className="w-4 h-4" /> Enviar sugestão
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }
