@@ -290,6 +290,97 @@ export type Database = {
         }
         Relationships: []
       }
+      growatt_credentials: {
+        Row: {
+          api_token: string
+          api_url: string
+          created_at: string
+          id: string
+          is_active: boolean
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          api_token: string
+          api_url?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          api_token?: string
+          api_url?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "growatt_credentials_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      growatt_inverters: {
+        Row: {
+          created_at: string
+          device_model: string | null
+          device_sn: string
+          device_type: string | null
+          id: string
+          is_active: boolean
+          last_data: Json | null
+          last_synced_at: string | null
+          plant_id: string | null
+          plant_name: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_model?: string | null
+          device_sn: string
+          device_type?: string | null
+          id?: string
+          is_active?: boolean
+          last_data?: Json | null
+          last_synced_at?: string | null
+          plant_id?: string | null
+          plant_name?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          device_model?: string | null
+          device_sn?: string
+          device_type?: string | null
+          id?: string
+          is_active?: boolean
+          last_data?: Json | null
+          last_synced_at?: string | null
+          plant_id?: string | null
+          plant_name?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "growatt_inverters_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hero_slides: {
         Row: {
           button_link: string | null
