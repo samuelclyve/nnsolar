@@ -113,6 +113,7 @@ export function TenantPortfolio({ images }: TenantPortfolioProps) {
               )}
             </motion.div>
           </motion.div>
+        )}
       </AnimatePresence>
     </section>
   );
