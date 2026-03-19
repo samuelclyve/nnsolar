@@ -661,7 +661,92 @@ export default function SiteEditor() {
             </Card>
           </TabsContent>
 
-          {/* ===== TESTIMONIALS TAB ===== */}
+          {/* ===== PORTFOLIO TAB ===== */}
+          <TabsContent value="portfolio">
+            <div className="space-y-6">
+              {/* Cases Section */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg flex items-center gap-2"><Camera className="w-5 h-5 text-primary" /> Cases e Instalações</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">Fotos dos projetos realizados pela sua empresa. Aparecem na galeria do site.</p>
+                  </div>
+                  <div>
+                    <input type="file" accept="image/*" className="hidden" id="case-upload" onChange={(e) => handlePortfolioImageUpload(e, "case")} />
+                    <Button variant="cta" onClick={() => document.getElementById("case-upload")?.click()} disabled={uploadingPortfolio}>
+                      <Plus className="w-4 h-4" /> {uploadingPortfolio ? "Enviando..." : "Adicionar Foto"}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {portfolioCases.map((img) => (
+                      <div key={img.id} className={`group relative rounded-xl overflow-hidden border ${img.is_active ? "border-border" : "border-muted opacity-50"}`}>
+                        <img src={img.image_url} alt={img.title || "Case"} className="w-full h-40 object-cover" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                          <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={() => updatePortfolioImage(img.id, { is_active: !img.is_active })}>
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="text-white hover:bg-destructive/80" onClick={() => deletePortfolioImage(img.id)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        {img.title && <div className="p-2"><p className="text-xs text-foreground truncate">{img.title}</p></div>}
+                      </div>
+                    ))}
+                    {portfolioCases.length === 0 && (
+                      <div className="col-span-full text-center py-12">
+                        <Camera className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-medium text-foreground mb-2">Nenhuma foto de case</h3>
+                        <p className="text-muted-foreground text-sm">Adicione fotos dos seus projetos para mostrar no site.</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Instagram Section */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg flex items-center gap-2"><Instagram className="w-5 h-5 text-primary" /> Feed do Instagram</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">Imagens que representam seus últimos posts do Instagram. Os 4 mais recentes aparecem no site.</p>
+                  </div>
+                  <div>
+                    <input type="file" accept="image/*" className="hidden" id="insta-upload" onChange={(e) => handlePortfolioImageUpload(e, "instagram")} />
+                    <Button variant="cta" onClick={() => document.getElementById("insta-upload")?.click()} disabled={uploadingPortfolio}>
+                      <Plus className="w-4 h-4" /> {uploadingPortfolio ? "Enviando..." : "Adicionar Post"}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {portfolioInsta.map((img) => (
+                      <div key={img.id} className={`group relative rounded-xl overflow-hidden border aspect-square ${img.is_active ? "border-border" : "border-muted opacity-50"}`}>
+                        <img src={img.image_url} alt="Instagram post" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                          <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={() => updatePortfolioImage(img.id, { is_active: !img.is_active })}>
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="text-white hover:bg-destructive/80" onClick={() => deletePortfolioImage(img.id)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    {portfolioInsta.length === 0 && (
+                      <div className="col-span-full text-center py-12">
+                        <Instagram className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-medium text-foreground mb-2">Nenhum post do Instagram</h3>
+                        <p className="text-muted-foreground text-sm">Adicione imagens dos seus posts para exibir no site. Os 4 mais recentes aparecerão.</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           <TabsContent value="testimonials">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
