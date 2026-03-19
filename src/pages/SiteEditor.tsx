@@ -79,13 +79,17 @@ export default function SiteEditor() {
   }, [workspaceId]);
 
   const fetchData = async () => {
-    const [slidesRes, testimonialsRes, settingsRes] = await Promise.all([
+    const [slidesRes, testimonialsRes, settingsRes, casesRes, instaRes] = await Promise.all([
       supabase.from("hero_slides").select("*").eq("workspace_id", workspaceId!).order("sort_order"),
       supabase.from("testimonials").select("*").eq("workspace_id", workspaceId!).order("sort_order"),
       supabase.from("site_settings").select("*").eq("workspace_id", workspaceId!),
+      supabase.from("portfolio_images").select("*").eq("workspace_id", workspaceId!).eq("category", "case").order("sort_order"),
+      supabase.from("portfolio_images").select("*").eq("workspace_id", workspaceId!).eq("category", "instagram").order("sort_order"),
     ]);
     setSlides(slidesRes.data || []);
     setTestimonials(testimonialsRes.data || []);
+    setPortfolioCases(casesRes.data || []);
+    setPortfolioInsta(instaRes.data || []);
     const map: Record<string, string> = {};
     (settingsRes.data || []).forEach((s: any) => { map[s.setting_key] = s.setting_value || ""; });
     setSettings(map);
