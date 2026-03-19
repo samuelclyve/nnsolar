@@ -46,6 +46,7 @@ const menuGroups: MenuGroup[] = [
     label: "Operações",
     items: [
       { icon: Wrench, label: "Instalações", href: "/installations", roles: ["admin", "manager", "technician", "comercial", "super_admin"] },
+      { icon: Sun, label: "Monitoramento", href: "/monitoring", roles: ["admin", "manager", "technician", "super_admin"] },
       { icon: FileText, label: "Documentos", href: "/documents", roles: ["admin", "manager", "comercial", "technician", "super_admin"] },
     ],
   },
