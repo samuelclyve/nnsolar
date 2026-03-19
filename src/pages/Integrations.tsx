@@ -21,8 +21,14 @@ const gridBg = {
   backgroundSize: '48px 48px',
 };
 
+const availableIntegrations = [
+  { icon: Zap, name: "SolisCloud", description: "Monitoramento em tempo real de inversores Solis. Acompanhe geração, potência e status dos dispositivos dos seus clientes direto pelo painel.", status: "Disponível" },
+  { icon: Zap, name: "Growatt (ShineServer)", description: "Integração com a API ShineServer da Growatt. Monitore plantas, inversores e geração de energia em tempo real.", status: "Disponível" },
+  { icon: Zap, name: "Huawei FusionSolar", description: "Conecte-se à plataforma iMaster NetEco da Huawei. Acompanhe estações, dispositivos e KPIs de geração solar.", status: "Disponível" },
+  { icon: Zap, name: "Fronius Solar.web", description: "Integração com a API Solar.web da Fronius. Monitore sistemas PV, fluxo de energia e dados agregados de geração.", status: "Disponível" },
+];
+
 const plannedIntegrations = [
-  { icon: Zap, name: "Inversores Solares", description: "Monitoramento em tempo real de inversores Fronius, Growatt, Huawei e mais. Acompanhe a geração de energia dos seus clientes direto pelo painel.", status: "Em desenvolvimento" },
   { icon: MessageCircle, name: "WhatsApp Business API", description: "Automação de mensagens e notificações via API oficial do WhatsApp. Envie atualizações de instalação, cobranças e follow-ups automaticamente.", status: "Em desenvolvimento" },
   { icon: Plug, name: "Geradores de Propostas", description: "Integração com ferramentas de dimensionamento e geração de propostas comerciais. Crie propostas profissionais em minutos.", status: "Planejado" },
   { icon: Smartphone, name: "Aplicativo Mobile para Clientes", description: "App nativo para seus clientes acompanharem o andamento da instalação, documentos e geração de energia em tempo real.", status: "Planejado" },
@@ -30,6 +36,7 @@ const plannedIntegrations = [
 ];
 
 const statusColors: Record<string, string> = {
+  "Disponível": "bg-green-500/10 text-green-600",
   "Em desenvolvimento": "bg-primary/10 text-primary",
   "Planejado": "bg-secondary/10 text-secondary",
 };
@@ -91,7 +98,7 @@ export default function Integrations() {
         </div>
       </section>
 
-      {/* Integrations Grid */}
+      {/* Available Integrations */}
       <section className="py-20 bg-background relative">
         <div className="absolute inset-0 opacity-[0.02]" style={gridBg} />
         <div className="container mx-auto px-4 relative">
@@ -101,13 +108,64 @@ export default function Integrations() {
             viewport={{ once: true }}
             className="text-2xl md:text-3xl font-display font-bold text-foreground mb-4"
           >
-            Integrações planejadas
+            Integrações disponíveis
+          </motion.h2>
+          <p className="text-muted-foreground mb-12 max-w-xl">
+            Conecte seus inversores solares ao Solarize e monitore tudo em um só lugar.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {availableIntegrations.map((item, i) => (
+              <motion.div
+                key={item.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <Card className="border border-green-500/20 bg-card hover:border-green-500/40 transition-all duration-300 h-full hover:shadow-md">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-11 h-11 rounded-xl bg-green-500/10 flex items-center justify-center">
+                        <item.icon className="w-5 h-5 text-green-600" />
+                      </div>
+                      <span className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${statusColors[item.status]}`}>
+                        {item.status}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-foreground mb-1.5">{item.name}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-4">{item.description}</p>
+                    <Link
+                      to="/signup"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-green-600 hover:text-green-700 transition-colors"
+                    >
+                      <ArrowRight className="w-3.5 h-3.5" /> Começar a usar
+                    </Link>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Planned Integrations */}
+      <section className="py-20 relative">
+        <div className="absolute inset-0 opacity-[0.02]" style={gridBg} />
+        <div className="container mx-auto px-4 relative">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-2xl md:text-3xl font-display font-bold text-foreground mb-4"
+          >
+            Em breve
           </motion.h2>
           <p className="text-muted-foreground mb-12 max-w-xl">
             Confira os sistemas e ferramentas que estamos trabalhando para integrar ao ecossistema Solarize.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {plannedIntegrations.map((item, i) => (
               <motion.div
                 key={item.name}
