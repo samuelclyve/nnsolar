@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   Image, Plus, Trash2, Save, Eye, GripVertical, Settings,
   MessageSquare, Type, Upload, X, Palette, Globe, Phone,
-  Mail, MapPin, Instagram, MessageCircle
+  Mail, MapPin, Instagram, MessageCircle, Camera, Edit
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,9 +40,21 @@ interface Testimonial {
   sort_order: number;
 }
 
+interface PortfolioImage {
+  id: string;
+  image_url: string;
+  title: string | null;
+  description: string | null;
+  category: string;
+  is_active: boolean;
+  sort_order: number;
+}
+
 export default function SiteEditor() {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [portfolioCases, setPortfolioCases] = useState<PortfolioImage[]>([]);
+  const [portfolioInsta, setPortfolioInsta] = useState<PortfolioImage[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSlideDialogOpen, setIsSlideDialogOpen] = useState(false);
@@ -67,13 +79,17 @@ export default function SiteEditor() {
   }, [workspaceId]);
 
   const fetchData = async () => {
-    const [slidesRes, testimonialsRes, settingsRes] = await Promise.all([
+    const [slidesRes, testimonialsRes, settingsRes, casesRes, instaRes] = await Promise.all([
       supabase.from("hero_slides").select("*").eq("workspace_id", workspaceId!).order("sort_order"),
       supabase.from("testimonials").select("*").eq("workspace_id", workspaceId!).order("sort_order"),
       supabase.from("site_settings").select("*").eq("workspace_id", workspaceId!),
+      supabase.from("portfolio_images").select("*").eq("workspace_id", workspaceId!).eq("category", "case").order("sort_order"),
+      supabase.from("portfolio_images").select("*").eq("workspace_id", workspaceId!).eq("category", "instagram").order("sort_order"),
     ]);
     setSlides(slidesRes.data || []);
     setTestimonials(testimonialsRes.data || []);
+    setPortfolioCases(casesRes.data || []);
+    setPortfolioInsta(instaRes.data || []);
     const map: Record<string, string> = {};
     (settingsRes.data || []).forEach((s: any) => { map[s.setting_key] = s.setting_value || ""; });
     setSettings(map);
@@ -240,6 +256,43 @@ export default function SiteEditor() {
   // Helper for setting update
   const updateSetting = (key: string, value: string) => setSettings({ ...settings, [key]: value });
 
+  // Portfolio image management
+  const portfolioImageInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingPortfolio, setUploadingPortfolio] = useState(false);
+  const [portfolioCategory, setPortfolioCategory] = useState<"case" | "instagram">("case");
+
+  const handlePortfolioImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, category: "case" | "instagram") => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPortfolio(true);
+    const url = await uploadImage(file);
+    if (url) {
+      const list = category === "case" ? portfolioCases : portfolioInsta;
+      await supabase.from("portfolio_images").insert({
+        workspace_id: workspaceId,
+        image_url: url,
+        category,
+        sort_order: list.length,
+        is_active: true,
+      });
+      toast({ title: "Imagem adicionada!" });
+      fetchData();
+    }
+    setUploadingPortfolio(false);
+    if (e.target) e.target.value = "";
+  };
+
+  const deletePortfolioImage = async (id: string) => {
+    await supabase.from("portfolio_images").delete().eq("id", id);
+    toast({ title: "Imagem removida!" });
+    fetchData();
+  };
+
+  const updatePortfolioImage = async (id: string, updates: Partial<PortfolioImage>) => {
+    await supabase.from("portfolio_images").update(updates).eq("id", id);
+    fetchData();
+  };
+
   // Color preview helper
   const color1 = settings.brand_color_primary || "#FF8C00";
   const color2 = settings.brand_color_secondary || "#1B3A5C";
@@ -281,10 +334,11 @@ export default function SiteEditor() {
         )}
 
         <Tabs defaultValue="brand" className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-6">
+          <TabsList className="grid w-full grid-cols-7 mb-6">
             <TabsTrigger value="brand" className="gap-1 text-xs"><Palette className="w-4 h-4" /> Identidade</TabsTrigger>
             <TabsTrigger value="hero" className="gap-1 text-xs"><Image className="w-4 h-4" /> Hero</TabsTrigger>
             <TabsTrigger value="slides" className="gap-1 text-xs"><Image className="w-4 h-4" /> Banners</TabsTrigger>
+            <TabsTrigger value="portfolio" className="gap-1 text-xs"><Camera className="w-4 h-4" /> Portfólio</TabsTrigger>
             <TabsTrigger value="testimonials" className="gap-1 text-xs"><MessageSquare className="w-4 h-4" /> Depoimentos</TabsTrigger>
             <TabsTrigger value="content" className="gap-1 text-xs"><Type className="w-4 h-4" /> Conteúdo</TabsTrigger>
             <TabsTrigger value="contact" className="gap-1 text-xs"><Phone className="w-4 h-4" /> Contato</TabsTrigger>
@@ -607,7 +661,92 @@ export default function SiteEditor() {
             </Card>
           </TabsContent>
 
-          {/* ===== TESTIMONIALS TAB ===== */}
+          {/* ===== PORTFOLIO TAB ===== */}
+          <TabsContent value="portfolio">
+            <div className="space-y-6">
+              {/* Cases Section */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg flex items-center gap-2"><Camera className="w-5 h-5 text-primary" /> Cases e Instalações</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">Fotos dos projetos realizados pela sua empresa. Aparecem na galeria do site.</p>
+                  </div>
+                  <div>
+                    <input type="file" accept="image/*" className="hidden" id="case-upload" onChange={(e) => handlePortfolioImageUpload(e, "case")} />
+                    <Button variant="cta" onClick={() => document.getElementById("case-upload")?.click()} disabled={uploadingPortfolio}>
+                      <Plus className="w-4 h-4" /> {uploadingPortfolio ? "Enviando..." : "Adicionar Foto"}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {portfolioCases.map((img) => (
+                      <div key={img.id} className={`group relative rounded-xl overflow-hidden border ${img.is_active ? "border-border" : "border-muted opacity-50"}`}>
+                        <img src={img.image_url} alt={img.title || "Case"} className="w-full h-40 object-cover" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                          <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={() => updatePortfolioImage(img.id, { is_active: !img.is_active })}>
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="text-white hover:bg-destructive/80" onClick={() => deletePortfolioImage(img.id)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        {img.title && <div className="p-2"><p className="text-xs text-foreground truncate">{img.title}</p></div>}
+                      </div>
+                    ))}
+                    {portfolioCases.length === 0 && (
+                      <div className="col-span-full text-center py-12">
+                        <Camera className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-medium text-foreground mb-2">Nenhuma foto de case</h3>
+                        <p className="text-muted-foreground text-sm">Adicione fotos dos seus projetos para mostrar no site.</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Instagram Section */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg flex items-center gap-2"><Instagram className="w-5 h-5 text-primary" /> Feed do Instagram</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">Imagens que representam seus últimos posts do Instagram. Os 4 mais recentes aparecem no site.</p>
+                  </div>
+                  <div>
+                    <input type="file" accept="image/*" className="hidden" id="insta-upload" onChange={(e) => handlePortfolioImageUpload(e, "instagram")} />
+                    <Button variant="cta" onClick={() => document.getElementById("insta-upload")?.click()} disabled={uploadingPortfolio}>
+                      <Plus className="w-4 h-4" /> {uploadingPortfolio ? "Enviando..." : "Adicionar Post"}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {portfolioInsta.map((img) => (
+                      <div key={img.id} className={`group relative rounded-xl overflow-hidden border aspect-square ${img.is_active ? "border-border" : "border-muted opacity-50"}`}>
+                        <img src={img.image_url} alt="Instagram post" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                          <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={() => updatePortfolioImage(img.id, { is_active: !img.is_active })}>
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="text-white hover:bg-destructive/80" onClick={() => deletePortfolioImage(img.id)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    {portfolioInsta.length === 0 && (
+                      <div className="col-span-full text-center py-12">
+                        <Instagram className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-medium text-foreground mb-2">Nenhum post do Instagram</h3>
+                        <p className="text-muted-foreground text-sm">Adicione imagens dos seus posts para exibir no site. Os 4 mais recentes aparecerão.</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           <TabsContent value="testimonials">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
