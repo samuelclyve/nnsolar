@@ -98,7 +98,7 @@ export default function Integrations() {
         </div>
       </section>
 
-      {/* Integrations Grid */}
+      {/* Available Integrations */}
       <section className="py-20 bg-background relative">
         <div className="absolute inset-0 opacity-[0.02]" style={gridBg} />
         <div className="container mx-auto px-4 relative">
@@ -108,13 +108,64 @@ export default function Integrations() {
             viewport={{ once: true }}
             className="text-2xl md:text-3xl font-display font-bold text-foreground mb-4"
           >
-            Integrações planejadas
+            Integrações disponíveis
+          </motion.h2>
+          <p className="text-muted-foreground mb-12 max-w-xl">
+            Conecte seus inversores solares ao Solarize e monitore tudo em um só lugar.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {availableIntegrations.map((item, i) => (
+              <motion.div
+                key={item.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <Card className="border border-green-500/20 bg-card hover:border-green-500/40 transition-all duration-300 h-full hover:shadow-md">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-11 h-11 rounded-xl bg-green-500/10 flex items-center justify-center">
+                        <item.icon className="w-5 h-5 text-green-600" />
+                      </div>
+                      <span className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${statusColors[item.status]}`}>
+                        {item.status}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-foreground mb-1.5">{item.name}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-4">{item.description}</p>
+                    <Link
+                      to="/signup"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-green-600 hover:text-green-700 transition-colors"
+                    >
+                      <ArrowRight className="w-3.5 h-3.5" /> Começar a usar
+                    </Link>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Planned Integrations */}
+      <section className="py-20 relative">
+        <div className="absolute inset-0 opacity-[0.02]" style={gridBg} />
+        <div className="container mx-auto px-4 relative">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-2xl md:text-3xl font-display font-bold text-foreground mb-4"
+          >
+            Em breve
           </motion.h2>
           <p className="text-muted-foreground mb-12 max-w-xl">
             Confira os sistemas e ferramentas que estamos trabalhando para integrar ao ecossistema Solarize.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {plannedIntegrations.map((item, i) => (
               <motion.div
                 key={item.name}
