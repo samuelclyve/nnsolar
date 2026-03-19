@@ -6,6 +6,8 @@ import { TenantHeader } from "@/components/tenant/TenantHeader";
 import { TenantHero } from "@/components/tenant/TenantHero";
 import { TenantCarousel } from "@/components/tenant/TenantCarousel";
 import { TenantSimulator } from "@/components/tenant/TenantSimulator";
+import { TenantPortfolio } from "@/components/tenant/TenantPortfolio";
+import { TenantInstagram } from "@/components/tenant/TenantInstagram";
 import { TenantHowItWorks } from "@/components/tenant/TenantHowItWorks";
 import { TenantTestimonials } from "@/components/tenant/TenantTestimonials";
 import { TenantLeadForm } from "@/components/tenant/TenantLeadForm";
