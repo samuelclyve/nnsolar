@@ -93,16 +93,25 @@ export default function TenantSite() {
       return;
     }
 
-    const [settingsRes, slidesRes, testimonialsRes] = await Promise.all([
+    const [settingsRes, slidesRes, testimonialsRes, casesRes, instaRes] = await Promise.all([
       supabase.from("site_settings").select("setting_key, setting_value").eq("workspace_id", ws.id),
       supabase.from("hero_slides").select("*").eq("workspace_id", ws.id).eq("is_active", true).order("sort_order"),
       supabase.from("testimonials").select("*").eq("workspace_id", ws.id).eq("is_active", true).order("sort_order"),
+      supabase.from("portfolio_images").select("*").eq("workspace_id", ws.id).eq("is_active", true).eq("category", "case").order("sort_order"),
+      supabase.from("portfolio_images").select("*").eq("workspace_id", ws.id).eq("is_active", true).eq("category", "instagram").order("sort_order").limit(4),
     ]);
 
     const settingsMap: Record<string, string> = {};
     settingsRes.data?.forEach(s => { settingsMap[s.setting_key] = s.setting_value || ""; });
 
-    setData({ workspace: ws, settings: settingsMap, slides: slidesRes.data || [], testimonials: testimonialsRes.data || [] });
+    setData({
+      workspace: ws,
+      settings: settingsMap,
+      slides: slidesRes.data || [],
+      testimonials: testimonialsRes.data || [],
+      portfolioCases: casesRes.data || [],
+      portfolioInstagram: instaRes.data || [],
+    });
     setIsLoading(false);
   };
 
