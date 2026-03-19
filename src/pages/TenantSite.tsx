@@ -18,6 +18,8 @@ interface SiteData {
   settings: Record<string, string>;
   slides: any[];
   testimonials: any[];
+  portfolioCases: any[];
+  portfolioInstagram: any[];
 }
 
 // Convert hex to HSL values string like "28 100% 50%"
